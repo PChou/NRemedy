@@ -1,9 +1,9 @@
 ---
 layout: default
-title: 厘議Blog
+title: My Blog
 ---
 　　<h2>{{ page.title }}</h2>
-　　<p>恷仟猟嫗</p>
+　　<p>Most New</p>
 　　<ul>
 　　　　{% for post in site.posts %}
 　　　　　　<li>{{ post.date | date_to_string }} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
