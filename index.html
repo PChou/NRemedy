@@ -1,11 +1,23 @@
----
+﻿---
 layout: default
-title: My Blog
+title: P_Chou's Tech Space
 ---
-<h2>{{ page.title }}</h2>
-<p>Most New</p>
-<ul>
 {% for post in site.posts %}
-<li>{{ post.date | date_to_string }} <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></li>
+<div class="post main">
+	<div class="date">		
+		<div class="background">
+			{% assign date = {{ post.date | date_to_string | truncatewords}} %}
+			<span class="day">{% cycle date %}</span><br>
+			<span class="month">{% cycle date %}</span><br>
+			<span class="year">{% cycle date %}</span>
+		</div>
+	</div>
+	<div class="detail">
+		<h2 class="title"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+		<div class="article">
+			{{ post.content }}
+		</div>
+	</div>	
+	<div style="clear:both"></div>			
+</div>
 {% endfor %}
-</ul>
