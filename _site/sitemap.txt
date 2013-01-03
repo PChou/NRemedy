@@ -1,0 +1,14 @@
+
+/categories/Git.html
+/categories/life.html
+/categories/web-build.html
+/index.html
+/sitemap.txt
+/tags/Git.html
+/tags/github-page.html
+/tags/jekyll.html
+/tags/liquid.html
+
+/Git/2013/01/03/git-resource.html
+/web-build/2013/01/03/build-github-blog-page-01.html
+/life/2013/01/02/hello-github.html
