@@ -34,7 +34,6 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 body {
 	line-height: 1;
 	color: #1F1F1F;
-	background:url('images/background.jpg');
 }
 ol, ul {
 	list-style: none; 
@@ -406,7 +405,7 @@ div.aligncenter {
 }
 
 #posts #left .date .background {
-	background:url('images/date_background.png') no-repeat top center;
+
 }
 
 #posts #left .date .day {
@@ -432,7 +431,6 @@ div.aligncenter {
 }
 
 #posts #left .date-small .background {
-	background:url('images/date_background_small.png') no-repeat top center;
 }
 
 #posts #left .date-small .day {
@@ -563,7 +561,6 @@ div.aligncenter {
 }
 
 .container .sidebar li {
-	background:url('images/star_icon.png') no-repeat center left;
 	padding-left:15px;	
 }
 
@@ -636,7 +633,6 @@ div.aligncenter {
 }
 
 #footer li li { 
-	background:url('images/star_icon_white.png') no-repeat center left;
 	padding-left:15px;
 }
 
@@ -951,4 +947,35 @@ div.aligncenter {
 	height:48px;
 	width:48px;
 	margin-right:10px;
+}
+
+.tag_box {
+	list-style:none;
+	margin:0;
+	padding:5px 0 ;
+	overflow:hidden;
+}
+.tag_box li {
+	line-height:28px;
+}
+
+.tag_box.inline li {
+	float:left;
+}
+.tag_box a {
+	padding: 3px 6px;
+	margin: 2px;
+	background: #eee;
+	color:#005F6B;
+	border-radius: 3px;
+	text-decoration:none;
+}
+.tag_box a span{
+	vertical-align:super;
+	font-size:0.8em;
+}
+.tag_box a.active {
+	background:#57A957;
+	border:1px solid #4C964D;
+	color:#FFF;
 }

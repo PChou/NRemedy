@@ -6,18 +6,19 @@ title: P_Chou's Tech Space
 <div class="post main">
 	<div class="date">		
 		<div class="background">
-			{% assign date = {{ post.date | date_to_string | truncatewords}} %}
-			<span class="day">{% cycle date %}</span><br>
-			<span class="month">{% cycle date %}</span><br>
-			<span class="year">{% cycle date %}</span>
+			<span class="day">{{ post.date | date_to_string | truncatewords: 2 | remove: '...' }}</span><br>
+			<span class="month">{{ post.date | date_to_string | split: ' ' | last }}</span><br>
 		</div>
 	</div>
 	<div class="detail">
-		<h2 class="title"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+		<h1 class="title"><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+		<a href="{{ site.baseurl }}{{ post.url }}#disqus_thread"></a>
 		<div class="article">
-			{{ post.content }}
+			{{ post.description }}
 		</div>
 	</div>	
 	<div style="clear:both"></div>			
 </div>
 {% endfor %}
+
+{% include disqus %}
