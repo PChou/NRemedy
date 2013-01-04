@@ -19,7 +19,7 @@ tags: [github-page,jekyll,liquid]
 <p>类似其他的模板引擎一样，标记是模板引擎解析的关键，liquid设计了如下两种标记：</p>
 <ul>
 <li><span>{</span>{ <span>}</span>}：此标记表征的是将其中的变量转化成文本 
-<li><span>{</span>% <span>%</span>}：此标记用于包含控制流关键字，比如：{% if %}、{% for x in xx %}</li></ul>
+<li><span>{</span>% <span>%</span>}：此标记用于包含控制流关键字，比如：<span>{</span>% if <span>%</span>}、<span>{</span>% for x in xx <span>%</span>}</li></ul>
 <p>显而易见的是，有了这种标记的支持，再加上jekyll内建的对象，构建网站就方便不少了。</p>
 <p>可能有朋友会更其他的服务器端脚本语言比较，比如asp、razor、jsp、velocity…，但是一定要记得的是，jekyll对模板的解析仅仅只有一次，它的目标就是将模板一次性的转化成静态网站，而不是上述的动态网站脚本语言。因此，对GitHub网站的维护工作，大致可以用下面的图表示：</p>
 <p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png" width="411" height="376"></a></p>
