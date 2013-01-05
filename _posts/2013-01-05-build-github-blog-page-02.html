@@ -1,0 +1,66 @@
+---
+layout: default
+title: 一步步在GitHub上创建博客主页(2)
+description: 本系列文章将一步步教你如何在GitHub上创建自己的博客或主页，事实上相关的文章网上有很多，这里只是把自己的经验分享给新手，方便他们逐步开始GitHub之旅。本篇将带你快速搭建一个GitHub的项目主页，在开始之前你最好已经安装好了git客户端。
+categories: [web-build]
+tags: [github-page, jekyll, liquid]
+---
+{% include post.container.begin %}
+
+<h2><font style="font-weight: bold">更多关于GitHub-Pages</font></h2>
+<p>上篇粗略介绍了GitHub和GitHub-Pages，我们知道它本意是为开源项目及其主页提供服务的，事实上，GitHub提供两种类型的主页</p>
+<ul>
+<li>个人或组织主页 
+<li>项目主页</li></ul>
+<p>对于普通的博主来说，用哪种并无所谓，本系列文章将采用<strong>项目主页</strong>，刚好我自己也有项目，借助项目来创建自己的博客似乎更“厚道”些。更多关于主页类型，请参见：<a href="https://help.github.com/articles/user-organization-and-project-pages" target="_blank">User, Organization and Project Pages</a>
+<p>另外，再次重申一下，GitHub-Pages仅仅为我们提供了静态页面的托管，不要说不能用wordpress，连基本的评论，访问统计都得自己想办法（幸好都有解决方案，后面会慢慢介绍）；而且，如果不是已项目的名义创建博客似乎有违原则，请慎重考虑。</p>
+<p>&nbsp;</p>
+<h2><font style="font-weight: bold">快速开始</font></h2>
+<p><strong>帐号注册</strong></p>
+<p>在创建博客之前，当然必须有GitHub的帐号，该帐号将用来创建项目，默认的域名<strong>username</strong>.github.com/<strong>projectName</strong>中的<strong>username</strong>也要用到这个帐号。</p>
+<blockquote>
+<p>注意：下面涉及到的一些命令凡是更用户名和项目名有关的一律会用这里的username和projectName代替，注意替换</p></blockquote>
+<p>访问：<a title="http://www.github.com/" href="http://www.github.com/">http://www.github.com/</a> sign up for free的意思就是“免费注册登录”，注册你的username和邮箱，邮箱十分重要，GitHub上很多通知都是通过邮箱的。比如你的主页上传并构建成功会通过邮箱通知，更重要的是，如果构建失败的话也会在邮件中说明原因。</p>
+<p>&nbsp;</p>
+<p><strong>创建项目仓库</strong></p>
+<p>在创建博客之前，还需要用已有的帐号创建一个项目，上面那个链接的projectName将是这里即将创建的项目名称。在Git中，项目被称为仓库(Repository)，仓库顾名思义，当然可以包含代码或者非代码。将来我们的网页或者模板实际上都是保存在这个仓库中的。</p>
+<p>登录后，访问<a title="https://github.com/new" href="https://github.com/new">https://github.com/new</a>，创建仓库如下图：</p>
+<p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-02-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-02-img0.png" width="600" height="400"></a></p>
+<p>&nbsp;</p>
+<p>创建了仓库后，我们就需要管理它，无论是管理本地仓库还是远程仓库都需要Git客户端。Git客户端实际上十分强大，它本身就可以offline的创建本地仓库，而本地仓库和远程仓库之间的同步也是通过Git客户端完成的。</p>
+<p>这里省略了windows下安装和使用Git客户端的基本技巧，您应该已经掌握此技能了。虽然，您仍然可以按照本教程的指引完成一个简单的网站，但是后期的维护工作无论如何都不能少了这项技能。</p>
+<p>下面的步骤假设您已经安装好了Git客户端，安装和使用技巧请参见：<a href="{{ site.baseurl }}/Git/2013/01/03/git-resource.html">Git学习资源</a></p></p>
+<p>&nbsp;</p>
+<p><strong>本地编辑及上传</strong></p>
+<p>在磁盘上创建一个目录，该目录与上面的项目名同名，在该目录下启用Git Bash命令行，并输入如下命令</p>
+<div style="background-color: rgb(0,0,0); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(192,192,192)" class="source"><span style="color: rgb(105,105,105)">1 </span><span style="color: rgb(0,0,204)">$ </span>git bash</div>
+<p>该命令实际上是在该目录下初始化一个本地的仓库，会在目录下新建一个.git的隐藏文件夹，可以看成是一个仓库数据库。</p>
+<p>创建一个没有父节点的分支<strong>gh-pages，并自动切换到这个分支上。</strong></p>
+<div style="background-color: rgb(0,0,0); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(192,192,192)" class="source"><span style="color: rgb(105,105,105)">1 </span><span style="color: rgb(0,0,204)">$ </span>git checkout --orphan gh-pages<br></div>
+<p>在Git中，分支(branch)的概念非常重要，Git之所以强大，很大程度上就是因为它强大的分支体系。这里的分支名字<strong>必须是gh-pages</strong>，因为github规定，只有该分支中的页面，才会生成网页文件。</p>
+<p>在该目录下手动创建如下文件和文件夹，最终形成这样的结构：</p>
+<p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-02-img1.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-02-img1.png" width="160" height="156"></a> 
+<ul>
+<li>_includes：默认的在模板中可以引用的文件的位置，后面会提到 
+<li>_layouts：默认的公共页面的位置，后面会提到 
+<li>_posts：博客文章默认的存放位置 
+<li>.gitignore：git将忽略这个文件中列出的匹配的文件或文件夹，不将这些纳入源码管理 
+<li>_config.yml：关于jekyll模板引擎的配置文件 
+<li>index.html：默认的主页</li></ul>
+<p>在_layouts目录下创建一个default.html，在其中输入如下内容，<strong>注意：文件本身要以UTF-8 without BOM的格式保存，以防止各种编码问题，建议使用notepad++编辑</strong></p>
+<p><em>default.html</em></p>
+<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source"><span style="color: rgb(76,131,23)">&lt;!DOCTYPE html&gt;</span><br><span style="color: rgb(30,144,255); font-weight: bold">&lt;html&gt;</span><br><span style="color: rgb(30,144,255); font-weight: bold">&lt;head&gt;</span><br>　<span style="color: rgb(30,144,255); font-weight: bold">&lt;meta</span> <span style="color: rgb(30,144,255)">http-equiv=</span><span style="color: rgb(170,85,0)">"content-type"</span> <span style="color: rgb(30,144,255)">content=</span><span style="color: rgb(170,85,0)">"text/html; charset=utf-8"</span> <span style="color: rgb(30,144,255); font-weight: bold">/&gt;</span><br>　<span style="color: rgb(30,144,255); font-weight: bold">&lt;title&gt;</span>&#123;&#123; page.title &#125;&#125;<span style="color: rgb(30,144,255); font-weight: bold">&lt;/title&gt;</span><br><span style="color: rgb(30,144,255); font-weight: bold">&lt;/head&gt;</span><br><span style="color: rgb(30,144,255); font-weight: bold">&lt;body&gt;</span><br>　&#123;&#123; content &#125;&#125;<br><span style="color: rgb(30,144,255); font-weight: bold">&lt;/body&gt;</span><br><span style="color: rgb(30,144,255); font-weight: bold">&lt;/html&gt;</span><br></div>
+<p><em>编辑index.html</em></p>
+<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source">---<br>layout: default<br>title: test title</div>
+<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source">---<br><span style="color: rgb(30,144,255); font-weight: bold">&lt;p&gt;</span>Hello world!<span style="color: rgb(30,144,255); font-weight: bold">&lt;/p&gt;</span><br></div>
+<p>再次打开Git Bash，先后输入如下命令：</p>
+<div style="background-color: rgb(0,0,0); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(192,192,192)" class="source"><span style="color: rgb(0,0,204)">$ </span>git add .<br><span style="color: rgb(0,0,204)">$ </span>git commit -m <span style="color: rgb(0,0,187)">"first post"</span><br><span style="color: rgb(0,0,204)">$ </span>git remote add origin https://github.com/username/projectName.git<br><span style="color: rgb(0,0,204)">$ </span>git push origin gh-pages<br></div>
+<ol>
+<li>将当前的改动暂存在本地仓库 
+<li>将暂存的改动提交到本地仓库，并写入本次提交的注释是”first post“ 
+<li>将远程仓库在本地添加一个引用：origin 
+<li>向origin推送<strong>gh-pages</strong>分支，该命令将会将本地分支<strong>gh-pages</strong>推送到github的远程仓库，并在远程仓库创建一个同名的分支。该命令后会提示输入用户名和密码。</li></ol>
+<p>现在，你可以泡杯咖啡，并等大约10分钟的时间，访问<em>http://username.github.com/projectName</em>就可以看到生成的博客了</p>
+<p>另外上面提到的，无论生成失败还是成功，Github会向你的邮箱发送一封邮件说明，请注意查收。</p>
+
+{% include post.container.end %}
