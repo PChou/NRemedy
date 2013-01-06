@@ -2,9 +2,9 @@
 layout: default
 title: P_Chou's Tech Space
 ---
-{% for cat in site.categories %}
-	{% if cat[0] == 'Git' %} {% comment %}<!-- change the target category name for each category -->{% endcomment %}
-		{% for post in cat[1] %}
+{% for tag in site.tags %}
+	{% if tag[0] == 'Linux' %} {% comment %}<!-- change the target tag name for each tag -->{% endcomment %}
+		{% for post in tag[1] %}
 			<div class="post main">
 				<div class="date">		
 					<div class="background">
