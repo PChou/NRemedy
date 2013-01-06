@@ -25,7 +25,8 @@ tags: [github-page]
 <h2><strong>绑定域名到GitHub-Page</strong></h2>
 <p>其实十分简单，假设我们购买了域名pchou.info，想用pchou.info访问你的站点http://username.github.com/projectname，你可以参考这个链接：<a href="https://help.github.com/articles/setting-up-a-custom-domain-with-pages" target="_blank">Setting up a custom domain with Pages</a></p>
 <p>在你的域名提供商那边，设置一条A记录：</p>
-<p>pchou.info&nbsp; 204.232.175.78（注意：这个IP难保不会变，所以要及时关注上面这个链接中给出的IP，并及时更新A记录）</p>
+<p>pchou.info&nbsp; 204.232.175.78（注意：这个IP难保不会变，所以要及时关注上面这个链接中给出的IP，并及时更新A记录）。下面这个截图是goddady上的A记录配置：</p>
+<p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-03-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-03-img0.png" width="621" height="103"></a></p>
 <p>然后在你的gh-pages分支的根目录中创建一个CNAME文件，其中只能有一行，就是pchou.info，用Git客户端上传更改，大约等十几分钟就能生效了。</p>
 <p>可以先ping一下pchou.info，如果返回的IP地址更配置的A记录一样的话，说明域名已经注册好了，就等GitHub生效了。不过别急，你还需要把_config.yml中的baseurl设置如下</p>
 <blockquote>
