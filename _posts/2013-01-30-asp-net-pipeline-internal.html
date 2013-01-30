@@ -1,0 +1,784 @@
+---
+layout: default
+title: 【转】深入IIS和ASP.NET&mdash;深入理解ASP.NET管道
+description: 本系列旨在记录IIS和ASP.NET内部原理，主要来源于网络上一些优秀的文章转载。本篇深入讲解了ASP.NET管道，并以自定义ASP.NET框架的目标给出了大量的代码示例，实为精彩之极之作。
+categories: [Web, ASP.NET]
+tags: [IIS]
+---
+{% include post.container.begin %}
+<p>原文地址：<a title="http://www.cnblogs.com/fish-li/archive/2011/09/05/2168073.html" href="http://www.cnblogs.com/fish-li/archive/2011/09/05/2168073.html">http://www.cnblogs.com/fish-li/archive/2011/09/05/2168073.html</a></p> <p>我的上篇博客<a href="http://www.cnblogs.com/fish-li/archive/2011/08/21/2148640.html" target="_blank">【我心目中的Asp.net核心对象】</a> 讲述了一些我认为在Asp.net中比较重要的核心对象，以及演示了直接使用它们也能实现一个简单的服务响应。今天，我将继续把我认为Asp.net的另一些重要的内容拿出来与大家一起分享， <b>同时将使用本次所讲述的内容改进上篇博客所演示的那个简单的服务，让它成为一个真正能用的服务框架。</b> </p> <p>在这篇博客中，不仅会继续演示上次提到的三个核心对象，我还会再引入另二个关键对象，我将用更多实战代码来演示它们如何在一起协同工作，来完成许多常见任务，展现它们的精彩故事，也最终会让它们来实现我的服务框架。因此，这篇博客不仅仅是针对Asp.net的基础技术的讲解，而是更多地以实战形式展示这些核心对象所能发挥的强大功能，以一个不到700行的轻量级服务框架来显示它们的核心价值，才是这篇博客的目标。 </p> <p>首先我要谈的话题是Asp.net的请求处理【管线】，我认为这是Asp.net中最重要的内容了，所有到达Asp.net的请求都要经过管线来处理，不管是WebForms, MVC, WebService, WCF(Asp.net的承载方式)，还是其它微软的采用HTTP协议的框架。为什么这些框架都选择要Asp.net做为它们的运行平台呢？<br>我们可以考虑一下：如果让您从无到有设计一个服务框架，有哪些事件是必须要处理的？<br>我想有三个最根本的事件要做：1. 监听请求端口，2. 为每个传入的连接请求分配线程来执行具体的响应操作， 3. 要把请求的数据读出来，并负责将处理后的响应数据发送给调用者。<br>这其实是个比较复杂也很枯燥的过程，但每个服务器端程序都需要这些基本功能。幸好IIS和Asp.net可以为我们做好这些事情，所以那些框架选择Asp.net平台就可以省去这些复杂的任务。使用Asp.net平台不仅可以简化设计，它还有着良好的扩展性以满足更多的框架在这个平台上面继续开发，而这个良好扩展性是离不开它的请求处理管线的。 </p> <p>Asp.net是一个功能完善的平台框架，它既提供一些高层次的框架供我们使用，比如:WebForms, MVC, WebService，也提供一些低层次的机制让我们使用，以便于让我们开发有特殊要求的新框架，新解决方案。这个低层次的机制就是请求处理管线，使用这个管线的有二类对象：HttpHandler, HttpModule，控制这条管线工作的对象是：HttpApplication 。通常情况下，我们并不需要直接使用HttpApplication对象，因此本文的主题将主要介绍HttpHandler, HttpModule这二类对象的功能以及如何使用它们。 </p> <h1>理解Asp.net管线</h1> <p>管线(Pipeline)这个词也是很有点意思，这个词也形象地说明了每个Asp.net请求的处理过程：请求是在一个管道中，要经过一系列的过程点，这些过程点连接起来也就形成一条线。 <i>以上是我对于这个词的理解，如果有误，恳请给予指正。</i> 这些一系列的过程点，其实就是由HttpApplication引发的一系列事件，通常可以由HttpModule来订阅，也可以在Global.asax中订阅，这一系列的事件也就构成了一次请求的生命周期。 </p> <p>事件模式，也就是观察者模式。根据【C# 3.0 设计模式】一书中的定义：“ 观察者模式定义了对象之间的一种联系，使得当一个对象改变状态时，所有其它的对象都可以相应地被通知到。" Asp.net的管线设计正是采用了这种方式，在这个设计模式中，观察者就是许多HttpModule对象，被观察的对象就是每个”请求“，它的状态是由HttpApplication 控制，用于描述当前请求的处理阶段，HttpApplication会根据一个特定的顺序修改这个状态，并在每个状态改变后引发相应的事件。 Asp.net会为每个请求分配一个HttpApplication对象来引发这些事件，因此可以让一大批观察者了解每个请求的状态，每个观察者也可以在感兴趣的时候修改请求的一些数据。这些与请求相关的数据的也就是我<a href="http://www.cnblogs.com/fish-li/archive/2011/08/21/2148640.html" target="_blank">上篇博客</a>中提到的HttpRequest, HttpResponse。正是由于引入了事件机制，Asp.net框架也有了极强的扩展能力。再来看看管线处理请求的过程，我将直接引用MSDN中的原文【IIS 5.0 和 6.0 的 ASP.NET 应用程序生命周期概述】中的片段。 </p> <p class="msdnRef">在处理该请求时将由 HttpApplication 类执行以下事件。 希望扩展 HttpApplication 类的开发人员尤其需要注意这些事件。<br>1. 对请求进行验证，将检查浏览器发送的信息，并确定其是否包含潜在恶意标记。 有关更多信息，请参见 ValidateRequest 和脚本侵入概述。<br>2. 如果已在 Web.config 文件的 UrlMappingsSection 节中配置了任何 URL，则执行 URL 映射。<br>3. 引发 BeginRequest 事件。<br>4. 引发 AuthenticateRequest 事件。<br>5. 引发 PostAuthenticateRequest 事件。<br>6. 引发 AuthorizeRequest 事件。<br>7. 引发 PostAuthorizeRequest 事件。<br>8. 引发 ResolveRequestCache 事件。<br>9. 引发 PostResolveRequestCache 事件。<br>10. 根据所请求资源的文件扩展名（在应用程序的配置文件中映射），选择实现 IHttpHandler 的类，对请求进行处理。 如果该请求针对从 Page 类派生的对象（页），并且需要对该页进行编译，则 ASP.NET 会在创建该页的实例之前对其进行编译。<br>11. 引发 PostMapRequestHandler 事件。<br>12. 引发 AcquireRequestState 事件。<br>13. 引发 PostAcquireRequestState 事件。<br>14. 引发 PreRequestHandlerExecute 事件。<br>15. 为该请求调用合适的 IHttpHandler 类的 ProcessRequest 方法（或异步版 IHttpAsyncHandler.BeginProcessRequest）。 例如，如果该请求针对某页，则当前的页实例将处理该请求。 <br>16. 引发 PostRequestHandlerExecute 事件。<br>17. 引发 ReleaseRequestState 事件。<br>18. 引发 PostReleaseRequestState 事件。<br>19. 如果定义了 Filter 属性，则执行响应筛选。<br>20. 引发 UpdateRequestCache 事件。<br>21. 引发 PostUpdateRequestCache 事件。<br>22. 引发 EndRequest 事件。<br>23. 引发 PreSendRequestHeaders 事件。<br>24. 引发 PreSendRequestContent 事件。 </p> <p>如果是IIS7，第10个事件也就是MapRequestHandler事件，而且在EndRequest 事件前，还增加了另二个事件：LogRequest 和 PostLogRequest 事件。<br>只有当应用程序在 IIS 7.0 集成模式下运行，并且与 .NET Framework 3.0 或更高版本一起运行时，才会支持 MapRequestHandler、LogRequest 和 PostLogRequest 事件。 </p> <p>这里要补充一下：从BeginRequest开始的事件，并不是每个事件都会被触发，因为在整个处理过程中，随时可以调用Response.End() 或者有未处理的异常发生而提前结束整个过程。在那些"知名"的事件中，也只有EndRequest事件是肯定会触发的， (部分Module的)BeginRequest有可能也不会被触发。 </p> <p>对于这些管线事件，<b class="redText">我只想提醒2个非常重要的地方：</b><br>1. 每个请求都将会映射到一个HttpHandler，通常也是处理请求的主要对象。<br>2. HttpModule可以任意订阅这些事件，在事件处理器中也可以参与修改请求的操作。<br>这2点也决定了HttpHandler和HttpModule的工作方式。 </p> <p>我找了二张【老图片】，希望能更直观的说明Asp.net管线的处理过程。结合我前面讲述的内容，再品味一下老图片吧。 </p> <p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522232631.png"></p> <p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522235510.png"></p> <h1>HttpHandler</h1> <p>HttpHandler通常是处理请求的核心对象。绝大多数的的请求都在【第10步】被映射到一个HttpHandler，然后在【第15步】中执行处理过程，因此也常把这类对象称为处理器或者处理程序。我们熟知的Page就是一个处理器，一个ashx文件也是一个处理器，不过ashx显示得更原始，我们还是来看一下ashx通常是个什么样子： </p><pre class="code"><span style="background: #ffee62">&lt;%</span><span style="color: blue">@ </span><span style="color: #a31515">WebHandler </span><span style="color: red">Language</span><span style="color: blue">="C#" </span><span style="color: red">Class</span><span style="color: blue">="Login" </span><span style="background: #ffee62">%&gt;
+
+</span><span style="color: blue">using </span>System;
+<span style="color: blue">using </span>System<span style="color: red">.</span>Web;
+
+<span style="color: blue">public class </span><span style="color: #2b91af">Login </span>: <span style="color: #2b91af">IHttpHandler </span>{
+        
+    <span style="color: blue">public void </span>ProcessRequest (<span style="color: #2b91af">HttpContext </span>context) {
+        context<span style="color: red">.</span>Response<span style="color: red">.</span>ContentType <span style="color: red">= </span><span style="color: #a31515">"text/plain"</span>;
+
+        <span style="color: blue">string </span>username <span style="color: red">= </span>context<span style="color: red">.</span>Request<span style="color: red">.</span>Form[<span style="color: #a31515">"name"</span>];
+        <span style="color: blue">string </span>password <span style="color: red">= </span>context<span style="color: red">.</span>Request<span style="color: red">.</span>Form[<span style="color: #a31515">"password"</span>];
+
+        <span style="color: blue">if</span>( password <span style="color: red">== </span><span style="color: #a31515">"aaaa" </span>) {
+            System<span style="color: red">.</span>Web<span style="color: red">.</span>Security<span style="color: red">.</span><span style="color: #2b91af">FormsAuthentication</span><span style="color: red">.</span>SetAuthCookie(username, <span style="color: blue">false</span>);
+            context<span style="color: red">.</span>Response<span style="color: red">.</span>Write(<span style="color: #a31515">"OK"</span>);
+        }
+        <span style="color: blue">else </span>{
+            context<span style="color: red">.</span>Response<span style="color: red">.</span>Write(<span style="color: #a31515">"用户名或密码不正确。"</span>);
+        }
+    }
+ 
+    <span style="color: blue">public bool </span>IsReusable {
+        <span style="color: blue">get </span>{
+            <span style="color: blue">return false</span>;
+        }
+    }
+}
+</pre>
+<p>可以看到它仅仅是实现一个IHttpHandler接口而已，IHttpHandler接口也很简单： </p><pre class="code"><span style="color: green">// 定义 ASP.NET 为使用自定义 HTTP 处理程序同步处理 HTTP Web 请求而实现的协定。
+</span><span style="color: blue">public interface </span><span style="color: #2b91af">IHttpHandler
+</span>{
+    <span style="color: green">// 获取一个值，该值指示其他请求是否可以使用 System.Web.IHttpHandler 实例。
+    //
+    // 返回结果:
+    //     如果 System.Web.IHttpHandler 实例可再次使用，则为 true；否则为 false。
+    </span><span style="color: blue">bool </span>IsReusable { <span style="color: blue">get</span>; }
+
+    <span style="color: green">// 通过实现 System.Web.IHttpHandler 接口的自定义 HttpHandler 启用 HTTP Web 请求的处理。
+    </span><span style="color: blue">void </span>ProcessRequest(HttpContext context);
+}
+</pre>
+<p>IsReusable属性上面有注释，我就不说了。接口中最重要的部分就是方法 <b>void ProcessRequest(HttpContext context);</b> 这个方法简单地不能再简单，只有一个参数，但这个参数的能量可不小，<b>有了它几乎就有了一切</b>，这就是我对它的评价。关于HttpContext的更多详细介绍请参考我的博客<a href="http://www.cnblogs.com/fish-li/archive/2011/08/21/2148640.html" target="_blank">【我心目中的Asp.net核心对象】</a>。 </p>
+<p>在Login.ashx中，我做了三简单的事：<br>1. 读取输入数据： 从Request.Form中。<br>2. 执行特定的业务逻辑： 一个简单的判断。<br>3. 返回结果给客户端： 调用Response.Write()<br>是的，就是这三个简单的操作，但也是绝大多数ashx文件的常规写法，它的确可以完成一次请求的处理过程。<br><b>记住：</b>事实上任何HttpHandler都是这样处理请求的，只是有时会借助一些框架的包装而变了味道而已。 </p>
+<p><b>我认为：</b>HttpHandler的强大离不开HttpContext，HttpHandler的重要性是因为管线会将每个请求都映射到一个HttpHandler。 </p>
+<p>通常，我们需要新的HttpHandler，创建一个ashx文件就可以了。但也可以创建自己的HttpHandler，或者要将一类【特殊的路径/扩展名】交给某个处理器来处理，那么就需要我们在web.config中注册那个处理器。<br><b>注意：</b>如果是【特殊的扩展名】可能还需要在IIS中注册，原因很简单：IIS不将请求交给Asp.net，我们的代码根本没机会运行！ </p>
+<p>我们可以采用以下方式在web.config中注册一个自定义的处理器：</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">/MyService.axd</span>" <span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">validate</span><span style="color: blue">=</span>"<span style="color: blue">false</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.MyServiceHandler</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;</span>
+</pre>
+<p>或者：（为了排版，我将一些代码做了换行处理）</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">remove </span><span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">*.cs</span>"<span style="color: blue">/&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">*.cs</span>" <span style="color: red">validate</span><span style="color: blue">=</span>"<span style="color: blue">false</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">FishWebLib.Ajax.AjaxMethodV2Handler, 
+			FishWebLib, Version=3.0.0.0, Culture=neutral, PublicKeyToken=04db02423b9ebbb2</span>"<span style="color: blue">/&gt;
+
+    &lt;</span><span style="color: #a31515">remove </span><span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">*.ascx</span>"<span style="color: blue">/&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">*.ascx</span>" <span style="color: red">validate</span><span style="color: blue">=</span>"<span style="color: blue">false</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">FishWebLib.Ajax.UserControlHandler, 
+			FishWebLib, Version=3.0.0.0, Culture=neutral, PublicKeyToken=04db02423b9ebbb2</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;</span>
+</pre>
+<h1>HttpModule</h1>
+<p>前面我已经提到过HttpModule的工作方式：订阅管线事件，并在事件处理器中执行所需的相关操作。<br>这个描述看起来很平淡，但是，它的工作方式给了它<b>无限强大的处理能力。</b> </p>
+<p>它的无限强大的处理能力来源于可以订阅管线事件，因此，它有能力可以在许多阶段修改请求，这些修改最终可能会影响请求的处理。<br>前面我说过：“HttpHandler是处理请求的主要对象”，但HttpModule却可以随意指定将某个请求交给某个处理器来执行！<br>甚至，HttpModule也可以直接处理请求，完全不给HttpHandler工作的机会！ </p>
+<p>我们来看一下HttpModule的实现方式：</p><pre class="code"><span style="color: gray">/// &lt;summary&gt;
+/// </span><span style="color: green">能支持双向GZIP压缩的Module，它会根据客户端是否启用GZIP来自动处理。
+</span><span style="color: gray">/// </span><span style="color: green">对于服务来说，不用关心GZIP处理，服务只要处理输入输出就可以了。
+</span><span style="color: gray">/// &lt;/summary&gt;
+</span><span style="color: blue">internal class </span><span style="color: #2b91af">DuplexGzipModule </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>app)
+    {
+        app<span style="color: red">.</span>BeginRequest <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_BeginRequest);
+    }
+
+    <span style="color: blue">void </span>app_BeginRequest(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 注意：这里不能使用"Accept-Encoding"这个头，二者的意义完全不同。
+        </span><span style="color: blue">if</span>( app<span style="color: red">.</span>Request<span style="color: red">.</span>Headers[<span style="color: #a31515">"Content-Encoding"</span>] <span style="color: red">== </span><span style="color: #a31515">"gzip" </span>) {
+            app<span style="color: red">.</span>Request<span style="color: red">.</span>Filter <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">GZipStream</span>(app<span style="color: red">.</span>Request<span style="color: red">.</span>Filter, <span style="color: #2b91af">CompressionMode</span><span style="color: red">.</span>Decompress);
+
+            app<span style="color: red">.</span>Response<span style="color: red">.</span>Filter <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">GZipStream</span>(app<span style="color: red">.</span>Response<span style="color: red">.</span>Filter, <span style="color: #2b91af">CompressionMode</span><span style="color: red">.</span>Compress);
+            app<span style="color: red">.</span>Response<span style="color: red">.</span>AppendHeader(<span style="color: #a31515">"Content-Encoding"</span>, <span style="color: #a31515">"gzip"</span>);
+        }
+    }
+
+    <span style="color: blue">public void </span>Dispose()
+    {
+    }
+}
+</pre>
+<p>每个HttpModule只需要实现IHttpModule接口就可以了。IHttpModule也是个简单的接口： </p><pre class="code"><span style="color: blue">public interface </span><span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">void </span>Dispose();
+
+    <span style="color: blue">void </span>Init(HttpApplication app);
+}
+</pre>
+<p>在这二个方法中，第一个方法通常可以保持为空。最重要的方法就是Init，它给了HttpModule能订阅管线事件的机会，然后在相应的事件处理中，我们就可以执行它的具体操作了。 </p>
+<p>还记得我在博客<a href="http://www.cnblogs.com/fish-li/archive/2011/08/21/2148640.html" target="_blank">【我心目中的Asp.net核心对象】</a> 最后给出一个示例吗？在QueryOrderService.ashx中，为了支持gzip，需要直接调用GZipStream类，对于一二个ashx来说，或许不是问题，如果这样的处理器变多了，每个处理器都那样写，您能受得了吗？反正我是受不了的，因此今天我把它改成使用Module来实现，代码简单了许多。<i>在本文末尾可以下载。</i> </p>
+<p>对于Asp.net项目来说：当您发现有很多处理输入输出的操作非常类似时，那正是HttpModule可以发挥的舞台，请把这些重复的操作交给它吧。 </p>
+<p>让HttpModule工作也需要在web.config中注册：</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">DuplexGzipModule</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.DuplexGzipModule</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;</span>
+</pre>
+<p>通常，我会把一些HttpModule放在类库中实现，然后在需要使用的项目的web.config中注册。<br>这也体现它的高重用性：写一次，许多项目就可以直接使用。 </p>
+<p><b>HttpModule的加载方式：</b>前面我说过“Asp.net会为每个请求分配一个HttpApplication对象”，在每个HttpApplication对象的初始化操作中，它会加载所有在web.config中注册的HttpModule。由于Asp.net并不是只创建一个HttpApplication对象，而是多个HttpApplication对象，因此每个HttpModule的Init事件是有可能被多次调用的。许多人喜欢在这里做各类初始化的操作，那么请注意在这里修改静态变量成员时的线程安全问题。特别地，如果要执行<b>程序初始化</b>的操作，那么还是把代码放在Global.asax的Application_Start中去处理吧， HttpModule的Init事件并不合适。 </p>
+<p><b>为HttpModule选择订阅合适的管线事件：</b>这是非常重要的，订阅不同的事件，产生的结果也会不一样。原因也很简单，在Asp.net运行环境中，并不只有一个HttpModule，某个HttpModule的判断可能要依据其它HttpModule的输出结果，而且在某些（晚期的）管线事件中，也不能再修改输出数据。在后面的示例中，DirectProcessRequestMoudle订阅了PostAuthorizeRequest事件，如果订阅BeginRequest事件或许将得到更好的性能，但是，在BeginRequest事件中，身份认证模块还没有工作，因此每个请求在这个事件阶段都属于“未登录”状态。 </p>
+<p>前面说了一大堆的HttpModule，事实上，在这个示例中，主角是另一个对象：Filter 。上篇博客我就提过它，最后为了演示它，把它放在一个HttpHandler里【糟蹋了】，没办法，上篇的主题不是管线呀。今天只好和HttpModule一起出场了。我认为Filter还是应该和HttpModule一起使用才能发挥它的独特价值。Filter的特点还真不合适在HttpHandler中使用，如果您在HttpHandler里使用Filter，我认为有必要考虑一下是不是用错了。 </p>
+<p>借HttpModule的地盘我们来谈谈Filter。Filter很低调，低调到什么程度：可能很少有人关注过它，因此也少有人用过它。事实也确实如此，一般情况下可以不用它，但用到它，你会发现它非常强大。前面我经常说到【输入输出流】，请求的数据，除了请求头以外，基本上全放在流中，如果您希望对这些数据以流的方式进行处理，特别是希望对于所有请求，或者某类请求，那么使用Filter是非常恰当的。前面的示例就是一个非常合理地使用，好好地品味它，或许您还能发现Filter能做更多的事情。 </p>
+<h1>关于Content-Encoding的解释</h1>
+<p><b>2012年2月1日补充内容：</b></p>
+<p>很多人在看了前面那段示例代码，都有一个疑问：<b>Fish Li，你是不是搞错了，Content-Encoding并不是个请求头啊？</b> </p>
+<p>对于这个疑问，有人在博客园中给我发过消息，也有给我发邮件。在一次次地解释后，我还是打算在这里说说我选这个标头的理由。 </p>
+<p>首先，我要说的是：我也知道 Content-Encoding 不是一个【标准】的请求头。<br>对于浏览器来说，也没必要有这个头，因为浏览器在发送请求时，总是不压缩的。因此在HTTP的标准中没有为请求头定义一个表示请求体已编码过的标头。但是，如果因为HTTP标准没有定义这个头，我就应该不去实现这个功能吗？？ </p>
+<p>要知道并非只有浏览器才能发送HTTP请求，我用C#写点代码也可以发送HTTP请求啊！<br>你说我要不要实现这个压缩请求体的功能？？<br><br>我们自己去实现发送HTTP请求的客户端时，为了能让服务端知道：请求体的内容是压缩过的，是不是必须有个头去告诉服务端？然而，Accept-Encoding只是告诉服务端：客户端能接受什么样的编码，并不能表示某次请求体的内容是压缩过的，你说有什么好的办法？？ <br><br>所以，我就在请求头中就使用了Content-Encoding。事实上，我就算用"XXXXXXXXXXXX"表示请求体是压缩过的，也可以的，只要我在服务端去检测这个头就可以了。但为了自己容易理解，我宁可选择这个标头。 </p>
+<h1>选 HttpHandler 还是 HttpModule ？</h1>
+<p>HttpHandler是每个请求的主要处理对象，而HttpModule可以选择请求交给哪个HttpHandler来处理，甚至，它还可以选择它自己来处理请求。<br>下面我给个示例代码来说明HttpModule也能直接请求： </p><pre class="code"><span style="color: gray">/// &lt;summary&gt;
+/// </span><span style="color: green">此Module示范了直接使用Module也能处理客户端的请求。
+</span><span style="color: gray">/// </span><span style="color: green">建议：除非要很好的理由，否则不建议使用这种方法。
+</span><span style="color: gray">/// &lt;/summary&gt;
+</span><span style="color: blue">internal class </span><span style="color: #2b91af">DirectProcessRequestMoudle </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>app)
+    {
+        app<span style="color: red">.</span>PostAuthorizeRequest <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_PostAuthorizeRequest);
+    }
+
+    <span style="color: blue">void </span>app_PostAuthorizeRequest(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: #2b91af">ServiceInfo </span>info <span style="color: red">= </span>GetServiceInfo(app<span style="color: red">.</span>Context);
+        <span style="color: blue">if</span>( info <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return</span>;
+
+        <span style="color: #2b91af">ServiceExecutor</span><span style="color: red">.</span>ProcessRequest(app<span style="color: red">.</span>Context, info);
+        app<span style="color: red">.</span>Response<span style="color: red">.</span>End();
+    }
+</pre>
+<p>为了更好的回答本节的这个问题，我再给段等效的代码，不过，请求是经过HttpHandler来处理 </p><pre class="code"><span style="color: blue">internal class </span><span style="color: #2b91af">MyServiceHandler </span>: <span style="color: #2b91af">IHttpHandler
+</span>{
+    <span style="color: blue">internal </span><span style="color: #2b91af">ServiceInfo </span>ServiceInfo { <span style="color: blue">get</span>; <span style="color: blue">set</span>; }
+
+    <span style="color: blue">public void </span>ProcessRequest(<span style="color: #2b91af">HttpContext </span>context)
+    {
+        <span style="color: #2b91af">ServiceInfo </span>info <span style="color: red">= </span><span style="color: blue">this</span><span style="color: red">.</span>ServiceInfo <span style="color: red">?? </span>GetServiceInfo(context);
+
+        <span style="color: #2b91af">ServiceExecutor</span><span style="color: red">.</span>ProcessRequest(context, info);
+    }
+</pre>
+<p>HttpHandler和HttpModule都能处理请求，我该选哪个？？</p>
+<p>对于此类情况，我的答案是：视情况而定，正如我在注释中描述的那样，<b>除非要很好的理由，否则不建议使用HttpModule处理请求。</b> 用HttpModule在某些时候可能会快点，关键点在于处理完成时要调用<b>Response.End();</b>这会让后面的事件全都<b>短路</b>，其它的HttpModule就没有机会执行。如果您的框架或者项目设计很依赖于管线中的事件处理，那么调用Response.End();无疑会破坏这个规则，也将会导致不能得到正确的结果。选择HttpHandler就不会有这种事情发生。 </p>
+<p>不过，也没有绝对的事情：在请求处理期间，您可以在任何地方调用Response.End(); 结果也是一样的。 </p>
+<p>幸好，短路的情况并不经常发生，因此选择HttpHandler会让整个Asp.net的管线都能发挥作用，因此，我建议优先选择HttpHandler。<br>尤其是在HttpHandler能很好的完成工作的前提下，就应该选HttpHandler，因为选HttpModule会给其它请求带来不必要的性能损失，具体细节请继续阅读。 </p>
+<p>其实，我们还可以从另一个角度来看这个问题。<br>首先，请仔细地阅读前面的示例代码，您是否发现它们在实现方式上非常类似？<br>现在应该找到答案了吧：把具体的处理操作分离到HttpHandler，HttpModule之外的地方。那么，此时这个问题也就不是问题了，您也可以提供多种方案供使用者选择。比如：我就为【我的服务框架】提供了5种方式让使用者可以轻松地将一个C#方法公开为一个服务方法，该如何选择这个问题，由使用者来决定，这个问题不会让我为难。 </p>
+<p><b>我的观点：</b>在没有太多技术难度的前提下，提供多种解决办法应该是对的，您将会避开很多麻烦事情。 </p>
+<h1>看不见的性能问题</h1>
+<p>前面我介绍了HttpModule的重要优点：高重用性。只要写好一个HttpModule可以放在任何Asp.net项目中使用，非常方便。 </p>
+<p>不过，再好的东西也不能滥用。HttpModule也可以对性能产生负面影响。原因也很简单：对于每个Asp.net请求，每个HttpModule都会在它们所订阅的事件中，去执行一些操作逻辑。这些操作逻辑或许对一些请求是无意义的，但仍会执行。因此，计算机将会白白浪费一些资源去执行一些无意义的代码。 </p>
+<p>知道了原因，解决办法也就很清楚了：<br>1. 去掉不需要的HttpModule<br>2. 在每个HttpModule的事件处理器中，<b>首先要确定是不是自己所需要处理的请求。对一些不相关的请求，应该立即退出。</b> </p>
+<p>在我们创建一个Asp.net项目时，如果不做任何修改，微软已经为我们加载了好多HttpModule 。请看以下代码： </p><pre class="code"><span style="color: blue">protected void </span>Page_Load(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+{
+    <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span><span style="color: #2b91af">HttpContext</span><span style="color: red">.</span>Current<span style="color: red">.</span>ApplicationInstance;        
+    <span style="color: #2b91af">StringBuilder </span>sb <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">StringBuilder</span>();
+
+    <span style="color: blue">foreach</span>( <span style="color: blue">string </span>module <span style="color: blue">in </span>app<span style="color: red">.</span>Modules<span style="color: red">.</span>AllKeys ) 
+        sb<span style="color: red">.</span>AppendFormat(module)<span style="color: red">.</span>Append(<span style="color: #a31515">"&lt;br /&gt;"</span>);
+
+    Response<span style="color: red">.</span>Write(sb<span style="color: red">.</span>ToString());
+}
+</pre>
+<p>输出结果如下：</p>
+<p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522241685.gif"></p>
+<p>总共有14个。<br>哎，大多数是我肯定不会用到的，但它们却被加载了，因此，在它们所订阅的事件中，它们的代码将会检查所有的请求，那些无意义的代码将有机会执行。如果您不想视而不见，那么请在web.config中做类似的修改，将不需要的Module移除。 </p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">remove </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">Session</span>"<span style="color: blue">/&gt;
+    &lt;</span><span style="color: #a31515">remove </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">RoleManager</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;</span>
+</pre>
+<p>HttpModule的第2个需要注意的地方是：HttpModule对所有的请求有效，如果HttpModule不能处理所有的请求，那么请先判断当前请求是否需要处理，对于不需要处理的请求，应该立即退出。请看以下示例代码： </p><pre class="code"><span style="color: gray">/// &lt;summary&gt;
+/// </span><span style="color: green">【演示用】让Aspx页的请求支持gzip压缩输出
+</span><span style="color: gray">/// &lt;/summary&gt;
+</span><span style="color: blue">public class </span><span style="color: #2b91af">FishGzipModule </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>app)
+    {
+        app<span style="color: red">.</span>BeginRequest <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_BeginRequest);
+    }
+
+    <span style="color: blue">void </span>app_BeginRequest(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 这里做个简单的演示，只处理aspx页面的输出压缩。
+        // 当然了，IIS也提供压缩功能，这里也仅当演示用，或许可适用于一些特殊场合。
+        </span><span style="color: blue">if</span>( app<span style="color: red">.</span>Request<span style="color: red">.</span>AppRelativeCurrentExecutionFilePath<span style="color: red">.</span>EndsWith(
+                            <span style="color: #a31515">"aspx"</span>, <span style="color: #2b91af">StringComparison</span><span style="color: red">.</span>OrdinalIgnoreCase) <span style="color: red">== </span><span style="color: blue">false </span>)
+            <span style="color: green">// 注意：先判断是不是要处理的请求，如果不是，直接退出。
+            //        而不是：先执行了后面的判断，再发现不是aspx时才退出。
+            </span><span style="color: blue">return</span>;
+
+
+        <span style="color: blue">string </span>flag <span style="color: red">= </span>app<span style="color: red">.</span>Request<span style="color: red">.</span>Headers[<span style="color: #a31515">"Accept-Encoding"</span>];
+        <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(flag) <span style="color: red">== </span><span style="color: blue">false </span><span style="color: red">&amp;&amp; </span>flag<span style="color: red">.</span>ToLower()<span style="color: red">.</span>IndexOf(<span style="color: #a31515">"gzip"</span>) <span style="color: red">&gt;= </span><span style="color: purple">0 </span>) {
+            app<span style="color: red">.</span>Response<span style="color: red">.</span>Filter <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">GZipStream</span>(app<span style="color: red">.</span>Response<span style="color: red">.</span>Filter, <span style="color: #2b91af">CompressionMode</span><span style="color: red">.</span>Compress);
+            app<span style="color: red">.</span>Response<span style="color: red">.</span>AppendHeader(<span style="color: #a31515">"Content-Encoding"</span>, <span style="color: #a31515">"gzip"</span>);
+        }
+    }
+</pre>
+<h1>更多实战介绍</h1>
+<p>本文从这里起，将不再过多的叙述一些理论文字，而是将以实战的形式展示Asp.net的强大管线功能，这些实战展示了一些很经典的应用场景，其中大部分示例代码将做为【我的服务框架】的关键部分。因此请注意理解这些代码。 </p>
+<p>实战代码大量使用了上篇博客<a href="http://www.cnblogs.com/fish-li/archive/2011/08/21/2148640.html" target="_blank">【我心目中的Asp.net核心对象】</a>所介绍的绝大多数对象，也算是再次展示那些核心对象的重要性，因此请务必先了解那些核心对象。 </p>
+<p>上篇博客仅展示了那些强大对象的功能，单独使用它们，也是不现实的，今天，我将演示它们与HttpHandler, HttpModule一起并肩工作所能完成的各种任务。 </p>
+<p>故事未讲完，传奇在继续。更多精彩即将上演！</p>
+<p style="height: 53px"></p>
+<h1>实战演示 - 模拟更多的HttpMethod</h1>
+<p>近几年又有一种被称为RESTful Web服务的概念进入开发人员的视野，它提倡使用HTTP协议提供的GET、POST、PUT和DELETE方法来操作网络资源。不过，目前的浏览器只支持GET、POST这二种方法，因此就有人想到采用HTTP头，表单值，或者查询字符串的形式来模拟这些浏览器不支持的HTTP方法。每种支持RESTful Web服务的框架都有它们自己的实现方式，今天我将使用HttpModule也来模拟这个操作。最终的结果是可以直接访问HttpRequest.HttpMethod获取这些操作的方法名字。 </p>
+<p>实现原理：订阅管线中的BeginRequest事件，检查当前请求是否需要修改HttpMethod，如果是，则修改HttpMethod属性。<br>所以选择BeginRequest这个事件，是因为这个事件比较早，可以让请求的后续阶段都能读到新的结果。 </p><pre class="code"><span style="color: gray">/// &lt;summary&gt;
+/// </span><span style="color: green">【演示用】实现了模拟更多 HttpMethod 的Module
+</span><span style="color: gray">/// &lt;/summary&gt;
+</span><span style="color: blue">internal class </span><span style="color: #2b91af">XHttpMethodModule </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">private </span><span style="color: #2b91af">FieldInfo </span>_field;
+
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>context)
+    {
+        <span style="color: green">// 订阅这个较早的事件，可以让请求的后续阶段都能读到新的结果。
+        </span>context<span style="color: red">.</span>BeginRequest <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(context_BeginRequest);
+        _field <span style="color: red">= </span><span style="color: blue">typeof</span>(<span style="color: #2b91af">HttpRequest</span>)<span style="color: red">.</span>GetField(<span style="color: #a31515">"_httpMethod"</span>, <span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>Instance <span style="color: red">| </span><span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>NonPublic);
+    }
+
+    <span style="color: blue">void </span>context_BeginRequest(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 这里仅检查是否为POST操作，如果您的应用中需要使用GET来模拟的，请修改这里。
+        </span><span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>Equals(app<span style="color: red">.</span>Request<span style="color: red">.</span>HttpMethod, <span style="color: #a31515">"POST"</span>, <span style="color: #2b91af">StringComparison</span><span style="color: red">.</span>OrdinalIgnoreCase) ) {
+
+            <span style="color: green">// 这里为了简单，我只检查请求头，如果还需要检查表单值或者查询字符串，请修改这里。
+            </span><span style="color: blue">string </span>headerOverrideValue <span style="color: red">= </span>app<span style="color: red">.</span>Request<span style="color: red">.</span>Headers[<span style="color: #a31515">"X-HTTP-Method-Override"</span>];
+
+            <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(headerOverrideValue) <span style="color: red">== </span><span style="color: blue">false </span>) {
+                <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>Equals(headerOverrideValue, <span style="color: #a31515">"GET"</span>, <span style="color: #2b91af">StringComparison</span><span style="color: red">.</span>OrdinalIgnoreCase) <span style="color: red">== </span><span style="color: blue">false </span><span style="color: red">&amp;&amp;
+                    </span><span style="color: blue">string</span><span style="color: red">.</span>Equals(headerOverrideValue, <span style="color: #a31515">"POST"</span>, <span style="color: #2b91af">StringComparison</span><span style="color: red">.</span>OrdinalIgnoreCase) <span style="color: red">== </span><span style="color: blue">false </span>) {
+
+                    <span style="color: green">// HttpRequest.HttpMethod属性其实就是访问_httpMethod这个私有字段，我将直接修改它。
+                    // 这样修改后，最原始的HTTP方法就丢失，通常这或许也是可以接受的。
+                    </span>_field<span style="color: red">.</span>SetValue(app<span style="color: red">.</span>Request, headerOverrideValue<span style="color: red">.</span>ToUpper());
+                }
+            }
+        }
+    }
+</pre>
+<p>我认为采用HttpModule来处理这个问题是个不错的选择。它至少有2个好处：<br>1. 这个HttpModule能继续给其它的网站项目使用，因此提高了代码的重用性。<br>2. 我可以随时决定要不要支持模拟，不需要模拟时，从web.config中不加载它就可以了，因此切换很灵活，<b>且不需要修改现有代码。</b> </p>
+<p>来看一下页面及调用结果吧</p><pre class="code"><span style="color: blue">protected void </span>Page_Load(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+{
+    Response<span style="color: red">.</span>Write(Request<span style="color: red">.</span>HttpMethod);
+}
+</pre>
+<p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522243323.gif"></p>
+<p>调用结果如下：</p>
+<p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522244846.gif"></p>
+<h1>实战演示 - URL重写</h1>
+<p>使用HttpModule来实现URL重写。这个功能应该是HttpModule非常经典的应用了。 </p>
+<p>通常情况下，这种应用常用的方式是将一个URL： /product/12 重写为 /product.aspx?id=12 ，此时product.aspx应该是一个已经已存在的页面。显然重写后的地址更友好。URL重写的目的就是能让URL更友好。 </p>
+<p>实现原理：订阅管线的PostAuthorizeRequest事件，检查URL是不是期望修改的模式，如果是，则调用Context.RewritePath()完成URL的重写操作。在管线的后续处理中，最终会使用新的URL来映射到一个合适的HttpHandler。说明：选择的事件只要在【第10个事件】之前就可以了，因为在第10个事件前重写URL，才能保证到将请求映射到合适的处理器来执行。就这么简单，请参考以下代码： </p><pre class="code"><span style="color: blue">public class </span><span style="color: #2b91af">MyServiceUrlRewriteModule </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: green">// 为了演示简单，直接写死地址。
+    // 注意：MyService.axd 必须在web.config中注册，以保证它能成功映射。
+    </span><span style="color: blue">public static string </span>RewriteUrlPattern <span style="color: red">= </span><span style="color: #a31515">"/MyService.axd?sc={1}&amp;op={1}"</span>;
+
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>app)
+    {
+        app<span style="color: red">.</span>PostAuthorizeRequest <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_PostAuthorizeRequest);
+    }
+
+    <span style="color: blue">void </span>app_PostAuthorizeRequest(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 这里将检查URL是否为需要重写的模式，比如:
+        //   http://localhost:11647/service/OrderService/QueryOrder
+        </span><span style="color: #2b91af">NamesPair </span>pair <span style="color: red">= </span><span style="color: #2b91af">FrameworkRules</span><span style="color: red">.</span>ParseNamesPair(app<span style="color: red">.</span>Request);
+        <span style="color: blue">if</span>( pair <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return</span>;
+
+        <span style="color: green">// 开始重写URL，最后将会映射到MyServiceHandler
+        </span><span style="color: blue">int </span>p <span style="color: red">= </span>app<span style="color: red">.</span>Request<span style="color: red">.</span>Path<span style="color: red">.</span>IndexOf(<span style="color: #a31515">'?'</span>);
+        <span style="color: blue">if</span>( p <span style="color: red">&gt; </span><span style="color: purple">0 </span>)
+            app<span style="color: red">.</span>Context<span style="color: red">.</span>RewritePath(<span style="color: blue">string</span><span style="color: red">.</span>Format(RewriteUrlPattern, pair<span style="color: red">.</span>ServiceName, pair<span style="color: red">.</span>MethodName)
+                <span style="color: red">+ </span><span style="color: #a31515">"&amp;" </span><span style="color: red">+ </span>app<span style="color: red">.</span>Request<span style="color: red">.</span>Path<span style="color: red">.</span>Substring(p <span style="color: red">+ </span><span style="color: purple">1</span>)
+                );
+        <span style="color: blue">else
+            </span>app<span style="color: red">.</span>Context<span style="color: red">.</span>RewritePath(<span style="color: blue">string</span><span style="color: red">.</span>Format(RewriteUrlPattern, pair<span style="color: red">.</span>ServiceName, pair<span style="color: red">.</span>MethodName));
+    }
+</pre>
+<p>重写发生了什么？<br>对于一个传入请求：http://localhost:11647/service/FormDemoService/ShowUrlInfo <br>它将被重写为：http://localhost:11647/MyService.axd?sc=FormDemoService&amp;op=ShowUrlInfo <br>由于在web.config中，对MyService.axd已做过注册，因此Asp.net会将请求转交给注册的处理器来处理它。 </p>
+<p>注意：URL重写，会影响某些变量的值。请参考以下代码，我将写个服务方法来检测这个现象： </p><pre class="code">[<span style="color: #2b91af">MyServiceMethod</span>]
+<span style="color: blue">public string </span>ShowUrlInfo(<span style="color: blue">int </span>a)
+{
+    System<span style="color: red">.</span>Web<span style="color: red">.</span><span style="color: #2b91af">HttpRequest </span>request <span style="color: red">= </span>System<span style="color: red">.</span>Web<span style="color: red">.</span><span style="color: #2b91af">HttpContext</span><span style="color: red">.</span>Current<span style="color: red">.</span>Request;
+
+    System<span style="color: red">.</span>Text<span style="color: red">.</span><span style="color: #2b91af">StringBuilder </span>sb <span style="color: red">= </span><span style="color: blue">new </span>System<span style="color: red">.</span>Text<span style="color: red">.</span><span style="color: #2b91af">StringBuilder</span>();
+    sb<span style="color: red">.</span>AppendFormat(<span style="color: #a31515">"Path: {0}\r\n"</span>, request<span style="color: red">.</span>Path);            
+    sb<span style="color: red">.</span>AppendFormat(<span style="color: #a31515">"RawUrl: {0}\r\n"</span>, request<span style="color: red">.</span>RawUrl);
+    sb<span style="color: red">.</span>AppendFormat(<span style="color: #a31515">"Url.PathAndQuery: {0}\r\n"</span>, request<span style="color: red">.</span>Url<span style="color: red">.</span>PathAndQuery);
+
+    <span style="color: blue">return </span>sb<span style="color: red">.</span>ToString();
+}
+</pre>
+<p>输出结果：</p>
+<p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522250585.gif"></p>
+<h1>实战演示 - URL路由</h1>
+<p>使用HttpModule来实现URL路由。这个功能随着Asp.net MVC框架的出现也逐渐流行起来了。</p>
+<p>URL路由的目标也是为了使用URL更友好，与URL重写类似。</p>
+<p>实现原理：订阅管线的PostResolveRequestCache事件，检查URL是不是期望的路由模式，如果是，则要根据请求中所包含的信息找到一个合适的处理器，并临时保存这个处理器，重写URL到一个Asp.net能映射处理器的地址。在管线的PostMapRequestHandler中，检查前面有没有临时保存的处理器，如果有，则重新给Context.Handler赋值，并重写URL到原始地址。在管线的后续处理中，最终会使用Context.Handler的HttpHandler。就这么简单，请参考以下代码： </p><pre class="code"><span style="color: blue">public class </span><span style="color: #2b91af">MyServiceUrlRoutingModule </span>: <span style="color: #2b91af">IHttpModule
+</span>{
+    <span style="color: blue">private static readonly object </span>s_dataKey <span style="color: red">= </span><span style="color: blue">new object</span>();
+
+    <span style="color: blue">public void </span>Init(<span style="color: #2b91af">HttpApplication </span>app)
+    {
+        app<span style="color: red">.</span>PostResolveRequestCache <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_PostResolveRequestCache);
+        app<span style="color: red">.</span>PostMapRequestHandler <span style="color: red">+= </span><span style="color: blue">new </span><span style="color: #2b91af">EventHandler</span>(app_PostMapRequestHandler);
+    }
+
+    <span style="color: blue">private void </span>app_PostResolveRequestCache(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 获取合适的处理器，注意这是与URL重写的根本差别。
+        // 即：根据当前请求【主动】寻找一个处理器，而不是使用RewritePath让Asp.net替我们去找。
+        </span><span style="color: #2b91af">MyServiceHandler </span>handler <span style="color: red">= </span>GetHandler(app<span style="color: red">.</span>Context);
+        <span style="color: blue">if</span>( handler <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return</span>;
+
+        <span style="color: green">// 临时保存前面获取到的处理器，这个值将在PostMapRequestHandler事件中再取出来。
+        </span>app<span style="color: red">.</span>Context<span style="color: red">.</span>Items[s_dataKey] <span style="color: red">= </span>handler;
+
+        <span style="color: green">// 进入正常的MapRequestHandler事件，随便映射到一个处理器就行了。
+        </span>app<span style="color: red">.</span>Context<span style="color: red">.</span>RewritePath(<span style="color: #a31515">"~/MyServiceUrlRoutingModule.axd"</span>);
+    }
+
+    <span style="color: blue">private void </span>app_PostMapRequestHandler(<span style="color: blue">object </span>sender, <span style="color: #2b91af">EventArgs </span>e)
+    {
+        <span style="color: #2b91af">HttpApplication </span>app <span style="color: red">= </span>(<span style="color: #2b91af">HttpApplication</span>)sender;
+
+        <span style="color: green">// 取出在PostResolveRequestCache事件中获得的处理器
+        </span><span style="color: #2b91af">MyServiceHandler </span>handler <span style="color: red">= </span>(<span style="color: #2b91af">MyServiceHandler</span>)app<span style="color: red">.</span>Context<span style="color: red">.</span>Items[s_dataKey];
+        <span style="color: blue">if</span>( handler <span style="color: red">!= </span><span style="color: blue">null </span>) {
+            <span style="color: green">// 还原URL请求地址。注意这里和URL重写的差别。
+            </span>app<span style="color: red">.</span>Context<span style="color: red">.</span>RewritePath(app<span style="color: red">.</span>Request<span style="color: red">.</span>RawUrl);
+
+            <span style="color: green">// 还原根据GetHandler(app.Context)调用得到的处理器。
+            // 因为此时app.Context.Handler是由"~/MyServiceUrlRoutingModule.axd"映射得到的。
+            </span>app<span style="color: red">.</span>Context<span style="color: red">.</span>Handler <span style="color: red">= </span>handler;
+        }
+    }
+</pre>
+<p>注意：在MyServiceUrlRoutingModule中，我将请求【路由】到一个MyServiceHandler的实例，而不是让Asp.net根据URL来替我选择。</p>
+<p><b>这段代码还个简化的版本</b>，有兴趣的可阅读我的博客 <a href="http://www.cnblogs.com/fish-li/archive/2012/01/29/2331477.html" target="_blank">【细说 HttpHandler 的映射过程】</a> </p>
+<p>在URL重写的演示中，有些URL相关的属性发生了改变，我们再来看一下URL路由是个什么结果：</p>
+<p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522252141.gif"></p>
+<h1>实现自己的服务框架</h1>
+<p>本篇博客在开头说过：将在本次博客中改进上次的服务实现，让它成为一个真正能用的服务框架。<br>前面在讲述Asp.net管线时，给出了很多示例代码，这些示例代码都可以在博客的结尾处下载到。这些代码来源于【我的服务框架】中的部分源代码，下面我将重点介绍【我的服务框架】。 </p>
+<p style="height: 53px"></p>
+<h1>利用【我的服务框架】将类公开成服务</h1>
+<p>在【我的服务框架】中，一个类要想公开为服务类，并不需要继承某个类或者实现什么接口，只需要在类上加一个特性就好了，方法也只需加一个特性，示例代码如下： </p><pre class="code">[<span style="color: #2b91af">MyService</span>]
+<span style="color: blue">public class </span><span style="color: #2b91af">OrderService
+</span>{
+    [<span style="color: #2b91af">MyServiceMethod</span>]
+    <span style="color: blue">public static string </span>Hello(<span style="color: blue">string </span>name)
+    {
+        <span style="color: blue">return </span><span style="color: #a31515">"Hello " </span><span style="color: red">+ </span>name;
+    }
+
+    [<span style="color: #2b91af">MyServiceMethod</span>]
+    <span style="color: blue">public </span><span style="color: #2b91af">List</span><span style="color: red">&lt;</span><span style="color: #2b91af">Order</span><span style="color: red">&gt; </span>QueryOrder(<span style="color: #2b91af">QueryOrderCondition </span>query)
+    {
+        <span style="color: green">// 模拟查询过程，这里就直接返回一个列表。        
+        </span><span style="color: #2b91af">List</span><span style="color: red">&lt;</span><span style="color: #2b91af">Order</span><span style="color: red">&gt; </span>list <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">List</span><span style="color: red">&lt;</span><span style="color: #2b91af">Order</span><span style="color: red">&gt;</span>();
+        <span style="color: blue">for</span>( <span style="color: blue">int </span>i <span style="color: red">= </span><span style="color: purple">0</span>; i <span style="color: red">&lt; </span><span style="color: purple">10</span>; i<span style="color: red">++ </span>)
+            list<span style="color: red">.</span>Add(<span style="color: #2b91af">DataFactory</span><span style="color: red">.</span>CreateRandomOrder());
+
+        <span style="color: blue">return </span>list;
+    }
+
+    <span style="color: blue">public string </span>HiddenMethod(<span style="color: blue">string </span>aa)
+    {
+        <span style="color: green">// 这个方法应该是不能以服务方式被调用到的。
+        </span><span style="color: blue">throw new </span><span style="color: #2b91af">NotImplementedException</span>();
+    }
+}
+</pre>
+<p>如果某个方法需要只公开给登录用户或者指定的用户，还可以使用以下方式：</p><pre class="code"><span style="color: green">// 这是一个访问受限的服务类，只允许某些用户调用。
+</span>[<span style="color: #2b91af">Authorize</span>]
+[<span style="color: #2b91af">MyService</span>]
+<span style="color: blue">public static class </span><span style="color: #2b91af">LimitService
+</span>{
+    [<span style="color: #2b91af">Authorize</span>(Users<span style="color: red">=</span><span style="color: #a31515">"fish-li, cc"</span>)]
+    [<span style="color: #2b91af">MyServiceMethod</span>]
+    <span style="color: blue">public static string </span>CalcPassword(<span style="color: blue">string </span>pwd)
+    {
+        <span style="color: green">// 这个方法只能由 fish-li, cc 二个用户来调用
+
+        </span><span style="color: blue">if</span>( pwd <span style="color: red">== </span><span style="color: blue">null </span>)
+            pwd <span style="color: red">= </span><span style="color: blue">string</span><span style="color: red">.</span>Empty;
+
+        <span style="color: blue">byte</span>[] buffer <span style="color: red">= </span>(<span style="color: blue">new </span><span style="color: #2b91af">MD5CryptoServiceProvider</span>())<span style="color: red">.</span>ComputeHash(<span style="color: #2b91af">Encoding</span><span style="color: red">.</span>Default<span style="color: red">.</span>GetBytes(pwd));
+        <span style="color: blue">return </span><span style="color: #2b91af">BitConverter</span><span style="color: red">./span&gt;ToString(buffer)<span style="color: red">.</span>Replace(<span style="color: #a31515">"-"</span>, <span style="color: #a31515">""</span>);
+    }
+
+    [<span style="color: #2b91af">MyServiceMethod</span>]
+    <span style="color: blue">public static string </span>CalcBase64(<span style="color: blue">string </span>str)
+    {
+        <span style="color: green">// 这个方法只能由已登录用户调用。
+
+        </span><span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(str) )
+            <span style="color: blue">return string</span><span style="color: red">.</span>Empty;
+
+        <span style="color: blue">return </span><span style="color: #2b91af">Convert</span><span style="color: red">.</span>ToBase64String(<span style="color: #2b91af">Encoding</span><span style="color: red">.</span>UTF8<span style="color: red">.</span>GetBytes(str));
+    }
+}
+</pre><p>就这么简单，一个类，就可以成为一个服务。<br><b>说明：本框架并不要求将服务类在网站项目中实现，完全可以放在类库中实现。</b> </p><p>还可以支持Session哦。</p><pre class="code">[<span style="color: #2b91af">MyService</span>(SessionMode<span style="color: red">=</span><span style="color: #2b91af">SessionMode</span><span style="color: red">.</span>Support)]
+<span style="color: blue">public class </span><span style="color: #2b91af">SessionDemoService 
+</span>{
+    [<span style="color: #2b91af">MyServiceMethod</span>]
+    <span style="color: blue">public int </span>Add(<span style="color: blue">int </span>a)
+    {
+        <span style="color: green">// 一个累加的方法，检验是否可以访问Session
+
+        </span><span style="color: blue">if</span>( System<span style="color: red">.</span>Web<span style="color: red">.</span><span style="color: #2b91af">HttpContext</span><span style="color: red">.</span>Current<span style="color: red">.</span>Session <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">InvalidOperationException</span>(<span style="color: #a31515">"Session没有开启。"</span>);
+
+        <span style="color: blue">object </span>obj <span style="color: red">= </span>System<span style="color: red">.</span>Web<span style="color: red">.</span><span style="color: #2b91af">HttpContext</span><span style="color: red">.</span>Current<span style="color: red">.</span>Session[<span style="color: #a31515">"counter"</span>];
+        <span style="color: blue">int </span>counter <span style="color: red">= </span>(obj <span style="color: red">== </span><span style="color: blue">null </span><span style="color: red">? </span><span style="color: purple">0 </span>: (<span style="color: blue">int</span>)obj);
+        counter <span style="color: red">+= </span>a;
+        System<span style="color: red">.</span>Web<span style="color: red">.</span><span style="color: #2b91af">HttpContext</span><span style="color: red">.</span>Current<span style="color: red">.</span>Session[<span style="color: #a31515">"counter"</span>] <span style="color: red">= </span>counter;
+        <span style="color: blue">return </span>counter;
+    }
+}
+</pre><p>SessionMode的定义如下：</p><pre class="code"><span style="color: blue">public enum </span><span style="color: #2b91af">SessionMode
+</span>{
+    NotSupport,
+    Support,
+    ReadOnly
+}
+</pre><h1>【我的服务框架】支持的序列化的种类</h1><p>在上篇博客中，我演示了使用JSON序列化的做法来实现一个服务响应。本来也是打算让框架仅支持JSON序列化的，因为传输的数据量小嘛。没想到，做到后来，还是认为有必要把XML序列化也加进来，XML序列化快呀。最后，居然想到既然是服务框架，Ajax调用也能算是服务吧，总不能不支持吧，后来干脆也能支持部分的Ajax调用了。 </p><p>在【我的服务框架】中，服务端判断客户端发送的数据序列化方式是通过判断请求头"Serializer-Format"来实现的。序列化的种类还允许继续自定义。只要实现以下接口： </p><pre class="code"><span style="color: blue">public interface </span><span style="color: #2b91af">ISerializerProvider
+</span>{
+    <span style="color: blue">object </span>Deserialize(<span style="color: #2b91af">Type </span>destType, <span style="color: #2b91af">HttpRequest </span>request);
+
+    <span style="color: blue">void </span>Serializer(<span style="color: blue">object </span>obj, <span style="color: #2b91af">HttpResponse </span>response);
+}
+</pre><p>然后调用以下方法就可以了：</p><pre class="code"><span style="color: blue">public static class </span><span style="color: #2b91af">SerializerProviderFactory
+</span>{
+    <span style="color: blue">public static void </span>RegisterSerializerProvider(<span style="color: blue">string </span>name, <span style="color: #2b91af">Type </span>type)
+    {
+        <span style="color: green">// ...................................
+    </span>}
+</pre><p>判断客户端的序列化方式，由属性FrameworkRules.GetSerializerFormat来决定： </p><pre class="code"><span style="color: blue">public static class </span><span style="color: #2b91af">FrameworkRules
+</span>{
+    <span style="color: blue">private static string </span>Internal_GetSerializerFormat(<span style="color: #2b91af">HttpRequest </span>request){
+        <span style="color: blue">string </span>flag <span style="color: red">= </span>request<span style="color: red">.</span>Headers[<span style="color: #a31515">"Serializer-Format"</span>];
+        <span style="color: blue">return </span>(<span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(flag) <span style="color: red">? </span><span style="color: #a31515">"form" </span>: flag);
+    }
+
+    <span style="color: blue">private static </span><span style="color: #2b91af">Func</span><span style="color: red">&lt;</span><span style="color: #2b91af">HttpRequest</span>, <span style="color: blue">string</span><span style="color: red">&gt; </span>_serializerFormatRule <span style="color: red">= </span>Internal_GetSerializerFormat;
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">此委托用来判断客户端发起的请求中，数据是以什么方式序列化的。
+    </span><span style="color: gray">/// </span><span style="color: green">返回的结果将会交给SerializerProviderFactory.GetSerializerProvider()来获取序列化提供者
+    </span><span style="color: gray">/// </span><span style="color: green">默认的实现是检查请求头："Serializer-Format"
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    </span><span style="color: blue">public static </span><span style="color: #2b91af">Func</span><span style="color: red">&lt;</span><span style="color: #2b91af">HttpRequest</span>, <span style="color: blue">string</span><span style="color: red">&gt; </span>GetSerializerFormat
+    {
+        <span style="color: blue">internal get </span>{ <span style="color: blue">return </span>_serializerFormatRule; }
+        <span style="color: blue">set
+        </span>{
+            <span style="color: blue">if</span>( <span style="color: blue">value </span><span style="color: red">== </span><span style="color: blue">null </span>)
+                <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"value"</span>);
+            _serializerFormatRule <span style="color: red">= </span><span style="color: blue">value</span>;
+        }
+    }
+</pre><p>只是一个委托，可以自己重新实现。</p><p>目前本框架提供了三个实现了接口ISerializerProvider的类供用户使用：JsonSerializerProvider, XmlSerializerProvider, FormSerializerProvider </p><p>这里只展示JsonSerializerProvider的实现：</p><pre class="code"><span style="color: blue">internal class </span><span style="color: #2b91af">JsonSerializerProvider </span>: <span style="color: #2b91af">ISerializerProvider
+</span>{
+    <span style="color: blue">private static readonly </span><span style="color: #2b91af">MethodInfo </span>s_JSSDeserializeMI
+                                <span style="color: red">= </span><span style="color: blue">typeof</span>(<span style="color: #2b91af">JavaScriptSerializer</span>)<span style="color: red">.</span>GetMethod(<span style="color: #a31515">"Deserialize"</span>);
+
+    <span style="color: #2b91af">JavaScriptSerializer </span>jss <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">JavaScriptSerializer</span>();
+
+    <span style="color: blue">public object </span>Deserialize(<span style="color: #2b91af">Type </span>destType, <span style="color: #2b91af">HttpRequest </span>request)
+    {
+        <span style="color: #2b91af">StreamReader </span>sr <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">StreamReader</span>(request<span style="color: red">.</span>InputStream, request<span style="color: red">.</span>ContentEncoding);
+        <span style="color: blue">string </span>input <span style="color: red">= </span>sr<span style="color: red">.</span>ReadToEnd();
+
+        <span style="color: #2b91af">MethodInfo </span>deserialize <span style="color: red">= </span>s_JSSDeserializeMI<span style="color: red">.</span>MakeGenericMethod(destType);
+
+        <span style="color: blue">return </span>deserialize<span style="color: red">.</span>Invoke(jss, <span style="color: blue">new object</span>[] { input });
+    }
+
+    <span style="color: blue">public void </span>Serializer(<span style="color: blue">object </span>obj, <span style="color: #2b91af">HttpResponse </span>response)
+    {
+        <span style="color: blue">if</span>( obj <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return</span>;
+
+        response<span style="color: red">.</span>ContentType <span style="color: red">= </span><span style="color: #a31515">"application/json"</span>;
+
+        response<span style="color: red">.</span>Write(jss<span style="color: red">.</span>Serialize(obj));
+    }
+</pre><p><b>注意：</b>FormSerializerProvider的实现不够完善，因为再搞下去，就和【我的WEB框架】就重复了。有兴趣的自己去完善吧。 </p><p>这里再给自己的作品打个广告：<br><a href="http://www.cnblogs.com/fish-li/archive/2011/05/02/2034354.html" target="_blank">【Asp.net MVC 框架，我也来山寨一下】</a>， <a href="http://www.cnblogs.com/fish-li/archive/2011/03/12/1982434.html" target="_blank">【晒晒我的Ajax服务端框架】</a>， <a href="http://www.cnblogs.com/fish-li/archive/2011/03/12/1982453.html" target="_blank">【我的Ajax服务端框架 - (1) JS直接调用C#方法】</a> </p><h1>【我的服务框架】对gzip的支持</h1><p>对于gzip的支持，我只想说：太简单了。<br>前面不是已给出DuplexGzipModule的实现代码嘛。是的，就是把它注册到web.config中就可以了。<br>你说简不简单？ 完全不用写多余的代码，要不要gzip支持，也只是个配置问题！ </p><p>说到这里，我想起前段时间Artech写的一篇博客<a href="http://www.cnblogs.com/artech/archive/2011/08/07/2129799.html" target="_blank">通过WCF扩展实现消息压缩</a>，正如我在前篇博客的回复中说到的：“本来真没兴趣看的，不过，为了验证我的猜想，还是去看了一下，果然也没让我失望。”。 </p><p>在此，有必要公开一下我的想法：绝对没有半点看不起Artech的意思，只是我对WCF没有兴趣了。理由也简单：不够简单。 </p><p>还是接着说，Artech的博客展示了在WCF中压缩消息的方式，当然我相信Artech对于WCF的理解，他的方案或许应该是最简单的解决方案，但是和【我的服务框架】对gzip的支持的易用性根本没法比。 </p><p>WCF的粉丝们，当您看到这里，请先别忙着喷我。听我说完：WCF的确很强大，我的这个不到700行的框架那也是根本不能和它相比的。 </p><p>做这个比较仅仅是为了展示Asp.net是一个强大的平台，Asp.net有更高水准的扩展性。 </p><h1>利用【我的服务框架】发布服务的5种方式</h1><p>【我的服务框架】可以提供5种不同的方式，让您将一个类及方法公开成一个服务，供外界调用。 </p><p><b>方法1：使用DirectProcessRequestMoudle，</b>只需要配置web.config即可。</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">DirectProcessRequestMoudle</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.DirectProcessRequestMoudle</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;</span>
+</pre><p>客户端调用URL：http://localhost:11647/service/OrderService/QueryOrder</p><p>说明：URL模式是可以自由定义的，只要给FrameworkRules.ParseNamesPair赋值即可，它的定义如下：</p><pre class="code"><span style="color: blue">public static </span><span style="color: #2b91af">Func</span><span style="color: red">&lt;</span><span style="color: #2b91af">HttpRequest</span>, <span style="color: #2b91af">NamesPair</span><span style="color: red">&gt; </span>ParseNamesPair
+
+</pre><p>默认的实现方式：</p><pre class="code"><span style="color: blue">internal static class </span><span style="color: #2b91af">UrlPatternHelper
+</span>{
+    <span style="color: green">// 为了演示简单，我只定义一个URL模式。【因为我认为对于服务来说，一个就够了】
+    // 如果希望适用性更广，可以从配置文件中读取，并且可支持多组URL模式。
+    // URL中加了"/service/"只是为了能更好地区分其它请求，如果您的网站没有子目录，删除它也是可以的。
+    </span><span style="color: blue">internal static readonly string </span>ServicePattern <span style="color: red">= </span><span style="color: #a31515">@"/service/(?&lt;name&gt;[^/]+)/(?&lt;method&gt;[^/]+)[/\?]?"</span>;
+    
+    <span style="color: blue">public static </span><span style="color: #2b91af">NamesPair </span>ParseNamesPair(<span style="color: #2b91af">HttpRequest </span>request)
+    {
+        <span style="color: blue">if</span>( request <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"request"</span>);
+
+        <span style="color: #2b91af">Match </span>match <span style="color: red">= </span><span style="color: #2b91af">Regex</span><span style="color: red">.</span>Match(request<span style="color: red">.</span>Path, ServicePattern);
+        <span style="color: blue">if</span>( match<span style="color: red">.</span>Success <span style="color: red">== </span><span style="color: blue">false </span>)
+            <span style="color: blue">return null</span>;
+
+        <span style="color: blue">return new </span><span style="color: #2b91af">NamesPair </span>{
+            ServiceName <span style="color: red">= </span>match<span style="color: red">.</span>Groups[<span style="color: #a31515">"name"</span>]<span style="color: red">.</span>Value,
+            MethodName <span style="color: red">= </span>match<span style="color: red">.</span>Groups[<span style="color: #a31515">"method"</span>]<span style="color: red">.</span>Value
+        };
+    }
+</pre><p>客户端调用URL： http://localhost:11647/service/OrderService/QueryOrder</p><p><b>方法2：使用MyServiceUrlRoutingModule，</b>只需要配置web.config即可。</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">MyServiceUrlRoutingModule</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.MyServiceUrlRoutingModule</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;</span>
+</pre><p>客户端调用URL： http://localhost:11647/service/OrderService/QueryOrder</p><p><b>说明：只有这种方式才能支持Session</b></p><p><b>方法3：使用MyServiceUrlRewriteModule，</b>只需要配置web.config即可。</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">/MyService.axd</span>" <span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">validate</span><span style="color: blue">=</span>"<span style="color: blue">false</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.MyServiceHandler</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;
+&lt;</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">name</span><span style="color: blue">=</span>"<span style="color: blue">MyServiceUrlRewriteModule</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.MyServiceUrlRewriteModule</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpModules</span><span style="color: blue">&gt;</span>
+</pre><p>客户端调用URL： http://localhost:11647/service/OrderService/QueryOrder</p><p><b>方法4：使用MyServiceHandler，</b>只需要配置web.config即可。</p><pre class="code"><span style="color: blue">&lt;</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;
+    &lt;</span><span style="color: #a31515">add </span><span style="color: red">path</span><span style="color: blue">=</span>"<span style="color: blue">/MyService.axd</span>" <span style="color: red">verb</span><span style="color: blue">=</span>"<span style="color: blue">*</span>" <span style="color: red">validate</span><span style="color: blue">=</span>"<span style="color: blue">false</span>" <span style="color: red">type</span><span style="color: blue">=</span>"<span style="color: blue">MySimpleServiceFramework.MyServiceHandler</span>"<span style="color: blue">/&gt;
+&lt;/</span><span style="color: #a31515">httpHandlers</span><span style="color: blue">&gt;</span>
+</pre><p>客户端调用URL： http://localhost:11647/MyService.axd?sc=OrderService&amp;op=QueryOrder</p><p><b>方法5：创建一个ashx，</b>不需要任何配置。</p><pre class="code"><span style="background: #ffee62">&lt;%</span><span style="color: blue">@ </span><span style="color: #a31515">WebHandler </span><span style="color: red">Language</span><span style="color: blue">="C#" </span><span style="color: red">Class</span><span style="color: blue">="MyService" </span><span style="background: #ffee62">%&gt;
+
+</span><span style="color: blue">using </span>System;
+<span style="color: blue">using </span>System<span style="color: red">.</span>Web;
+<span style="color: blue">using </span>MySimpleServiceFramework;
+
+<span style="color: blue">public class </span><span style="color: #2b91af">MyService </span>: <span style="color: #2b91af">IHttpHandler </span>{
+    
+    <span style="color: blue">public void </span>ProcessRequest (<span style="color: #2b91af">HttpContext </span>context) {
+        <span style="color: #2b91af">NamesPair </span>pair <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">NamesPair</span>();
+        pair<span style="color: red">.</span>ServiceName <span style="color: red">= </span>context<span style="color: red">.</span>Request<span style="color: red">.</span>QueryString[<span style="color: #a31515">"sc"</span>];
+        pair<span style="color: red">.</span>MethodName <span style="color: red">= </span>context<span style="color: red">.</span>Request<span style="color: red">.</span>QueryString[<span style="color: #a31515">"op"</span>];
+
+        <span style="color: #2b91af">ServiceExecutor</span><span style="color: red">.</span>ProcessRequest(context, pair);
+    }
+ 
+    <span style="color: blue">public bool </span>IsReusable {
+        <span style="color: blue">get </span>{
+            <span style="color: blue">return false</span>;
+        }
+    }
+}
+</pre><p>客户端调用URL： http://localhost:11647/MyService.ashx?sc=OrderService&amp;op=QueryOrder</p><p><b>注意：</b>前三种方法，需要在IIS中做些额外的配置，因为URL中不包含文件扩展名了，IIS不知道把请求交给Asp.net来处理。<br>具体配置见下图，此处省略78个字。 </p><p><img alt="" src="http://pic002.cnblogs.com/images/2011/281816/2011090522254360.gif"></p><h1>我对发布服务的5种方式的建议</h1><p>虽然，我给出了5种发布方式，但是我还是想说说我个人的想法。</p><p>在这些方法中，使用URL重写，URL路由的方法，并不是我想推荐的，写它们是主要是为了展示HttpModule 。不推荐它们是因为它们要判断URL是否符合指定模式，这个判断是有成本的。至于成本有多高，特此，我专了做门的测试。在示例代码压缩包中有个___TestRoutePerformance目录，结果如何，还是您自己去看吧，我也有点累了。 </p><p>此外，我想问：对于服务来说，URL友好有多大意义？服务的URL会让用户来输入还是让Google的爬虫来访问？ </p><p>如果以上二个问题都是否定的，那么，这二种方法就是在白白浪费机器的性能了。<br>当然了，如果您的站点访问量不大，那么这点性能也可以忽略不计了，就当我没说。 </p><p>使用URL重写URL路由，还有个比较麻烦的事情：如果想通过URL多传递一个参数，那么，是不是又要修改URL模式？ </p><p>对于使用DirectProcessRequestMoudle这种模式，我以前已经说过了：除非要很好的理由，否则不建议使用这种方法。</p><p>至于其它的二种方式，本质上是一样的，只是说：处理器谁来写的差别了。<br>不过，如果您要是选择手工创建一个处理器，除了不用修改web.config之外，还可以自定义URL参数名，可以选择要不要支持Session </p><h1>【我的服务框架】的一些核心类</h1><p>ReflectionHelper类用于根据类名及服务名定位到一个服务类型以及要调用的方法。<br>因此，它在框架中的作用也是非常关键的。 </p><pre class="code"><span style="color: blue">internal static class </span><span style="color: #2b91af">ReflectionHelper
+</span>{
+    <span style="color: blue">private static </span><span style="color: #2b91af">List</span><span style="color: red">&lt;</span><span style="color: #2b91af">TypeAndAttrInfo</span><span style="color: red">&gt; </span>s_typeList;
+
+    <span style="color: blue">static </span>ReflectionHelper()
+    {
+        InitServiceTypes();
+    }
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">加载所有的服务类型，判断方式就是检查类型是否有MyServiceAttribute
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    </span><span style="color: blue">private static void </span>InitServiceTypes()
+    {
+        s_typeList <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">List</span><span style="color: red">&lt;</span><span style="color: #2b91af">TypeAndAttrInfo</span><span style="color: red">&gt;</span>(<span style="color: purple">256</span>);
+
+        <span style="color: #2b91af">ICollection </span>assemblies <span style="color: red">= </span><span style="color: #2b91af">BuildManager</span><span style="color: red">.</span>GetReferencedAssemblies();
+        <span style="color: blue">foreach</span>( <span style="color: #2b91af">Assembly </span>assembly <span style="color: blue">in </span>assemblies ) {
+            <span style="color: blue">try </span>{
+                (<span style="color: blue">from </span>t <span style="color: blue">in </span>assembly<span style="color: red">.</span>GetExportedTypes()
+                 <span style="color: blue">let </span>a <span style="color: red">= </span>(<span style="color: #2b91af">MyServiceAttribute</span>[])t<span style="color: red">.</span>GetCustomAttributes(<span style="color: blue">typeof</span>(<span style="color: #2b91af">MyServiceAttribute</span>), <span style="color: blue">false</span>)
+                 <span style="color: blue">where </span>a<span style="color: red">.</span>Length <span style="color: red">&gt; </span><span style="color: purple">0
+                 </span><span style="color: blue">select new </span><span style="color: #2b91af">TypeAndAttrInfo </span>{ 
+                            ServiceType <span style="color: red">= </span>t, Attr <span style="color: red">= </span>a[<span style="color: purple">0</span>], AuthorizeAttr <span style="color: red">= </span>t<span style="color: red">.</span>GetClassAuthorizeAttribute() }
+                 )<span style="color: red">.</span>ToList()<span style="color: red">.</span>ForEach(b <span style="color: red">=&gt; </span>s_typeList<span style="color: red">.</span>Add(b));
+            }
+            <span style="color: blue">catch </span>{ }
+        }
+    }
+
+    <span style="color: blue">private static </span><span style="color: #2b91af">AuthorizeAttribute </span>GetClassAuthorizeAttribute(<span style="color: blue">this </span><span style="color: #2b91af">Type </span>t)
+    {
+        <span style="color: #2b91af">AuthorizeAttribute</span>[] attrs <span style="color: red">= </span>(<span style="color: #2b91af">AuthorizeAttribute</span>[])t<span style="color: red">.</span>GetCustomAttributes(<span style="color: blue">typeof</span>(<span style="color: #2b91af">AuthorizeAttribute</span>), <span style="color: blue">false</span>);
+        <span style="color: blue">return </span>(attrs<span style="color: red">.</span>Length <span style="color: red">&gt; </span><span style="color: purple">0 </span><span style="color: red">? </span>attrs[<span style="color: purple">0</span>] : <span style="color: blue">null</span>);
+    }
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">根据一个名称获取对应的服务类型（从缓存中获取类型）
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    /// &lt;param name="typeName"&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    </span><span style="color: blue">private static </span><span style="color: #2b91af">TypeAndAttrInfo </span>GetServiceType(<span style="color: blue">string </span>typeName)
+    {
+        <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(typeName) )
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"typeName"</span>);
+
+
+        <span style="color: green">// 查找类型的方式：如果有点号，则按全名来查找(包含命名空间)，否则只看名字。
+        // 本框架对于多个匹配条件的类型，将返回第一个匹配项。
+        </span><span style="color: blue">if</span>( typeName<span style="color: red">.</span>IndexOf(<span style="color: #a31515">'.'</span>) <span style="color: red">&gt; </span><span style="color: purple">0 </span>)
+            <span style="color: blue">return </span>s_typeList<span style="color: red">.</span>FirstOrDefault(t <span style="color: red">=&gt; </span><span style="color: blue">string</span><span style="color: red">.</span>Compare(t<span style="color: red">.</span>ServiceType<span style="color: red">.</span>FullName, typeName, <span style="color: blue">true</span>) <span style="color: red">== </span><span style="color: purple">0</span>);
+        <span style="color: blue">else
+            return </span>s_typeList<span style="color: red">.</span>FirstOrDefault(t <span style="color: red">=&gt; </span><span style="color: blue">string</span><span style="color: red">.</span>Compare(t<span style="color: red">.</span>ServiceType<span style="color: red">.</span>Name, typeName, <span style="color: blue">true</span>) <span style="color: red">== </span><span style="color: purple">0</span>);
+    }
+    
+    
+
+    <span style="color: blue">private static </span><span style="color: #2b91af">Hashtable </span>s_methodTable <span style="color: red">= </span><span style="color: #2b91af">Hashtable</span><span style="color: red">.</span>Synchronized(
+                                        <span style="color: blue">new </span><span style="color: #2b91af">Hashtable</span>(<span style="color: purple">4096</span>, <span style="color: #2b91af">StringComparer</span><span style="color: red">.</span>OrdinalIgnoreCase));
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">根据指定的类型以及方法名称，获取对应的方法信息
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    /// &lt;param name="type"&gt;&lt;/param&gt;
+    /// &lt;param name="methodName"&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    </span><span style="color: blue">private static </span><span style="color: #2b91af">MethodAndAttrInfo </span>GetServiceMethod(<span style="color: #2b91af">Type </span>type, <span style="color: blue">string </span>methodName)
+    {
+        <span style="color: blue">if</span>( type <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"type"</span>);
+        <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(methodName))
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"methodName"</span>);
+
+        <span style="color: green">// 首先尝试从缓存中读取
+        </span><span style="color: blue">string </span>key <span style="color: red">= </span>methodName <span style="color: red">+ </span><span style="color: #a31515">"@" </span><span style="color: red">+ </span>type<span style="color: red">.</span>FullName;
+        <span style="color: #2b91af">MethodAndAttrInfo </span>mi <span style="color: red">= </span>(<span style="color: #2b91af">MethodAndAttrInfo</span>)s_methodTable[key];
+
+        <span style="color: blue">if</span>( mi <span style="color: red">== </span><span style="color: blue">null </span>) {
+            <span style="color: green">// 注意：这里不考虑方法的重载。
+            </span><span style="color: #2b91af">MethodInfo </span>method <span style="color: red">= </span>type<span style="color: red">.</span>GetMethod(methodName,
+                     <span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>Static <span style="color: red">| </span><span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>Instance <span style="color: red">| </span><span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>Public <span style="color: red">| </span><span style="color: #2b91af">BindingFlags</span><span style="color: red">.</span>IgnoreCase);
+
+            <span style="color: blue">if</span>( method <span style="color: red">== </span><span style="color: blue">null </span>)
+                <span style="color: blue">return null</span>;
+
+            <span style="color: #2b91af">MyServiceMethodAttribute</span>[] attrs <span style="color: red">= </span>(<span style="color: #2b91af">MyServiceMethodAttribute</span>[])
+                                        method<span style="color: red">.</span>GetCustomAttributes(<span style="color: blue">typeof</span>(<span style="color: #2b91af">MyServiceMethodAttribute</span>), <span style="color: blue">false</span>);
+            <span style="color: blue">if</span>( attrs<span style="color: red">.</span>Length <span style="color: red">!= </span><span style="color: purple">1 </span>)
+                <span style="color: blue">return null</span>;
+
+
+            <span style="color: green">// 由于服务方法的参数来源于反序列化，此时只可能包含一个参数。
+            </span><span style="color: #2b91af">ParameterInfo</span>[] paraInfos <span style="color: red">= </span>method<span style="color: red">.</span>GetParameters();
+            <span style="color: blue">if</span>( paraInfos<span style="color: red">.</span>Length <span style="color: red">!= </span><span style="color: purple">1 </span>)
+                <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"指定的方法虽找到，但该方法的参数数量不是1"</span>);
+
+            <span style="color: #2b91af">AuthorizeAttribute</span>[] auths <span style="color: red">= </span>(<span style="color: #2b91af">AuthorizeAttribute</span>[])method<span style="color: red">.</span>GetCustomAttributes(<span style="color: blue">typeof</span>(<span style="color: #2b91af">AuthorizeAttribute</span>), <span style="color: blue">false</span>);
+
+            mi <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">MethodAndAttrInfo </span>{
+                        MethodInfo <span style="color: red">= </span>method,
+                        ParamType <span style="color: red">= </span>paraInfos[<span style="color: purple">0</span>]<span style="color: red">.</span>ParameterType,
+                        Attr <span style="color: red">= </span>attrs[<span style="color: purple">0</span>],
+                        AuthorizeAttr <span style="color: red">= </span>(auths<span style="color: red">.</span>Length <span style="color: red">&gt; </span><span style="color: purple">0 </span><span style="color: red">? </span>auths[<span style="color: purple">0</span>] : <span style="color: blue">null</span>)
+            };
+
+            s_methodTable[key] <span style="color: red">= </span>mi;
+        }
+
+        <span style="color: blue">return </span>mi;            
+    }
+
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">根据类型名称以及方法名称返回要调用的相关信息
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    /// &lt;param name="pair"&gt;</span><span style="color: green">包含类型名称以及方法名称的对象</span><span style="color: gray">&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    </span><span style="color: blue">public static </span><span style="color: #2b91af">InvokeInfo </span>GetInvokeInfo(<span style="color: #2b91af">NamesPair </span>pair)
+    {
+        <span style="color: blue">if</span>( pair <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"pair"</span>);
+
+        <span style="color: #2b91af">InvokeInfo </span>vkInfo <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">InvokeInfo</span>();
+
+        vkInfo<span style="color: red">.</span>ServiceTypeInfo <span style="color: red">= </span>GetServiceType(pair<span style="color: red">.</span>ServiceName);
+        <span style="color: blue">if</span>( vkInfo<span style="color: red">.</span>ServiceTypeInfo <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return null</span>;
+
+        vkInfo<span style="color: red">.</span>MethodAttrInfo <span style="color: red">= </span>GetServiceMethod(vkInfo<span style="color: red">.</span>ServiceTypeInfo<span style="color: red">.</span>ServiceType, pair<span style="color: red">.</span>MethodName);
+        <span style="color: blue">if</span>( vkInfo<span style="color: red">.</span>MethodAttrInfo <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">return null</span>;
+
+
+        <span style="color: blue">if</span>( vkInfo<span style="color: red">.</span>MethodAttrInfo<span style="color: red">.</span>MethodInfo<span style="color: red">.</span>IsStatic <span style="color: red">== </span><span style="color: blue">false </span>)
+            vkInfo<span style="color: red">.</span>ServiceInstance <span style="color: red">= </span><span style="color: #2b91af">Activator</span><span style="color: red">.</span>CreateInstance(vkInfo<span style="color: red">.</span>ServiceTypeInfo<span style="color: red">.</span>ServiceType);
+
+
+        <span style="color: blue">return </span>vkInfo;
+    }
+
+}
+</pre><p>ServiceExecutor用于调用服务方法，前面所说的5种服务发布方式，最终都要经过这里。 </p><pre class="code"><span style="color: gray">/// &lt;summary&gt;
+/// </span><span style="color: green">最终调用服务方法的工具类。
+</span><span style="color: gray">/// &lt;/summary&gt;
+</span><span style="color: blue">public static class </span><span style="color: #2b91af">ServiceExecutor
+</span>{
+    <span style="color: blue">internal static void </span>ProcessRequest(<span style="color: #2b91af">HttpContext </span>context, <span style="color: #2b91af">ServiceInfo </span>info)
+    {
+        <span style="color: blue">if</span>( context <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"context"</span>);
+        <span style="color: blue">if</span>( info <span style="color: red">== </span><span style="color: blue">null </span><span style="color: red">|| </span>info<span style="color: red">.</span>InvokeInfo <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"info"</span>);
+
+        <span style="color: green">//if( context.Request.InputStream.Length == 0 )
+        //    throw new InvalidDataException("没有调用数据，请将调用数据以请求体的方式传入。");
+        
+        </span><span style="color: blue">if</span>( info<span style="color: red">.</span>InvokeInfo<span style="color: red">.</span>AuthenticateRequest(context) <span style="color: red">== </span><span style="color: blue">false </span>)
+            <span style="color: #2b91af">ExceptionHelper</span><span style="color: red">.</span>Throw403Exception(context);
+        
+        <span style="color: green">// 获取客户端的数据序列化格式。    
+        //   默认实现方式：request.Headers["Serializer-Format"];
+        //   注意：这是我自定义的请求头名称，也可以不指定，默认为：form (表单)
+        </span><span style="color: blue">string </span>serializerFormat <span style="color: red">= </span><span style="color: #2b91af">FrameworkRules</span><span style="color: red">.</span>GetSerializerFormat(context<span style="color: red">.</span>Request);
+
+        <span style="color: #2b91af">ISerializerProvider </span>serializerProvider <span style="color: red">=
+                    </span><span style="color: #2b91af">SerializerProviderFactory</span><span style="color: red">.</span>GetSerializerProvider(serializerFormat);
+
+        <span style="color: green">// 获取要调用方法的参数类型
+        </span><span style="color: #2b91af">Type </span>destType <span style="color: red">= </span>info<span style="color: red">.</span>InvokeInfo<span style="color: red">.</span>MethodAttrInfo<span style="color: red">.</span>ParamType;
+
+        <span style="color: green">// 获取要调用的参数
+        </span>context<span style="color: red">.</span>Request<span style="color: red">.</span>InputStream<span style="color: red">.</span>Position <span style="color: red">= </span><span style="color: purple">0</span>;    <span style="color: green">// 防止其它Module读取过，但没有归位。
+        </span><span style="color: blue">object </span>param <span style="color: red">= </span>serializerProvider<span style="color: red">.</span>Deserialize(destType, context<span style="color: red">.</span>Request);
+        
+        <span style="color: green">// 调用服务方法
+        </span><span style="color: blue">object </span>result <span style="color: red">= </span>info<span style="color: red">.</span>InvokeInfo<span style="color: red">.</span>MethodAttrInfo<span style="color: red">.</span>MethodInfo<span style="color: red">.</span>Invoke(
+                                info<span style="color: red">.</span>InvokeInfo<span style="color: red">.</span>ServiceInstance, <span style="color: blue">new object</span>[] { param });
+
+        <span style="color: green">// 写输出结果
+        </span><span style="color: blue">if</span>( result <span style="color: red">!= </span><span style="color: blue">null </span>)
+            serializerProvider<span style="color: red">.</span>Serializer(result, context<span style="color: red">.</span>Response);
+    }
+
+    <span style="color: gray">/// &lt;summary&gt;
+    /// </span><span style="color: green">【外部接口】用于根据服务的类名和方法名执行某个请求
+    </span><span style="color: gray">/// &lt;/summary&gt;
+    /// &lt;param name="context"&gt;&lt;/param&gt;
+    /// &lt;param name="pair"&gt;&lt;/param&gt;
+    </span><span style="color: blue">public static void </span>ProcessRequest(<span style="color: #2b91af">HttpContext </span>context, <span style="color: #2b91af">NamesPair </span>pair)
+    {
+        <span style="color: blue">if</span>( pair <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: blue">throw new </span><span style="color: #2b91af">ArgumentNullException</span>(<span style="color: #a31515">"pair"</span>);
+
+        <span style="color: blue">if</span>( <span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(pair<span style="color: red">.</span>ServiceName) <span style="color: red">|| </span><span style="color: blue">string</span><span style="color: red">.</span>IsNullOrEmpty(pair<span style="color: red">.</span>MethodName) )
+            <span style="color: #2b91af">ExceptionHelper</span><span style="color: red">.</span>Throw404Exception(context);
+
+
+        <span style="color: #2b91af">InvokeInfo </span>vkInfo <span style="color: red">= </span><span style="color: #2b91af">ReflectionHelper</span><span style="color: red">.</span>GetInvokeInfo(pair);
+        <span style="color: blue">if</span>( vkInfo <span style="color: red">== </span><span style="color: blue">null </span>)
+            <span style="color: #2b91af">ExceptionHelper</span><span style="color: red">.</span>Throw404Exception(context);
+
+        <span style="color: #2b91af">ServiceInfo </span>info <span style="color: red">= </span><span style="color: blue">new </span><span style="color: #2b91af">ServiceInfo</span>(pair, vkInfo);
+
+        ProcessRequest(context, info);
+    }        
+}
+</pre><h1>关于写框架</h1><p>以前曾在网上见过几次关于“重复造轮子”的说法。基本上，全是反对意见。</p><p>我今天也想谈谈这个话题：要不要自己写框架？</p><p>我的答案是：要。</p><p>自己写框架的好处不在于能将它做得多强大，多完美，而是从写框架的过程中，可以学到很多东西。</p><p>一个框架写完了，不在乎要给多少人使用，而是自己感觉有没有进步，这才是关键。</p><p><b>如果您不重复造轮子，可能永远不知道造轮子的过程，造轮子需要什么内容。</b></p><p>如果不重复造轮子，世界上将只有一个操作系统。<br>如果不重复造轮子，世界上将只有一个数据库。<br>如果不重复造轮子，世界上将只有一种编程语言。<br>这样单调会很好吗？ <br><br>WebForms, MVC, Linq To SQL, Entity Framework, Remoting, Web Service, WCF<br>微软不也是一直在重复造轮子吗？ </p><h1>结束语</h1><p>终于写完了这篇博客。这篇博客花了我最多的写作时间：整整二个周末还加上一些业余时间。<br>当然了，其中也包括实现框架的时间。这其实也是希望更好地展示Asp.net的核心内容。<br>写框架不是目标，展示Asp.net技术，写博客才是目标哦。 </p><p>因此，这篇博客可谓是【下足了料】，只希望：<br>1. 能给大家分享Asp.net的核心内容。<br>2. 这篇博客的成绩能赶上<a href="http://www.cnblogs.com/fish-li/archive/2011/07/03/2096903.html" target="_blank">【细说Cookie】</a>。<br>我的写博热情也离不开您的肯定支持哦，如果您认为阅读此文有收获，别忘了点一下右下角的【推荐】，【关注 Fish Li】。<span class="icon_smile"></span> </p><p>Asp.net是个伟大的平台，能完成许多应用。这些应用的实现离不开这二次博客所提过的核心对象的支持，<br>本来还想再写点其它的示例，只是时间花得太多了。今天的示例已经很精彩了，到此为止吧，我也想休息了。<span class="icon_smile"></span> </p><p>每个对象都是一个不朽的传奇，每个传奇背后都有一个精彩的故事。<br>我是Fish Li, 感谢大家阅读我的博客，请继续关注我的后续博客。<span class="icon_smile"></span> </p><p style="height: 53px"></p><p><a href="http://files.cnblogs.com/fish-li/MySimpleServiceFramework.cab.7z">点击此处下载示例代码</a></p><div class="articleFooter"><p>如果，您认为阅读这篇博客让您有些收获，不妨点击一下右下角的<a id="btnRecommendMyBlog" href="javascript:void(0);">【<b>推荐</b>】</a>按钮。<br>如果，您希望更容易地发现我的新博客，不妨点击一下右下角的<a id="btnFollowFishLi" href="javascript:void(0);">【<b>关注 Fish Li</b>】</a>。<br>因为，我的写作热情也离不开您的肯定支持。 </p><p>感谢您的阅读，如果您对我的博客所讲述的内容有兴趣，请继续关注我的后续博客，我是Fish Li 。<span class="icon_smile"></span></p></div>{% include post.container.end %}
