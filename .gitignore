@@ -27,3 +27,5 @@ _ReSharper*/
 *.suo
 *.opensdf
 *.sdf
+_site/
+posts.db.txt

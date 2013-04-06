@@ -81,6 +81,7 @@ namespace ARNative
 			array<String^>^ EntryIdList,
 			UInt32 AttachFieldId);
 
+		void SetImpersonatedUser(String^ UserName);
 	private:
 		//store the AR session
 		ARControlStruct* session;

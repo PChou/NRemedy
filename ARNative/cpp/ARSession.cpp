@@ -514,4 +514,38 @@ array<Byte>^ ARSession::GetBLOB(
 	return buffer;
 }
 
+void ARSession::SetImpersonatedUser(String^ UserName)
+{
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	IntelligentARStructAR<ARStatusList> statuslist;//auto ~
+	//ARSetImpersonatedUser call will not set statuslist if call success which will cause invalid memory access
+	//when FreeARStatusList by AR API.
+	//So here init the statuslist to avoid this.
+	(&statuslist)->numItems = 0;
+	(&statuslist)->statusList = NULL;
+	if(UserName != nullptr && UserName != String::Empty)
+	{
+		char n_UserName[AR_MAX_ACCESS_NAME_SIZE + 1];
+		MarshalStringCopyToCharStack(n_UserName,UserName);
+		if(AR_OPERATION_FIALED(ARSetImpersonatedUser,(
+			this->session,	//session
+			n_UserName,	//user name
+			&statuslist)))
+		{
+			throw ARException::ConstructARException(&statuslist);
+		}
+	}
+	else
+	{
+		if(AR_OPERATION_FIALED(ARSetImpersonatedUser,(
+			this->session,	//session
+			NULL,	//user name
+			&statuslist)))
+		{
+			throw ARException::ConstructARException(&statuslist);
+		}
+	}
+}
+
 }
