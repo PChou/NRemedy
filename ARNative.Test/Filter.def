@@ -1,0 +1,27 @@
+char-set: UTF-8
+#
+#  File exported Tue Jan 15 15:35:50 2013
+#
+begin filter
+   name           : NRemedy_Test_Join_Form_OnSubmitPushToBase
+   timestamp      : 1357901837
+   owner          : parkerz.admin
+   last-changed   : parkerz.admin
+   filter-op      : 4
+   enable         : 1
+   filter-order   : 500
+   wk-conn-type   : 1
+   schema-name    : NRemedy_Test_Join_Form
+   export-version : 11
+   action {
+      push-field  : 0\1\@\25\NRemedy_Test_Regular_Form\1\536870915\0\4\6\102\1\@\1\@\1\536870915\0\1\4\
+      push-field  : 1\1\@\25\NRemedy_Test_Regular_Form\1\20000001\0\4\6\102\1\@\1\@\1\20000001\0\1\4\
+      push-field  : 2\1\@\25\NRemedy_Test_Regular_Form\1\8\0\4\6\102\1\@\1\@\1\8\0\1\4\
+   }
+   action {
+      push-field  : 0\1\@\28\NRemedy_Test_Regular_Another\1\536870915\0\4\6\102\1\@\1\@\1\536870915\0\1\4\
+      push-field  : 1\1\@\28\NRemedy_Test_Regular_Another\1\21000001\0\4\6\102\1\@\1\@\1\21000001\0\1\4\
+      push-field  : 2\1\@\28\NRemedy_Test_Regular_Another\1\8\0\4\6\102\1\@\1\@\1\536870913\0\1\4\
+   }
+   errhandler-opt : 0
+end

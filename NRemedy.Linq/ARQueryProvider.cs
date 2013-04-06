@@ -14,7 +14,7 @@ namespace NRemedy.Linq
     public class ARQueryProvider<T> : QueryProvider
     {
         protected object context;
-        protected object factory;
+        //protected object factory;
 
         //dictionary cache of model and property and id
         //Form
@@ -22,10 +22,10 @@ namespace NRemedy.Linq
             //property2 100002
         protected static Dictionary<string, Dictionary<string, uint>> _Cache;
 
-        public ARQueryProvider(object context,IARServerFactory factory)
+        public ARQueryProvider(object context)
         {
             this.context = context;
-            this.factory = factory;
+            //this.factory = factory;
             if(_Cache == null)
                 _Cache = new Dictionary<string, Dictionary<string, uint>>();
         }
@@ -67,7 +67,7 @@ namespace NRemedy.Linq
             //we should invoke GetEntryList
             if (!tr.HasGroupBy && !tr.HasStatictisc)
             {
-                ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context, (IARServerFactory)factory);
+                ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
                 //get select
                 List<uint> fieldIds = new List<uint>();
                 if(tr.HasSelect && tr.SelectedProperties.Count > 0){
@@ -125,7 +125,7 @@ namespace NRemedy.Linq
             }
             else if (tr.HasStatictisc && tr.StatictiscVerb == "Count")
             {
-                ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context, (IARServerFactory)factory);
+                ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
                 var list = proxy.GetListEntryStatictisc(
                     tr.Qulification.ToString(),
                     ARStatictisc.STAT_OP_COUNT,

@@ -13,13 +13,10 @@ namespace NRemedy.Linq
     /// <typeparam name="T">Model type</typeparam>
     public class ARSet<T> : Query<T>
     {
-        public ARSet(object context,IARServerFactory factory)
-            : base(new ARQueryProvider<T>(context, factory))
+        public ARSet(object context)
+            : base(new ARQueryProvider<T>(context))
         {
         }
 
-        public ARSet(object context) : this(context,new ARServerDefaultFactory())
-        {
-        }
     }
 }

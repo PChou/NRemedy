@@ -11,23 +11,38 @@ namespace NRemedy
 {
     /// <summary>
     /// AR登录会话对象，可以使用using关键字实例化，ARProxy和ARSet两大入口都需要该对象作为会话来访问AR
-    /// 
     /// </summary>
     public class ARLoginContext : IDisposable
     {
+        /// <summary>
+        /// AR Server IP
+        /// </summary>
         public string Server { get; set; }
 
+        /// <summary>
+        /// 操作API的用户名
+        /// </summary>
         public string User { get; set; }
 
+        /// <summary>
+        /// 操作API的用户名对应的密码
+        /// </summary>
         public string Password { get; set; }
 
+        /// <summary>
+        /// 登录时所用的认证字串
+        /// TODO:未实现
+        /// </summary>
         public string Authentication { get; set; }
 
         /// <summary>
-        /// 可使用该接口来访问BMC.ARSystem的API
+        /// 可使用该接口来访问原生封装的API
         /// </summary>
         public IARServer ServerInstance { get; set; }
 
+        /// <summary>
+        /// 登录状态
+        /// </summary>
         public ARLoginStatus LoginStatus { get; set; }
 
         /// <summary>
@@ -36,6 +51,7 @@ namespace NRemedy
         public ARLoginContext()
         { 
         }
+
         /// <summary>
         /// Constructor 2
         /// </summary>
@@ -44,19 +60,21 @@ namespace NRemedy
         /// <param name="password">Password</param>
         public ARLoginContext(string server, string user, string password)
         { 
-            Init(server,user,password,string.Empty);
+            Init(server,user,password,string.Empty,new ARServerDefaultFactory());
         }
 
         /// <summary>
-        /// Init the server
+        /// Constructor 3
         /// </summary>
         /// <param name="server">Server</param>
         /// <param name="user">User</param>
         /// <param name="password">Password</param>
-        public void Init(string server, string user, string password)
+        /// <param name="factory">IARServer的工厂接口</param>
+        public ARLoginContext(string server, string user, string password,IARServerFactory factory)
         {
-            Init(server,user,password,string.Empty);
+            Init(server, user, password, string.Empty,factory);
         }
+
 
         /// <summary>
         /// Init the server
@@ -65,27 +83,31 @@ namespace NRemedy
         /// <param name="user">User</param>
         /// <param name="password">Password</param>
         /// <param name="authentication">Authentication</param>
-        public void Init(string server, string user, string password, string authentication)
+        /// <param name="factory">IARServer的工厂接口</param>
+        public void Init(string server, string user, string password, string authentication, IARServerFactory factory)
         {
+            if (factory == null)
+                throw new ArgumentNullException("factory");
             Server = server;
             User = user;
             Password = password;
             Authentication = authentication;
+            ServerInstance = factory.CreateARServer();
+            Login();
         }
 
         /// <summary>
         /// LogIn IARServer
         /// </summary>
         /// <param name="server">ARServer，使用NRemedy内建的ARServer传入</param>
-        public void Login(IARServer server)
+        public void Login()
         {
-            if (LoginStatus != ARLoginStatus.Success || ServerInstance == null)
+            if (LoginStatus != ARLoginStatus.Success)
             {
                 try
                 {
-                    server.Login(Server, User, Password, Authentication);
+                    ServerInstance.Login(Server, User, Password, Authentication);
                     LoginStatus = ARLoginStatus.Success;
-                    ServerInstance = server;
                 }
                 catch (ARException are)
                 {

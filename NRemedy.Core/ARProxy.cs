@@ -38,24 +38,10 @@ namespace NRemedy
         /// <!--William Wang-->
         /// <param name="context">LoginContext</param>
         /// <param name="factory">Server Factory</param>
-        public ARProxy(ARLoginContext context, IARServerFactory factory)
+        public ARProxy(ARLoginContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (string.IsNullOrEmpty(context.Server)) throw new ArgumentNullException("context.Server");
-            if (string.IsNullOrEmpty(context.User)) throw new ArgumentNullException("context.User");
-            IARServer server = factory.CreateARServer();
-            context.Login(server);
             loginContext = context;
-        }
-
-        /// <summary>
-        /// Constructor 2
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="context">LoginContext</param>
-        public ARProxy(ARLoginContext context)
-            : this(context, new ARServerDefaultFactory())
-        {
         }
 
         /// <summary>

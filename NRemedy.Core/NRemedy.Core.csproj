@@ -107,8 +107,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ARNative\ARNative.vcxproj">
-      <Project>{A99BF76E-70D1-4C22-986C-BFA811C59F3C}</Project>
-      <Name>ARNative</Name>
+      <Project>{a99bf76e-70d1-4c22-986c-bfa811c59f3c}</Project>
+      <Name>ARNative %28Visual Studio 2010%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
