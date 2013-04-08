@@ -152,6 +152,7 @@
     <ClInclude Include="h\IntelligentARStruct.h" />
     <ClInclude Include="h\Util.h" />
     <ClInclude Include="h\_Free.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cpp\ARAttachment.cpp" />
@@ -167,6 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ARNative.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

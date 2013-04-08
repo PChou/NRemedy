@@ -8,34 +8,14 @@ namespace ARNative.Test
 {
     //this test is for GetListEntryStatictisc/GetEntryList
     [TestClass]
-    
-    public class ARSession_EntryList_Test : ARSession_CreateEntry_Test
+    public class ARSession_EntryList_Test : ARRegularConfig
     {
-        //#region Test Package
-        //protected static string TestRegularFormName = "NRemedy_Test_Regular_Form";
-        //protected static uint TestCharacterFieldId = 20000001;
-        //protected static uint TestIntFieldId = 20000002;
-        //protected static uint TestCharacterFieldIdNotExist = 745678897;
-
-        //protected static string TestCharacterFieldValue = "Hello Remedy";
-        //protected static string TestCharacterFieldValueChinese = "你好 Remedy";
-
-
-        //#endregion
-
-
-        //the following test need enviroment below
-        //Dictionary<String,int> assertTable = new Dictionary<string,int>();
-        //assertTable.Add("Hello Remedy",7);
-        //assertTable.Add("你好 RemedySet Something",2);
-        //assertTable.Add("你好 Remedy",9);
-        //all integer filed is 1
-
         /// <summary>
         /// perform env ready
         /// include clear all data in TestRegularFormName and add init data for statictisc
         /// </summary>
-        public ARSession_EntryList_Test()
+        [ClassInitialize]
+        public static void Initialize(TestContext context)
         {
             ARSession session = new ARSession();
             try
@@ -87,7 +67,6 @@ namespace ARNative.Test
 
 
         [TestMethod]
-        [TestCategory("MultiEntry")]
         public void GetEntryListStatictisc_count_noqulifier_nogroup_success()
         {
             ARSession session = new ARSession();

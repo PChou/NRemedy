@@ -8,32 +8,10 @@ namespace ARNative.Test
 {
     //this test is for CreateEntry,GetEntry,DeleteEntry,SetEntry
     [TestClass]
-    
-    public class ARSession_CreateEntry_Test : ARSession_Login_Test
+    public class ARSession_CreateEntry_Test : ARRegularConfig
     {
-        #region Test Package
-        protected static string TestRegularFormName = "NRemedy_Test_Regular_Form";
-        protected static uint TestCharacterFieldId = 20000001;
-        protected static uint TestIntFieldId = 20000002;
-        protected static uint TestDateTimeFieldId = 20000003;
-        protected static uint TestDateFieldId = 20000004;
-        protected static uint TestTimeFieldId = 2000005;
-        protected static uint TestRealFieldId = 20000006;
-        protected static uint TestDecimalFieldId = 20000007;
-
-        protected static uint TestCharacterFieldIdNotExist = 745678897;
-
-        protected static string TestCharacterFieldValue = "Hello Remedy";
-        protected static string TestCharacterFieldValueChinese = "你好 Remedy";
-
-
-        #endregion
-
-        /// <summary>
-        /// perform env ready
-        /// include clear all data in TestRegularFormName
-        /// </summary>
-        public ARSession_CreateEntry_Test()
+        [ClassInitialize]
+        public static void Initialize(TestContext context)
         {
             ARSession session = new ARSession();
             try

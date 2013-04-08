@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ARBaseForm.cs" />
+    <Compile Include="ARContextPool.cs" />
     <Compile Include="AREntryKeyAttribute.cs" />
     <Compile Include="ARFieldAttribute.cs" />
     <Compile Include="ARFormAttribute.cs" />
