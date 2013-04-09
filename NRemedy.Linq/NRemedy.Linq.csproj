@@ -61,7 +61,7 @@
       <Name>ARNative %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\NRemedy.Core\NRemedy.Core.csproj">
-      <Project>{F6A18DF3-700D-4619-B8FE-F4C786EE1B27}</Project>
+      <Project>{f6a18df3-700d-4619-b8fe-f4c786ee1b27}</Project>
       <Name>NRemedy.Core</Name>
     </ProjectReference>
   </ItemGroup>

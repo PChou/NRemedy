@@ -18,6 +18,11 @@ namespace NRemedy
     {
         protected ARSession SessionInstance;
 
+        protected void CheckSessionNull()
+        {
+            if (SessionInstance == null)
+                throw new Exception("ARSession has not been initialization.");
+        }
 
         public void Login(string server, string user, string password, string authentication)
         {
@@ -39,37 +44,32 @@ namespace NRemedy
 
         public string CreateEntry(string form, List<ARFieldValue> fieldValueList)
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             return SessionInstance.CreateEntry(form, fieldValueList.ToArray());
         }
 
         public void DeleteEntry(string form, string entryId, int deleteOption = 0)
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             SessionInstance.DeleteEntry(form, entryId.Split('|'));
         }
 
         public void SetEntry(string form, string entryId, List<ARFieldValue> fieldValueList)
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             SessionInstance.SetEntry(form, entryId.Split('|'), fieldValueList.ToArray());
         }
 
         public List<ARFieldValue> GetEntry(string form, string entryId, List<uint> FieldIdList)
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             return SessionInstance.GetEntry(form, entryId.Split('|'), FieldIdList.ToArray());
         }
 
 
         public List<AREntry> GetEntryList(string SchemaName, string Qulification, List<uint> FieldIdList, uint? StartIndex, uint? RetrieveCount, ref int totalMatch, List<ARSortInfo> SortInfo)
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             return SessionInstance.GetEntryList(
                 SchemaName,
                 Qulification,
@@ -89,8 +89,7 @@ namespace NRemedy
             List<UInt32> GroupbyFieldIdList
             )
         {
-            if (SessionInstance == null)
-                throw new Exception("ARSession has not been initialization.");
+            CheckSessionNull();
             if(ARStat != ARStatictisc.STAT_OP_COUNT && TargetFieldId == null)
                 throw new ArgumentNullException("TargetFieldId can not be null while ARStat is not COUNT");
 
@@ -98,6 +97,11 @@ namespace NRemedy
                 GroupbyFieldIdList == null ? null : GroupbyFieldIdList.ToArray()
                 );
  
+        }
+
+        public void SetImpersonatedUser(string user)
+        {
+            SessionInstance.SetImpersonatedUser(user);
         }
 
     }

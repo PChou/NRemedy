@@ -7,21 +7,8 @@ using System.Linq;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class JoinForm_Test : Login_Test
+    public class JoinForm_Test : RegularConfig
     {
-        //#region Test Package
-        //protected static string TestServer = "172.16.121.13";
-        //protected static string TestAdmin = "parkerz.admin";
-        //protected static string TestAdminPwd = "admin";
-
-        ////protected static string TestServer = "192.168.1.100";
-        ////protected static string TestAdmin = "Demo";
-        ////protected static string TestAdminPwd = "123";
-
-        //private static string TestChineseUser = "周平";
-        //private static string TestChineseUserPwd = "123";
-
-        //#endregion
 
         [TestMethod]
         public void ARProxy_Create_Entry_JoinForm_No_Assert()

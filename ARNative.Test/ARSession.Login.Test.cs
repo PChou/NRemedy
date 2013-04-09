@@ -16,7 +16,8 @@ namespace ARNative.Test
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
-
+            //clean first
+            Cleanup();
             //create a user which has login name with unicode character
             ARSession session = new ARSession();
             try

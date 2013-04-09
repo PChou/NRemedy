@@ -6,35 +6,20 @@ using ARNative;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class SingleEntry_Test : Login_Test
+    public class SingleEntry_Test : RegularConfig
     {
-        #region Test Package
-        protected static string TestRegularFormName = "NRemedy_Test_Regular_Form";
-        protected static uint TestCharacterFieldId = 20000001;
-        protected static uint TestIntFieldId = 20000002;
-        protected static uint TestDateTimeFieldId = 20000003;
-        protected static uint TestDateFieldId = 20000004;
-        protected static uint TestTimeFieldId = 2000005;
-        protected static uint TestRealFieldId = 20000006;
-        protected static uint TestDecimalFieldId = 20000007;
-
-        protected static uint TestCharacterFieldIdNotExist = 745678897;
-
-        protected static string TestCharacterFieldValue = "Hello Remedy";
-        protected static string TestCharacterFieldValueChinese = "你好 Remedy";
-
-
-        #endregion
 
         /// <summary>
         /// perform env ready
         /// include clear all data in TestRegularFormName
         /// </summary>
-        public SingleEntry_Test()
+        [ClassInitialize]
+        public static void Initialize(TestContext context2)
         {
-            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            ARLoginContext context = null;
             try
-            {
+            { 
+                context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
                 int totalMatch = -1;
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var models = proxy.GetEntryList(
@@ -231,6 +216,7 @@ namespace NRemedy.Core.Test
                 Assert.AreEqual(dt.Day, ((DateTime)model.DateTimeField).Day);
                 Assert.AreEqual(dt.Hour + 1, ((DateTime)model.DateTimeField).Hour);
                 Assert.AreEqual(dt.Minute + 1, ((DateTime)model.DateTimeField).Minute);
+                //the second may error in some case
                 Assert.AreEqual(dt.Second + 1, ((DateTime)model.DateTimeField).Second);
 
                 //Assert.AreEqual(dt + new TimeSpan(1, 1, 1), model.DateTimeField);

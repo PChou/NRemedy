@@ -7,35 +7,10 @@ using NRemedy.Linq;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class Linq_Test
+    public class Linq_Test : RegularConfig
     {
-
-        #region Test Package
-        protected static string TestServer = "172.16.121.13";
-        protected static string TestAdmin = "parkerz.admin";
-        protected static string TestAdminPwd = "admin";
-
-        //protected static string TestServer = "192.168.1.102";
-        //protected static string TestAdmin = "Demo";
-        //protected static string TestAdminPwd = "123";
-
-        protected static string TestRegularFormName = "NRemedy_Test_Regular_Form";
-        protected static uint TestCharacterFieldId = 20000001;
-        protected static uint TestIntFieldId = 20000002;
-        protected static uint TestDateTimeFieldId = 20000003;
-        protected static uint TestDateFieldId = 20000004;
-        protected static uint TestTimeFieldId = 2000005;
-        protected static uint TestRealFieldId = 20000006;
-        protected static uint TestDecimalFieldId = 20000007;
-
-        protected static uint TestCharacterFieldIdNotExist = 745678897;
-
-        protected static string TestCharacterFieldValue = "Hello Remedy";
-        protected static string TestCharacterFieldValueChinese = "你好 Remedy";
-
-        #endregion
-
-        public Linq_Test()
+        [ClassInitialize]
+        public static void Initialize(TestContext context2)
         {
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
@@ -809,28 +784,6 @@ namespace NRemedy.Core.Test
 
             }
         }
-
-        //[TestMethod]
-        //public void LinqQuery_single_Groupby_clause()
-        //{
-        //    using (ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd))
-        //    {
-        //        ARSet<NRemedy_Test_Regular_Form> set = new ARSet<NRemedy_Test_Regular_Form>(context);
-        //        var q = from s in set
-        //                group s by s.CharacterField into g
-        //                select g.Sum(s => s.IntegerField);
-
-        //        var q2 = from s in set
-        //                 group s by s.CharacterField into g
-        //                 select g;
-
-        //        foreach (var i in q2)
-        //        {
-
-
-        //        }
-        //    }
-        //}
 
         #endregion
     }

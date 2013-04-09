@@ -45,5 +45,7 @@ namespace NRemedy
             Nullable<UInt32> TargetFieldId,//Statictisc target fieldid, for count can be null,other can't be null
             List<UInt32> GroupbyFieldIdList //group by fieldid, null for no group
             );
+
+        void SetImpersonatedUser(string user);
     }
 }

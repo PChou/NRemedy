@@ -8,25 +8,9 @@ using System.Collections.Generic;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class BLOB_Test : Login_Test
+    public class BLOB_Test : RegularConfig
     {
-        //#region Test Package
-        //protected static string TestServer = "172.16.121.13";
-        //protected static string TestAdmin = "parkerz.admin";
-        //protected static string TestAdminPwd = "admin";
-
-        ////protected static string TestServer = "192.168.1.100";
-        ////protected static string TestAdmin = "Demo";
-        ////protected static string TestAdminPwd = "123";
-
-        //private static string TestChineseUser = "周平";
-        //private static string TestChineseUserPwd = "123";
-
-        //#endregion
-
-        protected static string TestRegularFormName = "NRemedy_Test_Regular_Form";
         protected static UInt32 attchFId = 20000011;
-        protected static uint TestCharacterFieldId = 20000001;
 
         [TestMethod]
         public void ARProxy_Create_Entry_with_Att_01()

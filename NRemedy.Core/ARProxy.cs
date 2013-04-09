@@ -53,6 +53,12 @@ namespace NRemedy
         {
             return loginContext.ServerInstance;
         }
+
+        public void SetImpersonatedUser(string user)
+        {
+            loginContext.ServerInstance.SetImpersonatedUser(user);
+        }
+
         /// <summary>
         /// Create AR Entry by model using default modelbinder 
         /// </summary>

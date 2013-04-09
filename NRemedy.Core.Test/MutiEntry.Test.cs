@@ -7,23 +7,11 @@ using ARNative;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class MutiEntry_Test : SingleEntry_Test
+    public class MutiEntry_Test : RegularConfig
     {
-        //#region Test Package
-        //protected static string TestServer = "172.16.121.13";
-        //protected static string TestAdmin = "parkerz.admin";
-        //protected static string TestAdminPwd = "admin";
 
-        ////protected static string TestServer = "192.168.1.100";
-        ////protected static string TestAdmin = "Demo";
-        ////protected static string TestAdminPwd = "123";
-
-        //private static string TestChineseUser = "周平";
-        //private static string TestChineseUserPwd = "123";
-
-        //#endregion
-
-        public MutiEntry_Test()
+        [ClassInitialize]
+        public static void Initialize(TestContext context2)
         {
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
