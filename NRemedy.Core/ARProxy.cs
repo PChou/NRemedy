@@ -91,220 +91,73 @@ namespace NRemedy
             }
         }
 
-
-
-        /// <summary>
-        /// Create list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void CreateListEntry(IList<T> entries, IModelBinder<T> binder,  bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (binder == null)
-        //        throw new ArgumentNullException("binder");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-        //            foreach (T item in entries)
-        //            {
-        //                CreateEntry(item, binder, GetFormName, 2);
-        //            }
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Create list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void CreateListEntry(IList<T> entries, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    CreateListEntry(entries, DefaultFactory.CreateModelBinder<T>(), GetFormName, isEnableTransaction);
-        //}
-
         /// <summary>
         /// delete entry by entryid
         /// </summary>
-        /// <param name="EntryId"></param>
-        public void DeleteEntry(string formName,string EntryId)
+        /// <param name="EntryId">entry id for the model</param>
+        public void DeleteEntry(string EntryId)
         {
-            if (string.IsNullOrEmpty(formName))
-                throw new Exception("formName must not be null or empty.");
             if (string.IsNullOrEmpty(EntryId))
                 return;
-            lock (lockObject)
-            {
-                loginContext.ServerInstance.DeleteEntry(formName, EntryId, 0);
-            }
+            string formName = GetFormName(typeof(T));
+            if (string.IsNullOrEmpty(formName))
+                throw new Exception("formName must not be null or empty.");
+            loginContext.ServerInstance.DeleteEntry(formName, EntryId, 0);
         }
 
-
         /// <summary>
-        /// Delete AR Entry by model, and indicate modelbinder、FormNameUtil
+        /// Delete AR Entry by single model
         /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
-        public void DeleteEntry(T entry)
+        /// <param name="entry">entry model to be delete, must have not null entryid property</param>
+        /// <param name="fnGetEntryId">delegate function to get entryid from model</param>
+        public void DeleteEntry(T entry,Func<T,string> fnGetEntryId)
         {
             if (entry == null)
                 throw new ArgumentNullException("entry");
+            if (fnGetEntryId == null)
+                throw new ArgumentNullException("fnGetEntryId");
             if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
                 throw new UnLoginException();
-            string formName = GetFormName(typeof(T));
-            DeleteEntry(formName, GetEntryId(entry));
+            
+            DeleteEntry(fnGetEntryId(entry));
         }
 
+        /// <summary>
+        /// Delete AR Entry by single model
+        /// </summary>
+        /// <param name="entry">entry model to be delete, must have not null entryid property</param>
+        public void DeleteEntry(T entry)
+        {
+            DeleteEntry(entry, GetEntryId);
+        }
 
         /// <summary>
-        /// Delete list entry
+        /// Delete AR Entry by qulification string
         /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="getFormName">getFormName</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void DeleteListEntry(IList<T> entries, ARGetFormNameDelegate getFormName, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-        //            foreach (T item in entries)
-        //            {
-        //                DeleteEntry(item, GetFormName, 3);
-        //            }
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-        //}
+        /// <param name="qualification">qulification string , null for all match and all delete</param>
+        /// <param name="fnGetEntryId">delegate function to get entryid from model</param>
+        public void DeleteEntriesByQuery(string qualification, Func<T, string> fnGetEntryId)
+        {
+            //at least query RequestID
+            List<uint> f = new List<uint>() { 1u };
+            int total = -1;
+            var list = this.GetEntryList(qualification, f, null, null, ref total, null);
+            if (list != null){
+                foreach (var l in list){
+                    if (l == null) continue;
+                    this.DeleteEntry(l, fnGetEntryId);
+                }
+            }
+        }
 
         /// <summary>
-        /// Delete list entry
+        /// Delete AR Entry by qulification string using default uncached Reflect method to get entryid from every model
         /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void DeleteListEntry(IList<T> entries, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    DeleteListEntry(entries, GetFormName, isEnableTransaction);
-        //}
-
-        /// <summary>
-        /// Delete entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="getFormName">getFormName</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void DeleteEntryByQuery(string qualification, ARGetFormNameDelegate getFormName,
-        //    bool isEnableTransaction = false, bool useLocale = false)
-        //{
-        //    if (String.IsNullOrEmpty(qualification))
-        //        throw new ArgumentNullException("qualification");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-
-        //            foreach (EntryDescription item in loginContext.ServerInstance.GetListEntry(getFormName(typeof(T)), qualification))
-        //            {
-        //                EntryDescription des = (EntryDescription)item;
-        //                loginContext.ServerInstance.DeleteEntry(getFormName(typeof(T)), des.EntryId);
-        //            }
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-
-        //}
-
-
-        /// <summary>
-        /// Delete entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void DeleteEntryByQuery(string qualification, bool isEnableTransaction = false, bool useLocale = false)
-        //{
-        //    DeleteEntryByQuery(qualification, GetFormName, isEnableTransaction, useLocale);
-        //}
+        /// <param name="qualification">qulification string , null for all match and all delete</param>
+        public void DeleteEntriesByQuery(string qualification)
+        {
+            DeleteEntriesByQuery(qualification, GetEntryId);
+        }
 
         /// <summary>
         /// Set AR Entry by model

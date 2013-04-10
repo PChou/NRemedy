@@ -10,12 +10,12 @@ namespace NRemedy.Linq
     /// translate result which is returned by the QueryVisitor 
     /// which can be access from the API invoke 
     /// </summary>
-    public class TranslateResult
+    public class TranslateResult : ConditionResult
     {
         //indicate if the linq expression contains where clause
         public bool HasWhere { get; set; }
-        //build result of qulification for where clause
-        public StringBuilder Qulification { get; set; }
+        //build result of qulification for where clause,inherit from base class
+        //public StringBuilder Qulification { get; set; }
 
         //indicate if the linq expression contains select clause
         public bool HasSelect { get; set; }

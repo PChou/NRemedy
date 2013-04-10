@@ -95,7 +95,7 @@ namespace NRemedy.Core.Test
                 Assert.IsNull(model);
 
                 //DeleteAgain
-                proxy.DeleteEntry(TestRegularFormName, entryId);
+                proxy.DeleteEntry(entryId);
             }
             catch (ARException ex)
             {

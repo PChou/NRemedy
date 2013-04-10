@@ -73,9 +73,19 @@ namespace NRemedy.Linq
                 {
                     return e;
                 }
-                LambdaExpression lambda = Expression.Lambda(e);
-                Delegate fn = lambda.Compile();
-                return Expression.Constant(fn.DynamicInvoke(null), e.Type);
+                //sometimes some lambdaExpression will be Evaluatable,
+                //such as m => true
+                if (e is LambdaExpression)
+                {
+                    return e;
+                }
+                else
+                {
+                    LambdaExpression lambda = Expression.Lambda(e);
+                    Delegate fn = lambda.Compile();
+                    return Expression.Constant(fn.DynamicInvoke(null), e.Type);
+                }
+                
             }
         }
 
