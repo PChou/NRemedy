@@ -22,5 +22,7 @@ namespace ARNative.Test
         protected static string TestCharacterFieldValueChinese = "你好 Remedy";
 
         protected static UInt32 attchFId = 20000011;
+
+        protected static uint TestRadioFieldId = 20000009;
     }
 }

@@ -466,5 +466,78 @@ namespace ARNative.Test
             }
             session.LogOut();
         }
+
+
+        [TestMethod]
+        public void CreateEntry_datatype_Enum_Status_NULL()
+        {
+            ARSession session = new ARSession();
+            try
+            {
+                session.Login(TestServer, TestAdmin, TestAdminPwd);
+                //Create
+                List<ARFieldValue> valuelist = new List<ARFieldValue>();
+                valuelist.Add(new ARFieldValue(TestRadioFieldId, null, ARDataType.DATA_TYPE_ENUM));//set null for the status character
+                string entryid = session.CreateEntry(TestRegularFormName, valuelist.ToArray());
+
+                //Get for Assert
+                List<string> entryIds = new List<string>();
+                entryIds.Add(entryid);
+                List<uint> fieldIds = new List<uint>();
+                fieldIds.Add(TestRadioFieldId);
+                List<ARFieldValue> Entry = session.GetEntry(TestRegularFormName, entryIds.ToArray(), fieldIds.ToArray());
+                Assert.AreEqual(1, Entry.Count);
+                Assert.AreEqual(ARDataType.DATA_TYPE_NULL, Entry[0].DataType);
+                Assert.AreEqual(TestRadioFieldId, Entry[0].FieldId);
+                Assert.AreEqual(null, Entry[0].Value);
+            }
+            catch (ARException ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            session.LogOut();
+        }
+
+        [TestMethod]
+        public void SetEntry_datatype_Enum_Status_NULL()
+        {
+            ARSession session = new ARSession();
+            try
+            {
+                session.Login(TestServer, TestAdmin, TestAdminPwd);
+                //Create
+                List<ARFieldValue> valuelist = new List<ARFieldValue>();
+                valuelist.Add(new ARFieldValue(TestRadioFieldId, 1, ARDataType.DATA_TYPE_ENUM));
+                string entryid = session.CreateEntry(TestRegularFormName, valuelist.ToArray());
+
+                //Get for Assert
+                List<string> entryIds = new List<string>();
+                entryIds.Add(entryid);
+                List<uint> fieldIds = new List<uint>();
+                fieldIds.Add(TestRadioFieldId);
+                List<ARFieldValue> Entry = session.GetEntry(TestRegularFormName, entryIds.ToArray(), fieldIds.ToArray());
+                Assert.AreEqual(1, Entry.Count);
+                Assert.AreEqual(ARDataType.DATA_TYPE_ENUM, Entry[0].DataType);
+                Assert.AreEqual(TestRadioFieldId, Entry[0].FieldId);
+                Assert.AreEqual((UInt32)1, Entry[0].Value);
+
+                //Set
+                valuelist.Clear();
+                valuelist.Add(new ARFieldValue(TestRadioFieldId, null, ARDataType.DATA_TYPE_ENUM));
+                session.SetEntry(TestRegularFormName, entryIds.ToArray(), valuelist.ToArray());
+
+                //Get for Assert
+                Entry = session.GetEntry(TestRegularFormName, entryIds.ToArray(), fieldIds.ToArray());
+                Assert.AreEqual(1, Entry.Count);
+                Assert.AreEqual(ARDataType.DATA_TYPE_NULL, Entry[0].DataType);
+                Assert.AreEqual(TestRadioFieldId, Entry[0].FieldId);
+                Assert.AreEqual(null, Entry[0].Value);
+            }
+            catch (ARException ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            session.LogOut();
+        }
     }
 }

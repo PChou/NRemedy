@@ -20,5 +20,7 @@ namespace NRemedy.Core.Test
 
         protected static string TestCharacterFieldValue = "Hello Remedy";
         protected static string TestCharacterFieldValueChinese = "你好 Remedy";
+
+        protected static uint TestRadioFieldId = 20000009;
     }
 }

@@ -31,6 +31,7 @@ namespace NRemedy.Core.Test
 
                 NRemedy_Test_Regular_Form newentry = new NRemedy_Test_Regular_Form();
                 newentry.CharacterField = TestCharacterFieldValue;
+                newentry.Radio_Button_Field = null;
                 newentry.IntegerField = 1;
                 for (int i = 0; i < 7; i++)
                 {
@@ -585,6 +586,7 @@ namespace NRemedy.Core.Test
                 foreach (var entry in q)
                 {
                     Assert.AreEqual(TestCharacterFieldValue, entry.CharacterField);
+                    Assert.AreEqual(null, entry.Radio_Button_Field);
                     count++;
                 }
                 Assert.AreEqual(7, count);

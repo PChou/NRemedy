@@ -30,6 +30,7 @@ namespace NRemedy
         private Double? _RealNumberField;
         private Decimal? _DecimalNumberField;
         private ARAttachment _Attachment;
+        private Nullable<Radio_Button_Field_Enum> _Radio_Button_Field;
         [NRemedy.ARFieldAttribute(DatabaseID = 1u, DatabaseName = "Request ID", DataType = ARType.CharacterField)]
         [NRemedy.AREntryKey]
         public String RequestID
@@ -163,6 +164,20 @@ namespace NRemedy
             }
         }
 
+        [NRemedy.ARFieldAttribute(DatabaseID = 20000009u, DatabaseName = "Radio Button Field", DataType = ARType.SelectionField)]
+        public Nullable<Radio_Button_Field_Enum> Radio_Button_Field
+        {
+            get
+            {
+                return this._Radio_Button_Field;
+            }
+            set
+            {
+                this._Radio_Button_Field = value;
+                this.OnPropertyChanged("Radio_Button_Field");
+            }
+        }
+
         public enum Status_Enum
         {
             New = 0,
@@ -170,6 +185,12 @@ namespace NRemedy
             Fixed = 2,
             Rejected = 3,
             Closed = 4,
+        }
+
+        public enum Radio_Button_Field_Enum
+        {
+            First = 0,
+            Second = 1
         }
     }
 }

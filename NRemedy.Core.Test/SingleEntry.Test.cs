@@ -344,5 +344,46 @@ namespace NRemedy.Core.Test
                 context.Dispose();
             }
         }
+
+        [TestMethod]
+        public void ARProxy_CreateEntry_datatype_Enum_NULL()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                    Radio_Button_Field = null//
+                });
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                Assert.AreEqual(null, model.RealNumberField);//
+
+
+                model.Status = NRemedy_Test_Regular_Form.Status_Enum.Rejected;
+                model.Radio_Button_Field = NRemedy_Test_Regular_Form.Radio_Button_Field_Enum.First;//
+                proxy.SetEntry(model);
+
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Rejected, model.Status);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Radio_Button_Field_Enum.First, model.Radio_Button_Field);//
+                //Assert.AreEqual(dt + new TimeSpan(1, 1, 1), model.DateTimeField);
+                Assert.AreEqual("should not changed", model.CharacterField);
+
+
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
     }
 }
