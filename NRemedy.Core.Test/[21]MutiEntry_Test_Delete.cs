@@ -1,15 +1,14 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NRemedy.Core;
 using System.Linq;
 using NRemedy.Linq;
-using ARNative;
 
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class ARProxyLambdaExtension_Delete_Test : RegularConfig
+    public class MutiEntry_Test_Delete : RegularConfig
     {
+
         [ClassInitialize]
         public static void Initialize(TestContext context2)
         {
@@ -32,7 +31,6 @@ namespace NRemedy.Core.Test
 
                 NRemedy_Test_Regular_Form newentry = new NRemedy_Test_Regular_Form();
                 newentry.CharacterField = TestCharacterFieldValue;
-                newentry.Radio_Button_Field = null;
                 newentry.IntegerField = 1;
                 for (int i = 0; i < 7; i++)
                 {
@@ -77,12 +75,13 @@ namespace NRemedy.Core.Test
                         select s.RequestID;
                 Assert.AreEqual(7, q.Count());
 
-                proxy.DeleteEntryList(m => m.CharacterField == TestCharacterFieldValue);
+                proxy.DeleteEntryList("'Character Field' = \"" + TestCharacterFieldValue + "\"");
 
                 //after delete the count should be 0
                 Assert.AreEqual(0, q.Count());
             }
-            finally {
+            finally
+            {
                 if (context != null)
                     context.Dispose();
             }
@@ -102,7 +101,7 @@ namespace NRemedy.Core.Test
                         select s.RequestID;
                 Assert.AreEqual(2, q.Count());
 
-                proxy.DeleteEntryList(m => m.CharacterField.Contains(TestCharacterFieldValueChinese + "%") && m.IntegerField == 3);
+                proxy.DeleteEntryList("'Character Field' LIKE \"" + TestCharacterFieldValueChinese + "%\" AND 'Integer Field' = 3");
 
                 //after delete the count should be 0
                 Assert.AreEqual(0, q.Count());
@@ -145,7 +144,7 @@ namespace NRemedy.Core.Test
                 int count = q.Count();
                 Assert.IsTrue(count > 0);
 
-                proxy.DeleteEntryList(m => true);
+                proxy.DeleteEntryList(null);
 
                 //after delete the count should be 0
                 Assert.AreEqual(0, q.Count());
@@ -156,7 +155,5 @@ namespace NRemedy.Core.Test
                     context.Dispose();
             }
         }
-
-
     }
 }

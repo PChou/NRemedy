@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NRemedy;
 using ARNative;
+using System.Collections.Generic;
 
 namespace NRemedy.Core.Test
 {
@@ -20,14 +21,14 @@ namespace NRemedy.Core.Test
             try
             { 
                 context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
-                int totalMatch = -1;
+                //int totalMatch = -1;
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var models = proxy.GetEntryList(
                     null,
+                    new string[]{ "RequestID" },
                     null,
+                    0,
                     null,
-                    null,
-                    ref totalMatch,
                     null);
                 foreach (var model in models)
                 {
@@ -375,6 +376,201 @@ namespace NRemedy.Core.Test
                 Assert.AreEqual("should not changed", model.CharacterField);
 
 
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+
+        [TestMethod]
+        public void ARProxy_CreateEntry_from_delegation()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                },
+                //define a delegate only save status
+                delegate(System.Reflection.PropertyInfo pi)
+                {
+                    return pi.Name == "Status";
+                }
+                );
+                
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                Assert.AreEqual(null, null);//
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void ARProxy_DeleteEntry_By_EntryId()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                }
+                );
+
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                
+                //delete
+                proxy.DeleteEntry(entryId);
+                NRemedy_Test_Regular_Form model2 = proxy.GetEntry(entryId);
+                Assert.IsNull(model2);
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void ARProxy_SetEntry_By_Properties_Str()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                    DecimalNumberField = 3.13m,
+                    IntegerField = 10
+                }
+                );
+
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
+                //Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                model.CharacterField = "don not want changed";
+                model.Status = NRemedy_Test_Regular_Form.Status_Enum.New;
+                model.DecimalNumberField = 3.14m;
+                model.IntegerField = 11;
+
+                //set
+                proxy.SetEntry(model, new string[] { 
+                    "Status",
+                    "DecimalNumberField",
+                    "IntegerField"
+                });
+
+                NRemedy_Test_Regular_Form model2 = proxy.GetEntry(entryId);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.New, model2.Status);
+                Assert.AreEqual(3.14m, model2.DecimalNumberField);
+                Assert.AreEqual(11, model2.IntegerField);
+                Assert.AreEqual("should not changed", model2.CharacterField);
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+
+        [TestMethod]
+        public void ARProxy_GetEntry_By_Properties_Str()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                    DecimalNumberField = 3.14m,
+                    IntegerField = 10
+                }
+                );
+
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId,new string[]{
+                    "Status",
+                    "DecimalNumberField"
+                });
+
+                Assert.IsNull(model.CharacterField);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                Assert.AreEqual(3.14m, model.DecimalNumberField);
+                Assert.AreEqual(null, model.IntegerField);
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        [TestMethod]
+        public void ARProxy_GetEntry_By_Properties_Ids()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                    DecimalNumberField = 3.14m,
+                    IntegerField = 10
+                }
+                );
+
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId, new List<uint>{
+                    7u,
+                    TestDecimalFieldId
+                });
+
+                Assert.IsNull(model.CharacterField);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                Assert.AreEqual(3.14m, model.DecimalNumberField);
+                Assert.AreEqual(null, model.IntegerField);
             }
             catch (Exception ex)
             {

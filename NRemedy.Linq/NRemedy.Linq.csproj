@@ -48,6 +48,7 @@
     <Compile Include="ConditionResult.cs" />
     <Compile Include="Enumerator.cs" />
     <Compile Include="Evaluator.cs" />
+    <Compile Include="ExpressionTypeMetaProvider.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Groupor.cs" />
     <Compile Include="QueryableEx.cs" />

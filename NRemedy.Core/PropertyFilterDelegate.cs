@@ -16,4 +16,6 @@ namespace NRemedy
     /// <param name="pi">property info</param>
     /// <returns>true : pass; false : block</returns>
     public delegate bool PropertyFilterDelegate(ARBaseForm model,PropertyInfo pi);
+
+    public delegate bool PropertyFilterDelegate2(PropertyInfo pi);
 }

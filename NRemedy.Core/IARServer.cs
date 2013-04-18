@@ -32,7 +32,8 @@ namespace NRemedy
 				String SchemaName,//form name
 				String Qulification,//qulification,null for all
 				List<UInt32> FieldIdList,//target fieldids,null for only request id
-				Nullable<UInt32> StartIndex,//page start,null for 0
+				//Nullable<UInt32> StartIndex,//page start,null for 0
+                UInt32 StartIndex,//query start index,0 base
 				Nullable<UInt32> RetrieveCount,//page size,null for all matched
 				ref Int32 totalMatch,//total size,-1 will not cause the count, it may more efficient ,see page 281
 				List<ARSortInfo> SortInfo //sort info,null for no sort

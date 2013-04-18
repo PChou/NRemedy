@@ -1,14 +1,12 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NRemedy.Core;
 using System.Linq;
 using NRemedy.Linq;
-using ARNative;
 
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class ARProxyLambdaExtension_Delete_Test : RegularConfig
+    public class MutiEntry_Test_Set : RegularConfig
     {
         [ClassInitialize]
         public static void Initialize(TestContext context2)
@@ -32,7 +30,6 @@ namespace NRemedy.Core.Test
 
                 NRemedy_Test_Regular_Form newentry = new NRemedy_Test_Regular_Form();
                 newentry.CharacterField = TestCharacterFieldValue;
-                newentry.Radio_Button_Field = null;
                 newentry.IntegerField = 1;
                 for (int i = 0; i < 7; i++)
                 {
@@ -64,7 +61,7 @@ namespace NRemedy.Core.Test
         }
 
         [TestMethod]
-        public void DeleteEntries_single_condition()
+        public void SetEntries_single_condition()
         {
             ARLoginContext context = null;
             try
@@ -74,38 +71,18 @@ namespace NRemedy.Core.Test
                 ARSet<NRemedy_Test_Regular_Form> set = new ARSet<NRemedy_Test_Regular_Form>(context);
                 var q = from s in set
                         where s.CharacterField == TestCharacterFieldValue
-                        select s.RequestID;
+                        select s.IntegerField;
                 Assert.AreEqual(7, q.Count());
 
-                proxy.DeleteEntryList(m => m.CharacterField == TestCharacterFieldValue);
+                NRemedy_Test_Regular_Form model = new NRemedy_Test_Regular_Form();
+                model.IntegerField = 10;//original is 1
 
-                //after delete the count should be 0
-                Assert.AreEqual(0, q.Count());
-            }
-            finally {
-                if (context != null)
-                    context.Dispose();
-            }
-        }
+                proxy.SetEntryList("'Character Field' = \"" + TestCharacterFieldValue + "\"", model, new string[] { "IntegerField" });
 
-        [TestMethod]
-        public void DeleteEntries_string_contains_condition()
-        {
-            ARLoginContext context = null;
-            try
-            {
-                context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
-                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
-                ARSet<NRemedy_Test_Regular_Form> set = new ARSet<NRemedy_Test_Regular_Form>(context);
-                var q = from s in set
-                        where s.CharacterField.Contains(TestCharacterFieldValueChinese + "%") && s.IntegerField == 3
-                        select s.RequestID;
-                Assert.AreEqual(2, q.Count());
-
-                proxy.DeleteEntryList(m => m.CharacterField.Contains(TestCharacterFieldValueChinese + "%") && m.IntegerField == 3);
-
-                //after delete the count should be 0
-                Assert.AreEqual(0, q.Count());
+                foreach (var i in q)
+                {
+                    Assert.AreEqual(10, i);
+                }
             }
             finally
             {
@@ -115,7 +92,7 @@ namespace NRemedy.Core.Test
         }
 
         [TestMethod]
-        public void DeleteEntries_constant_condition_true()
+        public void SetEntries_All()
         {
             ARLoginContext context = null;
             try
@@ -141,14 +118,21 @@ namespace NRemedy.Core.Test
 
                 ARSet<NRemedy_Test_Regular_Form> set = new ARSet<NRemedy_Test_Regular_Form>(context);
                 var q = from s in set
-                        select s.RequestID;
+                        select s.IntegerField;
+
                 int count = q.Count();
                 Assert.IsTrue(count > 0);
 
-                proxy.DeleteEntryList(m => true);
+                NRemedy_Test_Regular_Form model = new NRemedy_Test_Regular_Form();
+                model.IntegerField = 110;//original is 1
+
+                proxy.SetEntryList(null,model,new string[] { "IntegerField" });
 
                 //after delete the count should be 0
-                Assert.AreEqual(0, q.Count());
+                foreach(var i in q)
+                {
+                    Assert.AreEqual(110, i);
+                }
             }
             finally
             {
@@ -156,7 +140,5 @@ namespace NRemedy.Core.Test
                     context.Dispose();
             }
         }
-
-
     }
 }
