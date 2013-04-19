@@ -86,15 +86,17 @@
     <Compile Include="ARServerDefaultFactory.cs" />
     <Compile Include="ARType.cs" />
     <Compile Include="BMC.ARSystem.cs" />
-    <Compile Include="DefaultModelBinderFactory.cs" />
+    <Compile Include="DefaultTypeMetaProvider.cs" />
     <Compile Include="DuplicateIDException.cs" />
     <Compile Include="IARServer.cs" />
     <Compile Include="IARServerFactory.cs" />
-    <Compile Include="IModelBinder.cs" />
-    <Compile Include="ModelBinder.cs" />
+    <Compile Include="ITypeMetaProvider.cs" />
     <Compile Include="ModelBinderAccessLevel.cs" />
+    <Compile Include="ModelMeteData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyAndField.cs" />
     <Compile Include="PropertyFilterDelegate.cs" />
+    <Compile Include="TotalMatch.cs" />
     <Compile Include="UnLoginException.cs" />
   </ItemGroup>
   <ItemGroup>

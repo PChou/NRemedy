@@ -12,37 +12,37 @@ using System.Reflection;
 
 namespace NRemedy
 {
-    /// <summary>
-    /// ARProxy
-    /// </summary>
-    /// <example>
-    ///string ARServer = ConfigurationManager.AppSettings["ARServer"];
-    ///string ARUid = ConfigurationManager.AppSettings["ARUid"];
-    ///string ARPwd = ConfigurationManager.AppSettings["ARPwd"];
-    ///ARLoginContext context = new ARLoginContext(ARServer, ARUid, ARPwd);
-    ///ARProxy&lt;Rack&gt;  rack = new ARProxy&lt;Rack&gt; (context);
-    ///string querystr = string.Format("\'InstanceId\'=\"{0}\"", instanceId.Text);
-    ///Rack ra = rack.GetEntryByQuery(querystr)[0];
-    ///ra.Loaction="rack_Location"
-    ///rack.SetEntry(ra); 
-    /// </example>
-    /// <typeparam name="T">Type inherit from ARBaseForm</typeparam>
-    public class ARProxy<T>
+    public class ARProxy<T> where T : ARBaseForm
     {
         protected ARLoginContext loginContext;
+        public ITypeMetaProvider<T> _metaProvider;
+
         private static Object lockObject = new Object(); //保证对同一个Form，只有一种操作。
 
         /// <summary>
         /// Constructor 1 
         /// </summary>
-        /// <!--William Wang-->
         /// <param name="context">LoginContext</param>
-        /// <param name="factory">Server Factory</param>
         public ARProxy(ARLoginContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
             loginContext = context;
+            _metaProvider = new DefaultTypeMetaProvider<T>();
         }
+
+        /// <summary>
+        /// Constructor 1 
+        /// </summary>
+        /// <param name="context">LoginContext</param>
+        /// <param name="metaProvider">provider for model metadata</param>
+        public ARProxy(ARLoginContext context,ITypeMetaProvider<T> metaProvider)
+        {
+            if (context == null) throw new ArgumentNullException("context");
+            if (metaProvider == null) throw new ArgumentNullException("metaProvider");
+            loginContext = context;
+            _metaProvider = metaProvider;
+        }
+
 
         /// <summary>
         /// return IARServer interface
@@ -59,538 +59,568 @@ namespace NRemedy
             loginContext.ServerInstance.SetImpersonatedUser(user);
         }
 
-        /// <summary>
-        /// Create AR Entry by model using default modelbinder 
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
-        public string CreateEntry(T entry)
-        {
-            return CreateEntry(entry, DefaultFactory.CreateModelBinder<T>());
-        }
+        #region create entry function
 
-        /// <summary>
-        /// Create AR Entry by model, and indicate modelbinder、FormNameUtil
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="getFormName">getFormName Delegate</param>
-        public string CreateEntry(T entry, IModelBinder<T> binder)
+        //formName
+        //Model
+        //(Properties && Model)
+        //                  FieldId
+        //                  DataType
+        //                  Getter null|not null
+        public string CreateEntry(ModelMeteData<T> MetaData)
         {
-            if (entry == null)
-                throw new ArgumentNullException("entry");
-            if (binder == null)
-                throw new ArgumentNullException("binder");
+            if (MetaData == null)
+                throw new ArgumentNullException("MetaData");
+            if (string.IsNullOrEmpty(MetaData.FormName))
+                throw new ArgumentException("MetaData.FormName must provider valid value.");
+            if (MetaData.Model == null)
+                throw new ArgumentException("MetaData.Model must provider valid value.");
             if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
                 throw new UnLoginException();
-            string formName = GetFormName(typeof(T));
-            lock (lockObject)
+
+            if (MetaData.Properties == null || MetaData.Properties.Count == 0)
+                return null;
+            //use MetaData.Properties to build fvl
+            List<ARFieldValue> fvl = new List<ARFieldValue>();
+            foreach(PropertyAndField<T> pf in MetaData.Properties)
             {
-                return loginContext.ServerInstance.CreateEntry(formName, binder.UnBind(entry));
+                ARFieldValue fv = new ARFieldValue();
+                fv.FieldId = pf.DatabaseId;
+                fv.DataType = (ARDataType)pf.DatabaseType;
+                fv.Value = pf.GetValueC(MetaData.Model);
+                fvl.Add(fv);
             }
+
+            return loginContext.ServerInstance.CreateEntry(MetaData.FormName, fvl);
+ 
         }
 
-
-
-        /// <summary>
-        /// Create list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void CreateListEntry(IList<T> entries, IModelBinder<T> binder,  bool isEnableTransaction = false)
+        //public string CreateEntry(List<ARFieldValue> FieldValueList)
         //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (binder == null)
-        //        throw new ArgumentNullException("binder");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-        //            foreach (T item in entries)
-        //            {
-        //                CreateEntry(item, binder, GetFormName, 2);
-        //            }
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
+        //    string formName = _metaProvider.GetFormNameFromModelType(typeof(T));
+        //    ModelMeteData<T> metaData = new ModelMeteData<T>();
+        //    metaData.FieldValeList = FieldValueList;
+        //    metaData.FormName = formName;
+        //    return CreateEntry(metaData);
         //}
 
-        /// <summary>
-        /// Create list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void CreateListEntry(IList<T> entries, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    CreateListEntry(entries, DefaultFactory.CreateModelBinder<T>(), GetFormName, isEnableTransaction);
-        //}
+        public string CreateEntry(T entry,PropertyFilterDelegate2 filter)
+        {
+            if (entry == null) throw new ArgumentNullException("entry");
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            metaData.FormName = _metaProvider.GetFormNameFromModelType();
+            metaData.Model = entry;
+            var props = _metaProvider.GetPropertyInfoes(
+                BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance,
+                filter
+                );
+            metaData.Properties = new List<PropertyAndField<T>>();
+
+            foreach (var p in props){
+                if ((p.AccessLevel & ModelBinderAccessLevel.OnlyUnBind) == ModelBinderAccessLevel.OnlyUnBind){
+                    metaData.Properties.Add(p);
+                }
+            }
+
+            return CreateEntry(metaData);
+
+        }
+
+        public string CreateEntry(T entry)
+        {
+            return CreateEntry(entry, null);
+        }
+
+        #endregion
+
+        #region delete entry function
+
+        //formName
+        //entryid
+        public void DeleteEntry(ModelMeteData<T> MetaData)
+        {
+            if (MetaData == null)
+                throw new ArgumentNullException("MetaData");
+            if (string.IsNullOrEmpty(MetaData.EntryId))
+                throw new ArgumentException("MetaData.EntryId must provider valid value.");
+            if (string.IsNullOrEmpty(MetaData.FormName))
+                throw new ArgumentException("MetaData.FormName must provider valid value.");
+            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
+                throw new UnLoginException();
+            loginContext.ServerInstance.DeleteEntry(MetaData.FormName, MetaData.EntryId, 0);
+        }
 
         /// <summary>
         /// delete entry by entryid
         /// </summary>
-        /// <param name="EntryId"></param>
-        public void DeleteEntry(string formName,string EntryId)
+        /// <param name="EntryId">entry id for the model</param>
+        public void DeleteEntry(string EntryId)
         {
-            if (string.IsNullOrEmpty(formName))
-                throw new Exception("formName must not be null or empty.");
-            if (string.IsNullOrEmpty(EntryId))
-                return;
-            lock (lockObject)
-            {
-                loginContext.ServerInstance.DeleteEntry(formName, EntryId, 0);
-            }
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.EntryId = EntryId;
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            DeleteEntry(meta);
         }
 
-
         /// <summary>
-        /// Delete AR Entry by model, and indicate modelbinder、FormNameUtil
+        /// Delete AR Entry by single model
         /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
+        /// <param name="entry">entry model to be delete, must have not null entryid property</param>
         public void DeleteEntry(T entry)
         {
             if (entry == null)
                 throw new ArgumentNullException("entry");
-            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-                throw new UnLoginException();
-            string formName = GetFormName(typeof(T));
-            DeleteEntry(formName, GetEntryId(entry));
+            var entryIdProp = _metaProvider.GetEntryIdPropertyInfo();
+            if (entryIdProp == null)
+                throw new CustomAttributeFormatException("Can not find EntryId's PropertyInfo.");
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.EntryId = (string)entryIdProp.GetValue(entry);
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            DeleteEntry(meta);
         }
 
 
-        /// <summary>
-        /// Delete list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="getFormName">getFormName</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void DeleteListEntry(IList<T> entries, ARGetFormNameDelegate getFormName, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-        //            foreach (T item in entries)
-        //            {
-        //                DeleteEntry(item, GetFormName, 3);
-        //            }
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Delete list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void DeleteListEntry(IList<T> entries, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    DeleteListEntry(entries, GetFormName, isEnableTransaction);
-        //}
-
-        /// <summary>
-        /// Delete entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="getFormName">getFormName</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void DeleteEntryByQuery(string qualification, ARGetFormNameDelegate getFormName,
-        //    bool isEnableTransaction = false, bool useLocale = false)
-        //{
-        //    if (String.IsNullOrEmpty(qualification))
-        //        throw new ArgumentNullException("qualification");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-
-        //            foreach (EntryDescription item in loginContext.ServerInstance.GetListEntry(getFormName(typeof(T)), qualification))
-        //            {
-        //                EntryDescription des = (EntryDescription)item;
-        //                loginContext.ServerInstance.DeleteEntry(getFormName(typeof(T)), des.EntryId);
-        //            }
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-
-        //}
+        public void DeleteEntryList(string qualification)
+        {
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            int total = -1;
+            List<AREntry> entries = loginContext.ServerInstance.GetEntryList(meta.FormName, qualification, null, 0, null,ref total, null);
+            foreach (var entry in entries)
+            {
+                string entryid = string.Join("|", entry.EntryIds.ToArray());
+                meta.EntryId = entryid;
+                DeleteEntry(meta);
+            }
+        }
 
 
-        /// <summary>
-        /// Delete entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void DeleteEntryByQuery(string qualification, bool isEnableTransaction = false, bool useLocale = false)
-        //{
-        //    DeleteEntryByQuery(qualification, GetFormName, isEnableTransaction, useLocale);
-        //}
+        #endregion
 
-        /// <summary>
-        /// Set AR Entry by model
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
-        /// <param name="binder">ModelBinder</param>
-        public void SetEntry(T entry, IModelBinder<T> binder)
+        #region set entry function
+
+        //formname
+        //entryid
+        //(Properties && Model)
+        //                  FieldId
+        //                  DataType
+        //                  Getter null|not null
+        public void SetEntry(ModelMeteData<T> MetaData)
+        {
+            if (MetaData == null)
+                throw new ArgumentNullException("MetaData");
+            if (string.IsNullOrEmpty(MetaData.EntryId))
+                throw new ArgumentException("MetaData.EntryId must provider valid value.");
+            if (string.IsNullOrEmpty(MetaData.FormName))
+                throw new ArgumentException("MetaData.FormName must provider valid value.");
+            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
+                throw new UnLoginException();
+
+            if (MetaData.Properties == null || MetaData.Properties.Count == 0)
+                return;
+            //use MetaData.Properties to build fvl
+            List<ARFieldValue> fvl = new List<ARFieldValue>();
+            foreach (PropertyAndField<T> pf in MetaData.Properties)
+            {
+                ARFieldValue fv = new ARFieldValue();
+                fv.FieldId = pf.DatabaseId;
+                fv.DataType = (ARDataType)pf.DatabaseType;
+                fv.Value = pf.GetValueC(MetaData.Model);
+                fvl.Add(fv);
+            }
+
+            loginContext.ServerInstance.SetEntry(MetaData.FormName, MetaData.EntryId, fvl);
+
+        }
+
+        public void SetEntry(string EntryId, List<ARFieldValue> FieldValueList)
+        {
+            string formName = _metaProvider.GetFormNameFromModelType();
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            //metaData.FieldValeList = FieldValueList;
+
+            var properties = _metaProvider.GetPropertyInfoes(BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+            List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+            foreach (var p in properties)
+            {
+                if (FieldValueList.Find(delegate(ARFieldValue arfv) { return arfv.FieldId == p.DatabaseId; }) != null)
+                    props.Add(p);
+            }
+
+            metaData.Properties = props;
+            metaData.FormName = formName;
+            metaData.EntryId = EntryId;
+            SetEntry(metaData);
+        }
+
+        public void SetEntry(T entry, PropertyFilterDelegate filter)
         {
             if (entry == null)
                 throw new ArgumentNullException("entry");
-            if (binder == null)
-                throw new ArgumentNullException("binder");
-            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-                throw new UnLoginException();
-            string formName = GetFormName(typeof(T));
-            lock (lockObject)
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            var entryIdProp = _metaProvider.GetEntryIdPropertyInfo();
+            if (entryIdProp == null)
+                throw new CustomAttributeFormatException("Can not find EntryId's PropertyInfo.");
+
+            meta.EntryId = (string)entryIdProp.GetValue(entry);
+            meta.Model = entry;
+
+            var props = _metaProvider.GetPropertyInfoes(entry as ARBaseForm,
+                BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance,
+                filter
+                );
+
+            meta.Properties = new List<PropertyAndField<T>>();
+
+            foreach (var p in props)
             {
-                loginContext.ServerInstance.SetEntry(formName, GetEntryId(entry), binder.UnBindForUpdate(entry));
+                if ((p.AccessLevel & ModelBinderAccessLevel.OnlyUnBind) == ModelBinderAccessLevel.OnlyUnBind)
+                {
+                    meta.Properties.Add(p);
+                }
             }
+
+            SetEntry(meta);
         }
 
-        /// <summary>
-        /// Set AR Entry by model using default modelbinder、default getFormName
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry">model</param>
         public void SetEntry(T entry)
         {
-            SetEntry(entry, DefaultFactory.CreateModelBinder<T>());
+            SetEntry(entry, delegate(ARBaseForm model, PropertyInfo pi) 
+                {
+
+                    if (model == null)
+                        throw new ArgumentNullException("model", "model is probably not inherit from ARBaseForm");
+                    if (pi == null)
+                        throw new ArgumentNullException("pi");
+
+                    bool result = false;
+
+                    if (model.ChangedProperties.ContainsKey(pi.Name))
+                        result = model.ChangedProperties[pi.Name];
+                    else
+                        result = false;
+
+                    return result;
+                }
+            );
         }
 
-        /// <summary>
-        /// Set list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="getFormName">getFormName</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void SetListEntry(IList<T> entries, IModelBinder<T> binder, ARGetFormNameDelegate getFormName, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (binder == null)
-        //        throw new ArgumentNullException("binder");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-        //            foreach (T item in entries)
-        //            {
-        //                SetEntry(item, binder, GetFormName, 1);
-        //            }
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Set list entry
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entries">List Model</param>
-        /// <param name="isEnableTransaction">is enable transaction</param>
-        //public void SetListEntry(IList<T> entries, bool isEnableTransaction = false)
-        //{
-        //    if (entries == null || entries.Count == 0)
-        //        throw new ArgumentNullException("entries");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    SetListEntry(entries, DefaultFactory.CreateModelBinder<T>(), GetFormName);
-        //}
-
-        /// <summary>
-        /// Set entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry"> entry</param>
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="binder">binder</param>
-        /// <param name="getFormName">ARGetFormNameDelegate</param>
-        /// <param name="isEnableTransaction">isEnableTransaction</param>
-        /// <param name="noMatchOption">NoMatchOption</param>
-        /// <param name="multiMatchOption">MultiMatchOption</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void SetEntryByQuery(T entry, string qualification, IModelBinder<T> binder, ARGetFormNameDelegate getFormName,
-        //    bool isEnableTransaction = false, Server.SetEntryByQuery_NoMatchOption noMatchOption = Server.SetEntryByQuery_NoMatchOption.NoAction,
-        //    Server.SetEntryByQuery_MultiMatchOption multiMatchOption = Server.SetEntryByQuery_MultiMatchOption.ModifyAll, bool useLocale = false)
-        //{
-        //    if (entry == null)
-        //        throw new ArgumentNullException("entry");
-        //    if (String.IsNullOrEmpty(qualification))
-        //        throw new ArgumentNullException("qualification");
-        //    if (binder == null)
-        //        throw new ArgumentNullException("binder");
-        //    if (getFormName == null)
-        //        throw new ArgumentNullException("getFormName");
-        //    if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-        //        throw new UnLoginException();
-        //    lock (lockObject)
-        //    {
-        //        try
-        //        {
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.BeginBulkEntryTransaction();
-        //            }
-
-        //            loginContext.ServerInstance.SetEntryByQuery(getFormName(typeof(T)), qualification,
-        //                noMatchOption, multiMatchOption, binder.UnBindForUpdate(entry), useLocale);
-
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.SendBulkEntryTransaction();
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            if (isEnableTransaction)
-        //            {
-        //                loginContext.ServerInstance.CancelBulkEntryTransaction();
-        //            }
-        //            throw;
-        //        }
-        //    }
-
-        //}
-
-        /// <summary>
-        /// Set entris by query
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entry"> entry</param>
-        /// <param name="qualification"> for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004"  </param>
-        /// <param name="isEnableTransaction">isEnableTransaction</param>
-        /// <param name="noMatchOption">NoMatchOption</param>
-        /// <param name="multiMatchOption">MultiMatchOption</param>
-        /// <param name="useLocale">whether to use locale while getting the matched entry list </param>
-        //public void SetEntryByQuery(T entry, string qualification,
-        //    bool isEnableTransaction = false, Server.SetEntryByQuery_NoMatchOption noMatchOption = Server.SetEntryByQuery_NoMatchOption.NoAction,
-        //    Server.SetEntryByQuery_MultiMatchOption multiMatchOption = Server.SetEntryByQuery_MultiMatchOption.ModifyAll, bool useLocale = false)
-        //{
-        //    SetEntryByQuery(entry, qualification, DefaultFactory.CreateModelBinder<T>(), GetFormName, isEnableTransaction, noMatchOption, multiMatchOption, useLocale);
-        //}
-
-        
-//        public object GetEntry(string entryID, Type targetModelType, IModelBinder<T> binder, ARGetFormNameDelegate getFormName,)
-
-
-
-        /// <summary>
-        /// Get AR Entry by entryId using default modelbinder and return all field in model
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entryID">entryID</param>
-        public T GetEntry(string entryID)
+        public void SetEntry(T entry, IEnumerable<string> Properties)
         {
-            return GetEntry(entryID, DefaultFactory.CreateModelBinder<T>());
+            List<string> props = new List<string>(Properties);
+            SetEntry(entry, delegate(ARBaseForm model, PropertyInfo pi)
+                {
+                    if (pi == null)
+                        throw new ArgumentNullException("pi");
+                    return props.Contains(pi.Name);
+                }
+            );
         }
 
-
-        /// <summary>
-        ///  Get AR Entry by entryId using custom model binder and return all field in model
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entryID">entryID</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="getFormName">getFormName Delegate</param>
-        public T GetEntry(string entryID, IModelBinder<T> binder)
+        public void SetEntryList(string qualification, List<ARFieldValue> FieldValueList)
         {
-            return GetEntry(entryID, DefaultFactory.CreateModelBinder<T>(), binder.UnBindToFieldIdList());
-        }
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            int total = -1;
+            List<AREntry> entries = loginContext.ServerInstance.GetEntryList(meta.FormName, qualification, null, 0, null, ref total, null);
 
-        /// <summary>
-        /// Get AR Entry by entryId using custom model binder and custom filedIds
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entryID">entryID</param>
-        /// <param name="binder">ModelBinder</param>
-        /// <param name="getFormName">getFormName Delegate</param>
-        public T GetEntry(string entryID, IModelBinder<T> binder,List<UInt32> FieldIds)
-        {
-            if (String.IsNullOrEmpty(entryID))
-                throw new ArgumentNullException("entry");
-            if (binder == null)
-                throw new ArgumentNullException("binder");
-            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
-                throw new UnLoginException();
-            string formName = GetFormName(typeof(T));
-            lock (lockObject)
+            var properties = _metaProvider.GetPropertyInfoes(BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+            List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+            foreach (var p in properties)
             {
-                return binder.Bind(loginContext.ServerInstance.GetEntry(formName, entryID, FieldIds));
+                if (FieldValueList.Find(delegate(ARFieldValue arfv) { return arfv.FieldId == p.DatabaseId; }) != null)
+                    props.Add(p);
+            }
+
+            meta.Properties = props;
+
+            foreach (var entry in entries)
+            {
+                string entryid = string.Join("|", entry.EntryIds.ToArray());
+                meta.EntryId = entryid;
+                SetEntry(meta);
+            }
+ 
+        }
+
+        public void SetEntryList(string qualification,T entry, IEnumerable<string> Properties)
+        {
+            string formName = _metaProvider.GetFormNameFromModelType();
+            int total = -1;
+            List<AREntry> entries = loginContext.ServerInstance.GetEntryList(formName, qualification, null, 0, null, ref total, null);
+            var entryIdProp = _metaProvider.GetEntryIdPropertyInfo();
+            foreach (var e in entries)
+            {
+                string entryid = string.Join("|", e.EntryIds.ToArray());
+                entryIdProp.SetValue(entry, entryid);
+                SetEntry(entry, Properties);
             }
         }
 
-        /// <summary>
-        /// Get Entry list by where \ select \ order by \ pagestart \ pageindex
-        /// </summary>
-        /// <param name="qualification">qulification , null for all . for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004" </param>
-        /// <param name="fieldIds">select fieldId list,null for only request id</param>
-        /// <param name="StartIndex">pagestart, null for no page</param>
-        /// <param name="RetrieveCount">pagecount, null for no page</param>
-        /// <param name="totalMatch">ref : total count match the qulification . -1 will not cause the count, it may more efficient</param>
-        /// <param name="sortInfo">sortinfo</param>
-        /// <returns></returns>
+        #endregion
+
+
+        #region get entry function
+
+        //formname
+        //entryid
+        //Properties
+        //              FieldId
+        //              DataType
+        //              Setter null|not null
+        public T GetEntry(ModelMeteData<T> MetaData)
+        {
+            if (MetaData == null)
+                throw new ArgumentNullException("MetaData");
+            if (string.IsNullOrEmpty(MetaData.EntryId))
+                throw new ArgumentException("MetaData.EntryId must provider valid value.");
+            if (string.IsNullOrEmpty(MetaData.FormName))
+                throw new ArgumentException("MetaData.FormName must provider valid value.");
+            if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
+                throw new UnLoginException();
+            if (MetaData.Properties == null || MetaData.Properties.Count == 0)
+                throw new ArgumentException("MetaData.Properties must provider valid value.");
+
+            List<ARFieldValue> raw;
+            Dictionary<uint,PropertyAndField<T>> mapps = new Dictionary<uint,PropertyAndField<T>>();
+
+            List<uint> fil = new List<uint>();
+                
+            foreach (var prop in MetaData.Properties){
+                fil.Add(prop.DatabaseId);
+                mapps.Add(prop.DatabaseId,prop);
+            }
+            raw = loginContext.ServerInstance.GetEntry(MetaData.FormName, MetaData.EntryId,fil);
+
+
+            if (raw == null)
+                return null;
+
+            T model = Activator.CreateInstance<T>();
+
+            foreach (var arfv in raw){
+                PropertyAndField<T> t_p = mapps[arfv.FieldId];
+                t_p.SetValueC(model, arfv.Value);
+            }
+            return model;
+        }
+
+        public T GetEntry(string EntryId, List<UInt32> FieldIdList)
+        {
+            string formName = _metaProvider.GetFormNameFromModelType();
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+
+            var properties = _metaProvider.GetPropertyInfoes(BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+            List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+            foreach (var p in properties)
+            {
+                if (FieldIdList.Find(delegate(UInt32 arfv) 
+                { 
+                    return arfv == p.DatabaseId;
+                }) 
+                != 0)
+                    props.Add(p);
+            }
+
+            metaData.Properties = props;
+            metaData.FormName = formName;
+            metaData.EntryId = EntryId;
+            return GetEntry(metaData);
+        }
+
+        public T GetEntry(string EntryId, PropertyFilterDelegate2 filter)
+        {
+            string formName = _metaProvider.GetFormNameFromModelType();
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            //metaData.FieldIdList = FieldIdList;
+            metaData.FormName = formName;
+            metaData.EntryId = EntryId;
+            var props = _metaProvider.GetPropertyInfoes(
+                BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance,
+                filter
+                );
+            metaData.Properties = new List<PropertyAndField<T>>();
+            foreach (var p in props)
+            {
+                if((p.AccessLevel & ModelBinderAccessLevel.OnlyBind) == ModelBinderAccessLevel.OnlyBind)
+                {
+                    metaData.Properties.Add(p);
+                }
+
+            }
+
+            return GetEntry(metaData);
+        }
+
+        public T GetEntry(string EntryId, IEnumerable<string> Properties)
+        {
+            List<string> valid = new List<string>(Properties);
+
+            return GetEntry(EntryId, delegate(PropertyInfo pi) 
+                {
+                    if (pi == null)
+                        throw new ArgumentNullException("pi");
+                    return valid.Contains(pi.Name);
+
+                }
+            );
+        }
+
+        public T GetEntry(string EntryId)
+        {
+            return GetEntry(EntryId, delegate(PropertyInfo pi)
+            {
+                return true;
+            }
+            );
+        }
+
+        //formname
+        //Properties
+        //              FieldId
+        //              DataType
+        //              Setter null|not null
         public IList<T> GetEntryList(
+            uint StartIndex,
             string qualification,
-            List<UInt32> fieldIds,
-            uint? StartIndex,
+            ModelMeteData<T> MetaData,
             uint? RetrieveCount,
-            ref int totalMatch,
+            TotalMatch totalMatch,
             List<ARSortInfo> sortInfo
             )
         {
-            return GetEntryList(qualification, fieldIds, StartIndex, RetrieveCount, ref totalMatch, sortInfo, DefaultFactory.CreateModelBinder<T>());
-        }
-
-
-        /// <summary>
-        /// Get Entry list by where \ select \ order by \ pagestart \ pageindex
-        /// </summary>
-        /// <param name="qualification">qulification , null for all . for example: "\'cChr_ProcessType\' LIKE \"%geGen%\" AND \'cInt_ApproveOrder\'=1004" </param>
-        /// <param name="fieldIds">select fieldId list,null for only request id</param>
-        /// <param name="StartIndex">pagestart, null for no page</param>
-        /// <param name="RetrieveCount">pagecount, null for no page</param>
-        /// <param name="totalMatch">ref : total count match the qulification . -1 will not cause the count, it may more efficient</param>
-        /// <param name="sortInfo">sortinfo</param>
-        /// <param name="binder">custom modelbinder</param>
-        /// <returns></returns>
-        public IList<T> GetEntryList(
-            string qualification,
-            List<UInt32> fieldIds,
-            uint? StartIndex,
-            uint? RetrieveCount,
-            ref int totalMatch,
-            List<ARSortInfo> sortInfo,
-            IModelBinder<T> binder)
-        {
-            if (binder == null)
-                throw new ArgumentNullException("binder");
+            if (MetaData == null)
+                throw new ArgumentNullException("MetaData");
+            if (string.IsNullOrEmpty(MetaData.FormName))
+                throw new ArgumentException("MetaData.FormName must provider valid value.");
+            if(MetaData.Properties == null && MetaData.Properties.Count == 0)
+            {
+                throw new ArgumentException("MetaData.Properties must provider valid value.");
+            }
             if (loginContext.LoginStatus != ARLoginStatus.Success || loginContext.ServerInstance == null)
                 throw new UnLoginException();
+            int total = 0;
+            if(totalMatch == null)
+                total = -1;
+            List<AREntry> raw_entries = null;
+            Dictionary<uint,PropertyAndField<T>> mapps = new Dictionary<uint,PropertyAndField<T>>();
 
-            string formName = GetFormName(typeof(T));
-
-            List<AREntry> entryList = loginContext.ServerInstance.GetEntryList(
-                formName,
-                qualification,
-                fieldIds,
-                StartIndex,
-                RetrieveCount,
-                ref totalMatch,
-                sortInfo
-                );
-            List<T> listT = new List<T>();
-            foreach (var entry in entryList){
-                string entryid = string.Join("|",entry.EntryIds.ToArray());
-                T model = binder.Bind(entry.FieldValues);
-                SetEntryId(model, entryid);
-                listT.Add(model);
+            List<uint> fil = new List<uint>();
                 
+            foreach (var prop in MetaData.Properties){
+                fil.Add(prop.DatabaseId);
+                mapps.Add(prop.DatabaseId,prop);
             }
+            raw_entries = loginContext.ServerInstance.GetEntryList
+                (MetaData.FormName,qualification,fil,StartIndex,RetrieveCount,ref total,sortInfo);
+
+            if (raw_entries == null)
+                return null;
+            List<T> listT = new List<T>();
+
+            foreach(var raw in raw_entries)
+            {
+                //TOTEST:join form condition may have some issue
+                T model = Activator.CreateInstance<T>();
+                //string entryid = string.Join("|", raw.EntryIds.ToArray());
+                //mapps[1].SetValue(model,entryid);
+                foreach(var fv in raw.FieldValues){
+                    mapps[fv.FieldId].SetValueC(model,fv.Value);
+                }
+                listT.Add(model);
+            }
+            if (totalMatch != null)
+                totalMatch.Value = total;
             return listT;
         }
+
+        public IList<T> GetEntryList(
+            string qualification,
+            List<uint> FieldIdList,
+            uint StartIndex,
+            uint? RetrieveCount,
+            TotalMatch totalMatch,
+            List<ARSortInfo> sortInfo
+            )
+        {
+            ModelMeteData<T> meta = new ModelMeteData<T>();
+            meta.FormName = _metaProvider.GetFormNameFromModelType();
+            var properties = _metaProvider.GetPropertyInfoes(BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+            List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+            foreach (var p in properties)
+            {
+                if (FieldIdList.Find(delegate(UInt32 arfv) { return arfv == p.DatabaseId; }) != 0)
+                    props.Add(p);
+            }
+            meta.Properties = props;
+
+            return GetEntryList(StartIndex,qualification, meta, RetrieveCount, totalMatch, sortInfo);
+        }
+
+        public IList<T> GetEntryList(
+            string qualification,
+            uint StartIndex,
+            PropertyFilterDelegate2 filter,
+            uint? RetrieveCount,
+            TotalMatch totalMatch,
+            List<ARSortInfo> sortInfo
+            )
+        {
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            metaData.FormName = _metaProvider.GetFormNameFromModelType();
+            var props = _metaProvider.GetPropertyInfoes(
+                BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance,
+                filter
+                );
+            metaData.Properties = new List<PropertyAndField<T>>();
+            foreach (var p in props){
+                if ((p.AccessLevel & ModelBinderAccessLevel.OnlyBind) == ModelBinderAccessLevel.OnlyBind)
+                {
+                    metaData.Properties.Add(p);
+                }
+
+            }
+
+            return GetEntryList(StartIndex,qualification, metaData, RetrieveCount,totalMatch, sortInfo);
+
+        }
+
+        public IList<T> GetEntryList(
+            string qualification,
+            IEnumerable<string> Properties,
+            uint? RetrieveCount,
+            uint StartIndex,
+            TotalMatch totalMatch,
+            List<ARSortInfo> sortInfo
+            )
+        {
+            List<string> valid = null;
+            if (Properties != null)
+            {
+                valid = new List<string>(Properties);
+            }
+            else
+            {
+                valid = new List<string>();
+            }
+            
+            return GetEntryList(
+                    qualification,
+                    StartIndex,
+                    delegate(PropertyInfo pi)
+                        {
+                            if (pi == null)
+                                throw new ArgumentNullException("pi");
+                            return valid.Contains(pi.Name);
+                        },
+                    RetrieveCount,
+                    totalMatch,
+                    sortInfo
+                );
+        }
+
+        #endregion
 
         /// <summary>
         /// GetListEntryStatictisc function
@@ -601,19 +631,58 @@ namespace NRemedy
         ///     the return list may have more than one entry, group by field will be bind to each entry, and the result is stored in base class(ARBaseForm)'s Statictis
         /// note : the result is object , but mostly the actual type is double,don't forget to Convert
         /// </summary>
+        /// <param name="SchemaName"></param>
         /// <param name="Qulification"></param>
         /// <param name="ARStat"></param>
         /// <param name="TargetFieldId"></param>
-        /// <param name="GroupbyFieldIdList"></param>
+        /// <param name="Properties"></param>
         /// <returns></returns>
         public IList<T> GetListEntryStatictisc(
             String Qulification,
-            ARStatictisc ARStat,
             Nullable<UInt32> TargetFieldId,
-            List<UInt32> GroupbyFieldIdList
+            IEnumerable<string> Properties,
+            ARStatictisc ARStat
             )
         {
-            return GetListEntryStatictisc(Qulification, ARStat, TargetFieldId, GroupbyFieldIdList, DefaultFactory.CreateModelBinder<T>());
+            List<string> valid = new List<string>(Properties);
+
+            return GetListEntryStatictisc(Qulification,  TargetFieldId,ARStat,delegate(PropertyInfo pi)
+            {
+                if (pi == null)
+                    throw new ArgumentNullException("pi");
+                return valid.Contains(pi.Name);
+
+            }
+            );
+ 
+        }
+
+
+        protected IList<T> GetListEntryStatictisc(
+            String Qulification,
+            Nullable<UInt32> TargetFieldId,
+            ARStatictisc ARStat,
+            PropertyFilterDelegate2 filter
+            )
+        {
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            metaData.FormName = _metaProvider.GetFormNameFromModelType();
+            var props = _metaProvider.GetPropertyInfoes(
+                BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance,
+                filter
+                );
+            metaData.Properties = new List<PropertyAndField<T>>();
+            foreach (var p in props)
+            {
+                if ((p.AccessLevel & ModelBinderAccessLevel.OnlyBind) == ModelBinderAccessLevel.OnlyBind)
+                {
+                    metaData.Properties.Add(p);
+                }
+
+            }
+
+            return GetListEntryStatictisc(ARStat,Qulification,  TargetFieldId,metaData);
+ 
         }
 
         /// <summary>
@@ -630,154 +699,144 @@ namespace NRemedy
         /// <param name="ARStat"></param>
         /// <param name="TargetFieldId"></param>
         /// <param name="GroupbyFieldIdList"></param>
-        /// <param name="binder"></param>
         /// <returns></returns>
         public IList<T> GetListEntryStatictisc(
             String Qulification,
             ARStatictisc ARStat,
             Nullable<UInt32> TargetFieldId,
-            List<UInt32> GroupbyFieldIdList,
-            IModelBinder<T> binder
+            List<UInt32> GroupbyFieldIdList
             )
+        {
+            string formName = _metaProvider.GetFormNameFromModelType();
+            ModelMeteData<T> metaData = new ModelMeteData<T>();
+            if (GroupbyFieldIdList != null)
+            {
+                var properties = _metaProvider.GetPropertyInfoes(BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+                List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+                foreach (var p in properties)
+                {
+                    if (GroupbyFieldIdList.Find(delegate(UInt32 arfv) { return arfv == p.DatabaseId; }) != 0)
+                        props.Add(p);
+                }
+
+                metaData.Properties = props;
+            }
+            metaData.FormName = formName;
+            return GetListEntryStatictisc(ARStat,Qulification,TargetFieldId, metaData);
+
+            ////tagetfiledid must not null if ARStat is not count
+            //if (TargetFieldId == null && ARStat != ARStatictisc.STAT_OP_COUNT)
+            //    throw new InvalidOperationException("TargetFieldId must not null if ARStat is not COUNT");
+            //string formName = _metaProvider.GetFormNameFromModelType();
+            //List<ARGroupByStatictisc> result = loginContext.ServerInstance.GetEntryListStatictisc(
+            //    formName,
+            //    Qulification,
+            //    ARStat,
+            //    TargetFieldId,
+            //    GroupbyFieldIdList);
+
+            //List<T> models = new List<T>();
+
+            ////if GroupbyFieldIdList is null, the result must only one row
+            ////tagetfiledid can be ignore
+            //if (GroupbyFieldIdList == null || GroupbyFieldIdList.Count == 0)
+            //{
+            //    T model = Activator.CreateInstance<T>();
+            //    if (!(model is ARBaseForm))
+            //        throw new InvalidCastException("T must be inherit from ARBaseForm so that Statictisc operation can be cast.");
+            //    (model as ARBaseForm).Statictisc = result[0].Statictisc;
+            //    models.Add(model);
+            //}
+            ////else GroupbyFieldIdList is not null,the result may have rows more than 1
+            ////and targetfieldid can be ignore
+            //else
+            //{
+            //    //store the arid and artype map
+            //    Dictionary<uint, ARType> idmaptype = new Dictionary<uint, ARType>();
+
+            //    foreach (ARGroupByStatictisc g in result)
+            //    {
+            //        T model = Activator.CreateInstance<T>();
+            //        List<ARFieldValue> fv = new List<ARFieldValue>();
+            //        for (int i = 0; i < g.GroupByValues.Count; i++)
+            //        {
+            //            if (!idmaptype.ContainsKey(GroupbyFieldIdList[i]))
+            //                idmaptype.Add(GroupbyFieldIdList[i], _metaProvider.GetARTypeFromFieldId(typeof(T),GroupbyFieldIdList[i]));
+            //            fv.Add(new ARFieldValue(GroupbyFieldIdList[i], g.GroupByValues[i], (ARDataType)idmaptype[GroupbyFieldIdList[i]]));
+            //        }
+            //        //bind model property from groupvalues
+            //        model = binder.Bind(fv);
+            //        //add statictisc result to the ARBaseForm
+            //        if (!(model is ARBaseForm))
+            //            throw new InvalidCastException("T must be inherit from ARBaseForm so that Statictisc operation can be cast.");
+            //        (model as ARBaseForm).Statictisc = g.Statictisc;
+            //        models.Add(model);
+            //    }
+            //}
+
+
+            //return models;
+        }
+
+        //formname
+        //Properties
+        //              FieldId
+        //              DataType
+        //              Setter null|not null
+        public IList<T> GetListEntryStatictisc(
+            ARStatictisc ARStat,
+            String Qulification,
+            Nullable<UInt32> TargetFieldId,
+            ModelMeteData<T> MetaData
+           )
         {
             //tagetfiledid must not null if ARStat is not count
             if (TargetFieldId == null && ARStat != ARStatictisc.STAT_OP_COUNT)
                 throw new InvalidOperationException("TargetFieldId must not null if ARStat is not COUNT");
-            string formName = GetFormName(typeof(T));
-            List<ARGroupByStatictisc> result = loginContext.ServerInstance.GetEntryListStatictisc(
-                formName,
-                Qulification,
-                ARStat,
-                TargetFieldId,
-                GroupbyFieldIdList);
 
+            List<ARGroupByStatictisc> raw_entries = null;
             List<T> models = new List<T>();
-         
-            //if GroupbyFieldIdList is null, the result must only one row
-            //tagetfiledid can be ignore
-            if (GroupbyFieldIdList == null || GroupbyFieldIdList.Count == 0)
+            Dictionary<uint, PropertyAndField<T>> mapps = new Dictionary<uint, PropertyAndField<T>>();
+            
+            if (MetaData.Properties == null || MetaData.Properties.Count == 0)
             {
+                raw_entries = loginContext.ServerInstance.GetEntryListStatictisc(MetaData.FormName, Qulification, ARStat, TargetFieldId, null);
                 T model = Activator.CreateInstance<T>();
                 if (!(model is ARBaseForm))
                     throw new InvalidCastException("T must be inherit from ARBaseForm so that Statictisc operation can be cast.");
-                (model as ARBaseForm).Statictisc = result[0].Statictisc;
+                model.Statictisc = raw_entries[0].Statictisc;
                 models.Add(model);
+                return models;
             }
-            //else GroupbyFieldIdList is not null,the result may have rows more than 1
-            //and targetfieldid can be ignore
-            else
-            {
-                //store the arid and artype map
-                Dictionary<uint, ARType> idmaptype = new Dictionary<uint, ARType>();
 
-                foreach (ARGroupByStatictisc g in result){
-                    T model = Activator.CreateInstance<T>();
-                    List<ARFieldValue> fv = new List<ARFieldValue>();
-                    for(int i = 0 ; i < g.GroupByValues.Count ; i++)
-                    {
-                        if (!idmaptype.ContainsKey(GroupbyFieldIdList[i]))
-                            idmaptype.Add(GroupbyFieldIdList[i], GetARTypeFromFieldId(GroupbyFieldIdList[i]));
-                        fv.Add(new ARFieldValue(GroupbyFieldIdList[i], g.GroupByValues[i], (ARDataType)idmaptype[GroupbyFieldIdList[i]]));
-                    }
-                    //bind model property from groupvalues
-                    model = binder.Bind(fv);
-                    //add statictisc result to the ARBaseForm
-                    if (!(model is ARBaseForm))
-                        throw new InvalidCastException("T must be inherit from ARBaseForm so that Statictisc operation can be cast.");
-                    (model as ARBaseForm).Statictisc = g.Statictisc;
-                    models.Add(model);
-                }
+
+            List<uint> fil = new List<uint>();
+
+            foreach (var prop in MetaData.Properties)
+            {
+                fil.Add(prop.DatabaseId);
+                mapps.Add(prop.DatabaseId, prop);
+            }
+            raw_entries = loginContext.ServerInstance.GetEntryListStatictisc(MetaData.FormName, Qulification, ARStat, TargetFieldId, fil);
+
+            if (raw_entries == null)
+                return null;
+
+            foreach (var raw in raw_entries)
+            {
+                T model = Activator.CreateInstance<T>();
+                var enumer1 = mapps.GetEnumerator();
+                var enumer2 = raw.GroupByValues.GetEnumerator();
+                while (enumer1.MoveNext() && enumer2.MoveNext())
+                {
+                    enumer1.Current.Value.SetValueC(model, enumer2.Current);
+                    model.Statictisc = raw.Statictisc;
+                } 
+                models.Add(model);
             }
 
 
             return models;
-        }
-
-        /// <summary>
-        /// get the formname 
-        /// </summary>
-        /// <!--William Wang-->
-        /// <returns> form name</returns>
-        protected string GetFormName(Type t)
-        {
-            string name = string.Empty;
-            var attributes = t.GetCustomAttributes(false);
-            ARFormAttribute formAttribute = null;
-            foreach(var attr in attributes){
-                if (attr is ARFormAttribute){
-                    formAttribute = (ARFormAttribute)attr;
-                    break;
-                }
-            }
-
-            if (formAttribute != null)
-                name = formAttribute.FormName;
-
-            return name;
-        }
-
-        /// <summary>
-        /// get the entry ID
-        /// </summary>
-        /// <!--William Wang-->
-        /// <param name="entity"> model object</param>
-        /// <returns></returns>
-        protected string GetEntryId(T entity)
-        {
-            if (entity == null)
-            {
-                throw new ArgumentNullException("entity");
-            }
-            foreach (PropertyInfo item in typeof(T).GetProperties()){
-                var attributes = item.GetCustomAttributes(false);
-                foreach (var attr in attributes){
-                    if (attr is AREntryKeyAttribute){
-                        return item.GetValue(entity, null).ToString();
-                    }
-                }
-            }
-            return string.Empty;
-        }
-
-        protected ARType GetARTypeFromFieldId(UInt32 fieldId)
-        {
-            foreach (PropertyInfo item in typeof(T).GetProperties()){
-                var attributes = item.GetCustomAttributes(false);
-                foreach (var attr in attributes)
-                {
-                    if (attr is ARFieldAttribute)
-                    {
-                        if (((ARFieldAttribute)attr).DatabaseID == fieldId)
-                            return ((ARFieldAttribute)attr).DataType; 
-                    }
-                }
-            }
-            throw new InvalidOperationException(string.Format("fieldId : {0} can not be found in Model definition : {1}",fieldId,typeof(T).FullName));
-        }
-
-        /// <summary>
-        /// Set Entry id for Model
-        /// </summary>
-        /// <param name="model">model not null</param>
-        /// <param name="entryId">entryid to be set</param>
-        protected void SetEntryId(T model,string entryId)
-        {
-            if (model == null)
-                throw new ArgumentNullException("model");
-            if (string.IsNullOrEmpty(entryId))
-                throw new ArgumentNullException("entryId");
-            foreach (PropertyInfo item in typeof(T).GetProperties())
-            {
-                var attributes = item.GetCustomAttributes(false);
-                foreach (var attr in attributes)
-                {
-                    if (attr is AREntryKeyAttribute)
-                    {
-                        item.SetValue(model, entryId, null);
-                        return;
-                    }
-                }
-            }
         }
 
     }

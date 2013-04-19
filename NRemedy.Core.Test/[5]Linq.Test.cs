@@ -15,14 +15,14 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
-                int totalMatch = -1;
+                //int totalMatch = -1;
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var models = proxy.GetEntryList(
                     null,
+                    new string[] { "RequestID" },
                     null,
+                    0,
                     null,
-                    null,
-                    ref totalMatch,
                     null);
                 foreach (var model in models)
                 {

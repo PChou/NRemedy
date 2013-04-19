@@ -7,7 +7,7 @@ using ARNative;
 namespace NRemedy.Core.Test
 {
     [TestClass]
-    public class MutiEntry_Test : RegularConfig
+    public class MutiEntry_Test_Get : RegularConfig
     {
 
         [ClassInitialize]
@@ -16,14 +16,14 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
-                int totalMatch = -1;
+                //int totalMatch = -1;
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var models = proxy.GetEntryList(
                     null,
+                    new string[] { "RequestID" },
                     null,
+                    0,
                     null,
-                    null,
-                    ref totalMatch,
                     null);
                 foreach (var model in models)
                 {
@@ -71,20 +71,20 @@ namespace NRemedy.Core.Test
             {
                 List<uint> fieldIds = new List<uint>();
                 fieldIds.Add(TestCharacterFieldId);
-                int totalMatch = -1;
+                //int totalMatch = -1;
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var models = proxy.GetEntryList(
                     "'Character Field' = \"Hello Remedy\"",
                     fieldIds,
+                    0,
                     null,
                     null,
-                    ref totalMatch,
                     null);
 
                 Assert.AreEqual(7, models.Count);
                 foreach (var model in models)
                 {
-                    Assert.AreEqual("Hello Remedy", model.CharacterField);
+                    Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
                 }
 
             }
@@ -104,22 +104,23 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
-                int total = -1;
+                //int total = -1;
                 List<UInt32> fieldIds = new List<UInt32>();
                 fieldIds.Add(TestCharacterFieldId);
                 fieldIds.Add(TestIntFieldId);
+                fieldIds.Add(1u);
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var retlist = proxy.GetEntryList(
                     "'Character Field' LIKE \"%你好%\"",
                     fieldIds,
                     0,
                     5,
-                    ref total,
+                    null,
                     null
                     );
                 //paged count should be 5,although total matched count is 11
                 Assert.AreEqual(5, retlist.Count);
-                Assert.AreEqual(-1, total);
+                //Assert.AreEqual(-1, total);
                 foreach (var entry in retlist)
                 {
                     Assert.AreEqual(true, entry.CharacterField.Contains("你好"));
@@ -147,21 +148,22 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
-                int total = 0;
+                TotalMatch total = new TotalMatch();
                 List<UInt32> fieldIds = new List<UInt32>();
                 fieldIds.Add(TestCharacterFieldId);
                 fieldIds.Add(TestIntFieldId);
+                fieldIds.Add(1u);
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
                 var retlist = proxy.GetEntryList(
                     "'Character Field' LIKE \"%你好%\"",
                     fieldIds,
                     0,
                     5,
-                    ref total,
+                    total,
                     null
                     );
                 Assert.AreEqual(5, retlist.Count);
-                Assert.AreEqual(11, total);
+                Assert.AreEqual(11, total.Value);
                 foreach (var entry in retlist)
                 {
                     Assert.AreEqual(true, entry.CharacterField.Contains("你好"));
@@ -187,10 +189,11 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
-                int total = 0;
+                TotalMatch total = new TotalMatch();
                 List<UInt32> fieldIds = new List<UInt32>();
                 fieldIds.Add(TestCharacterFieldId);
                 fieldIds.Add(TestIntFieldId);
+                fieldIds.Add(1u);
                 List<ARSortInfo> sortInfo = new List<ARSortInfo>();
                 sortInfo.Add(new ARSortInfo
                 {
@@ -203,13 +206,13 @@ namespace NRemedy.Core.Test
                 var retlist = proxy.GetEntryList(
                     "'Character Field' LIKE \"%你好%\"",
                     fieldIds,
+                    0,
                     null,
-                    null,
-                    ref total,
+                    total,
                     sortInfo
                     );
                 Assert.AreEqual(11, retlist.Count);
-                Assert.AreEqual(11, total);
+                Assert.AreEqual(11, total.Value);
                 foreach (var entry in retlist)
                 {
                     Assert.AreEqual(true, entry.CharacterField.Contains("你好"));
@@ -231,6 +234,108 @@ namespace NRemedy.Core.Test
             }
         }
 
+
+        [TestMethod]
+        public void ARProxy_GetEntryList_by_filter_qulifier_fieldIds_nopage_nocount_noorder_success()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                var models = proxy.GetEntryList(
+                    "'Character Field' = \"Hello Remedy\"",
+                    0,
+                    delegate(System.Reflection.PropertyInfo pi){
+                        return pi.Name == "CharacterField";
+                    },
+                    null,
+                    null,
+                    null);
+
+                Assert.AreEqual(7, models.Count);
+                foreach (var model in models)
+                {
+                    Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
+                    Assert.AreEqual(null, model.IntegerField);
+                }
+
+                var models2 = proxy.GetEntryList(
+                    "'Character Field' = \"Hello Remedy\"",
+                    0,
+                    delegate(System.Reflection.PropertyInfo pi)
+                    {
+                        return pi.Name == "CharacterField" || pi.Name == "IntegerField";
+                    },
+                    null,
+                    null,
+                    null);
+
+                Assert.AreEqual(7, models2.Count);
+                foreach (var model in models2)
+                {
+                    Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
+                    Assert.AreEqual(1, model.IntegerField);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+
+        [TestMethod]
+        public void ARProxy_GetEntryList_by_Properties_Str_qulifier_fieldIds_nopage_nocount_noorder_success()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                var models = proxy.GetEntryList(
+                    "'Character Field' = \"Hello Remedy\"",
+                    new string[]{ "CharacterField" },
+                    null,
+                    0,
+                    null,
+                    null);
+
+                Assert.AreEqual(7, models.Count);
+                foreach (var model in models)
+                {
+                    Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
+                    Assert.AreEqual(null, model.IntegerField);
+                }
+
+                var models2 = proxy.GetEntryList(
+                    "'Character Field' = \"Hello Remedy\"",
+                    new string[] { "CharacterField", "IntegerField" },
+                    null,
+                    0,
+                    null,
+                    null);
+
+                Assert.AreEqual(7, models2.Count);
+                foreach (var model in models2)
+                {
+                    Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
+                    Assert.AreEqual(1, model.IntegerField);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
 
         //statictisc test
         //GetListEntryStatictisc
@@ -488,6 +593,42 @@ namespace NRemedy.Core.Test
                     ARStatictisc.STAT_OP_AVERAGE,
                     TestIntFieldId,
                     groupIds
+                    );
+                Assert.AreEqual(2, retlist.Count);
+                Dictionary<String, int> assertTable = new Dictionary<string, int>();
+                //assertTable.Add("Hello Remedy", 7);
+                assertTable.Add("你好 RemedySet Something", 3);
+                assertTable.Add("你好 Remedy", 2);
+
+                Assert.AreEqual(assertTable[retlist[0].CharacterField], Convert.ToInt32(retlist[0].Statictisc));
+                Assert.AreEqual(assertTable[retlist[1].CharacterField], Convert.ToInt32(retlist[1].Statictisc));
+
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+
+            }
+            finally
+            {
+                context.Dispose();
+            }
+
+        }
+
+        [TestMethod]
+        public void ARProxy_GetEntryListStatictisc_by_Properties_Str_avg_qulifier_group_success()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                var retlist = proxy.GetListEntryStatictisc(
+                    "'Character Field' LIKE \"%你好%\"",
+                    
+                    TestIntFieldId,
+                    new string[] { "CharacterField" },
+                    ARStatictisc.STAT_OP_AVERAGE
                     );
                 Assert.AreEqual(2, retlist.Count);
                 Dictionary<String, int> assertTable = new Dictionary<string, int>();

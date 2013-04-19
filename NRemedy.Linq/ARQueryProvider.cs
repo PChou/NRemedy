@@ -11,7 +11,8 @@ using System.Collections;
 
 namespace NRemedy.Linq
 {
-    public class ARQueryProvider<T> : QueryProvider
+    public class ARQueryProvider<T>  : QueryProvider
+        where T : ARBaseForm
     {
         protected object context;
         //protected object factory;
@@ -81,14 +82,14 @@ namespace NRemedy.Linq
                 }
 
                 //get paged
-                uint? StartIndex = null;
+                uint StartIndex = 0;
                 uint? RetrieveCount = null;
                 if(tr.HasSkip)
                     StartIndex = (uint)tr.Skip.Value;
                 if(tr.HasTake)
                     RetrieveCount = (uint)tr.Take.Value;
                 //do not return count
-                int total = -1;
+                //int total = -1;
 
                 //get order by
                 List<ARSortInfo> sort = new List<ARSortInfo>();
@@ -106,7 +107,7 @@ namespace NRemedy.Linq
                     fieldIds,
                     StartIndex,
                     RetrieveCount,
-                    ref total,
+                    null,
                     sort
                     );
 
@@ -126,11 +127,12 @@ namespace NRemedy.Linq
             else if (tr.HasStatictisc && tr.StatictiscVerb == "Count")
             {
                 ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
+                List<UInt32> groups = null;
                 var list = proxy.GetListEntryStatictisc(
                     tr.Qulification.ToString(),
                     ARStatictisc.STAT_OP_COUNT,
                     null,
-                    null);
+                    groups);
                 if (list.Count != 1)
                     throw new Exception("GetListEntryStatictisc returns invalid result.");
                 T entry = list[0];

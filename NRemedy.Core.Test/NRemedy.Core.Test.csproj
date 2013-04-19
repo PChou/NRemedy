@@ -60,16 +60,21 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ContextConfig.cs" />
+    <Compile Include="[8]ARProxyLambdaExtension.GetList.Test.cs" />
+    <Compile Include="[7]ARProxyLambdaExtension.Get.Test.cs" />
+    <Compile Include="[22]MutiEntry_Test_Set.cs" />
     <Compile Include="Model\NRemedy_Test_Join_Form.cs" />
     <Compile Include="Model\NRemedy_Test_Regular_Form.cs" />
+    <Compile Include="[21]MutiEntry_Test_Delete.cs" />
     <Compile Include="RegularConfig.cs" />
-    <Compile Include="SingleEntry.Test.cs" />
+    <Compile Include="[1]SingleEntry.Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Login.Test.cs" />
-    <Compile Include="MutiEntry.Test.cs" />
-    <Compile Include="Linq.Test.cs" />
-    <Compile Include="BLOB.Test.cs" />
-    <Compile Include="JoinForm.Test.cs" />
+    <Compile Include="[0]Login.Test.cs" />
+    <Compile Include="[2]MutiEntry_Get.Test.cs" />
+    <Compile Include="[5]Linq.Test.cs" />
+    <Compile Include="[4]BLOB.Test.cs" />
+    <Compile Include="[3]JoinForm.Test.cs" />
+    <Compile Include="[6]ARProxyLambdaExtension.Delete.Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ARNative\ARNative.vcxproj">

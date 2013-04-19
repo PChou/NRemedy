@@ -12,6 +12,7 @@ namespace NRemedy.Linq
     /// </summary>
     /// <typeparam name="T">Model type</typeparam>
     public class ARSet<T> : Query<T>
+        where T : ARBaseForm
     {
         public ARSet(object context)
             : base(new ARQueryProvider<T>(context))

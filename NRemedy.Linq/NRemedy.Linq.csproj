@@ -41,10 +41,14 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ARProxyLambdaExtension.cs" />
     <Compile Include="ARQueryProvider.cs" />
     <Compile Include="ARSet.cs" />
+    <Compile Include="ConditionExpressionVisitor.cs" />
+    <Compile Include="ConditionResult.cs" />
     <Compile Include="Enumerator.cs" />
     <Compile Include="Evaluator.cs" />
+    <Compile Include="ExpressionTypeMetaProvider.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Groupor.cs" />
     <Compile Include="QueryableEx.cs" />

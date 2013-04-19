@@ -67,7 +67,7 @@ namespace NRemedy
         }
 
 
-        public List<AREntry> GetEntryList(string SchemaName, string Qulification, List<uint> FieldIdList, uint? StartIndex, uint? RetrieveCount, ref int totalMatch, List<ARSortInfo> SortInfo)
+        public List<AREntry> GetEntryList(string SchemaName, string Qulification, List<uint> FieldIdList, uint StartIndex, uint? RetrieveCount, ref int totalMatch, List<ARSortInfo> SortInfo)
         {
             CheckSessionNull();
             return SessionInstance.GetEntryList(

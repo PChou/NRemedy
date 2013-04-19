@@ -268,6 +268,10 @@ List<ARGroupByStatictisc^>^ ARSession::GetListEntryStatictisc(
 
 	//qulifier struct
 	IntelligentARStructAR<ARQualifierStruct> qulifier;
+	//!!if the qulifier does not init by the ARLoadARQualifierStruct API call, memory access exception sometimes may happened when FreeARQualifierStruct is called
+	//this may happen when the Qulification is empty , and mixed C Runtime Lib exist at runtime
+	(&qulifier)->operation = 0;
+	//(&qulifier)->u.fieldId = 0;
 	if(Qulification != nullptr && Qulification != String::Empty){
 		char* qString = NULL;//(char*)calloc(Qulification->Length*2+2,sizeof(char));//garantee buffer enough
 		qString = MarshalStringCopyToChar(Qulification);
@@ -352,6 +356,9 @@ List<AREntry^>^ ARSession::GetEntryList(
 	MarshalStringCopyToCharStack(n_schemaName,SchemaName);
 	//qulifier struct
 	IntelligentARStructAR<ARQualifierStruct> qulifier;
+	//!!if the qulifier does not init by the ARLoadARQualifierStruct API call, memory access exception sometimes may happened when FreeARQualifierStruct is called
+	//this may happen when the Qulification is empty , and mixed C Runtime Lib exist at runtime
+	(&qulifier)->operation = 0;
 	if(Qulification != nullptr && Qulification != String::Empty){
 		char* qString = NULL;//(char*)calloc(Qulification->Length*2+2,sizeof(char));//garantee buffer enough
 		qString = MarshalStringCopyToChar(Qulification);

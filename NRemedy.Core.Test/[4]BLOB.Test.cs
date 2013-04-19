@@ -41,8 +41,8 @@ namespace NRemedy.Core.Test
 
                 List<UInt32> attchFIds = new List<uint>();
                 attchFIds.Add(attchFId);
-                int total = -1;
-                IList<NRemedy_Test_Regular_Form> entries = proxy.GetEntryList(null, attchFIds, null, null, ref total, null);
+                //int total = -1;
+                IList<NRemedy_Test_Regular_Form> entries = proxy.GetEntryList(null, attchFIds, 0, null, null, null);
                 foreach (var e in entries)
                 {
                     if (e.Attachment != null && e.Attachment.AttchmentName == "ARProxy_Create_Entry_with_Att_01.txt")
