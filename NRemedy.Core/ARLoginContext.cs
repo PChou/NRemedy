@@ -11,6 +11,7 @@ namespace NRemedy
 {
     /// <summary>
     /// AR登录会话对象，可以使用using关键字实例化，ARProxy和ARSet两大入口都需要该对象作为会话来访问AR
+    /// since Transaction API impelement in this class, so it becomes thread unsafed.
     /// </summary>
     public class ARLoginContext : IDisposable
     {
@@ -121,6 +122,23 @@ namespace NRemedy
                 }
             }
         }
+
+        public void TransactionBegin()
+        {
+            ServerInstance.BeginBulkEntryTransaction();
+        }
+
+        public ARTransactionResult TransactionCommit()
+        {
+            return ServerInstance.CommitBulkEntryTransaction();
+        }
+
+        public void TransactionCancel()
+        {
+            ServerInstance.CancelBulkEntryTransaction();
+        }
+
+
 
         ~ARLoginContext()
         {

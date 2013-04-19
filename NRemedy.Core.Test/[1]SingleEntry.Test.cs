@@ -505,6 +505,56 @@ namespace NRemedy.Core.Test
             }
         }
 
+        [TestMethod]
+        public void ARProxy_SetEntry_By_Properties_Ids()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                DateTime dt = DateTime.Now;
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed,
+                    DecimalNumberField = 3.13m,
+                    IntegerField = 10
+                }
+                );
+
+                Assert.AreNotEqual(null, entryId);
+                NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
+                //Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
+                model.CharacterField = "don not want changed";
+                model.Status = NRemedy_Test_Regular_Form.Status_Enum.New;
+                model.DecimalNumberField = 3.14m;
+                model.IntegerField = 11;
+
+                List<ARFieldValue> up_fvs = new List<ARFieldValue>();
+                
+                up_fvs.Add(new ARFieldValue(TestDecimalFieldId, 3.14m, ARDataType.DATA_TYPE_DECIMAL));
+                up_fvs.Add(new ARFieldValue(7u, NRemedy_Test_Regular_Form.Status_Enum.New, ARDataType.DATA_TYPE_ENUM));
+                up_fvs.Add(new ARFieldValue(TestIntFieldId, 11, ARDataType.DATA_TYPE_INTEGER));
+
+                //set
+                proxy.SetEntry(entryId, up_fvs);
+
+                NRemedy_Test_Regular_Form model2 = proxy.GetEntry(entryId);
+                Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.New, model2.Status);
+                Assert.AreEqual(3.14m, model2.DecimalNumberField);
+                Assert.AreEqual(11, model2.IntegerField);
+                Assert.AreEqual("should not changed", model2.CharacterField);
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
 
         [TestMethod]
         public void ARProxy_GetEntry_By_Properties_Str()
@@ -571,6 +621,56 @@ namespace NRemedy.Core.Test
                 Assert.AreEqual(NRemedy_Test_Regular_Form.Status_Enum.Fixed, model.Status);
                 Assert.AreEqual(3.14m, model.DecimalNumberField);
                 Assert.AreEqual(null, model.IntegerField);
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+
+        [TestMethod]
+        public void ARProxy_Transacation_Simple_Rollback()
+        {
+            ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
+            try
+            {
+                ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                context.TransactionBegin();
+                string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form
+                {
+                    CharacterField = "should not changed",
+                    Status = NRemedy_Test_Regular_Form.Status_Enum.Fixed
+                });
+                Assert.AreEqual(string.Empty, entryId);
+                //second call will failed
+                List<ARFieldValue> up_fvs = new List<ARFieldValue>();
+                up_fvs.Add(new ARFieldValue(TestCharacterFieldId, (object)TestCharacterFieldValueChinese, ARDataType.DATA_TYPE_CHAR));
+                proxy.SetEntry("11111111111", up_fvs);
+
+                var result = context.TransactionCommit();
+
+                Assert.IsFalse(result.Success);
+                Assert.AreEqual(2, result.ResultList.Count);
+
+                Assert.AreEqual(EntryCallType.BULK_ENTRY_CREATE, result.ResultList[0].CallType);
+                var entryid1 = result.ResultList[0].EntryId;
+                //!!@@important
+                //when create entry is not in trasaction, it will not cause warning 52 when the RequestID is in the fieldValueList
+                //but in trasacation, this will cause warning 52.
+                //this because trasaction actually means group the operations and send to AR when commit.AR may block the operaion,
+                //even this is caused by warning
+                Assert.IsNull(result.ResultList[0].Status);
+
+                Assert.AreEqual(EntryCallType.BULK_ENTRY_SET, result.ResultList[1].CallType);
+                Assert.IsNotNull(result.ResultList[1].Status);
+                //item do not exist in the db
+                Assert.AreEqual(302, result.ResultList[1].Status.MessageNumber);
+
             }
             catch (Exception ex)
             {

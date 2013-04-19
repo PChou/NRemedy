@@ -57,7 +57,7 @@ namespace NRemedy.Linq
                 //unbinder need at least readable property
                (BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var fieldAttribute = GetARAttributeField(prop, ModelBinderAccessLevel.OnlyUnBind);
+                    var fieldAttribute = GetARAttributeField(prop, ModelBinderAccessLevel.OnlyUnBind | ModelBinderAccessLevel.OnlyBind);
                     if (fieldAttribute == null) continue;
                     propertry.Add(prop.Name,fieldAttribute.DatabaseID);
                 }
@@ -330,7 +330,7 @@ namespace NRemedy.Linq
             if (attribute.DataType == ARType.None)
                 throw new CustomAttributeFormatException(
                     string.Format("DataType of ARFieldAttribute on Property : {0} cannot be null.", pi.Name));
-            if ((attribute.BinderAccess & accessLevel) == accessLevel)
+            if ((attribute.BinderAccess & accessLevel) == attribute.BinderAccess)
                 return attribute;
             else
                 return null;

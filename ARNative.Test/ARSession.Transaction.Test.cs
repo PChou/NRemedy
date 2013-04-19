@@ -290,5 +290,40 @@ namespace ARNative.Test
             session.LogOut();
         }
 
+        [TestMethod]
+        public void ARSession_Transcation_Create_Set_Cancel()
+        {
+            ARSession session = new ARSession();
+            try
+            {
+                session.Login(TestServer, TestAdmin, TestAdminPwd);
+                List<ARFieldValue> valuelist = new List<ARFieldValue>();
+                valuelist.Add(new ARFieldValue(TestCharacterFieldId, (object)TestCharacterFieldValue, ARDataType.DATA_TYPE_CHAR));
+                var entrytobeset = session.CreateEntry(TestRegularFormName, valuelist.ToArray());
+
+                //begin Transaction
+                session.BeginBulkEntryTransaction();
+                //create
+                session.CreateEntry(TestRegularFormName, valuelist.ToArray());
+
+                List<string> entryid = new List<string>() { entrytobeset };
+                List<ARFieldValue> up_fvs = new List<ARFieldValue>();
+                up_fvs.Add(new ARFieldValue(TestCharacterFieldId, (object)TestCharacterFieldValueChinese, ARDataType.DATA_TYPE_CHAR));
+                //let the second call success too
+                session.SetEntry(TestRegularFormName, entryid.ToArray(), up_fvs.ToArray());
+                //commit
+                var result = session.EndBulkEntryTransaction(2);
+
+
+
+                Assert.IsTrue(result.Success);
+
+            }
+            catch (ARException ex)
+            {
+                Assert.AreEqual(null, ex);
+            }
+            session.LogOut();
+        }
     }
 }

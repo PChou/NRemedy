@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using ARNative;
+using System.Threading;
 
 
 namespace NRemedy
@@ -17,6 +18,23 @@ namespace NRemedy
     public class ARServer : IARServer
     {
         protected ARSession SessionInstance;
+
+        protected static int _SERVER_INFO_MAX_ENTRIES = -1;
+
+        public static int SERVER_INFO_MAX_ENTRIES
+        {
+            get
+            {
+                return _SERVER_INFO_MAX_ENTRIES;
+            }
+            set
+            {
+                _SERVER_INFO_MAX_ENTRIES = value;
+            }
+
+        }
+
+        private static object _lock = new object();
 
         protected void CheckSessionNull()
         {
@@ -70,15 +88,104 @@ namespace NRemedy
         public List<AREntry> GetEntryList(string SchemaName, string Qulification, List<uint> FieldIdList, uint StartIndex, uint? RetrieveCount, ref int totalMatch, List<ARSortInfo> SortInfo)
         {
             CheckSessionNull();
-            return SessionInstance.GetEntryList(
-                SchemaName,
-                Qulification,
-                FieldIdList == null ? null : FieldIdList.ToArray(),
-                StartIndex,
-                RetrieveCount,
-                ref totalMatch,
-                SortInfo == null ? null : SortInfo.ToArray()
-                );
+
+            //try to get the SERVER_INFO_MAX_ENTRIES when first GetEntryList call
+            //consider multi-thread problem
+            if (SERVER_INFO_MAX_ENTRIES == -1)
+            {
+                //thread may suspend just here,so we had better double check the SERVER_INFO_MAX_ENTRIES
+                 lock (_lock){
+                    if (SERVER_INFO_MAX_ENTRIES == -1)
+                    {
+                        List<uint> request = new List<uint>(){ (uint)ServerInfoType.SERVER_INFO_MAX_ENTRIES };
+                        var result = SessionInstance.GetServerInfo(request.ToArray());
+                        SERVER_INFO_MAX_ENTRIES = (int)result[0].Value;
+                    }
+                }
+            }
+            
+            //if SERVER_INFO_MAX_ENTRIES is 0 or -1, no need to cut page
+            if ((SERVER_INFO_MAX_ENTRIES == 0 || SERVER_INFO_MAX_ENTRIES == -1)
+                //if maxEntriesPerQuery can cover per Query,only one query needed.
+                || RetrieveCount <= SERVER_INFO_MAX_ENTRIES)
+            {
+                return SessionInstance.GetEntryList(
+                    SchemaName,
+                    Qulification,
+                    FieldIdList == null ? null : FieldIdList.ToArray(),
+                    StartIndex,
+                    RetrieveCount,
+                    ref totalMatch,
+                    SortInfo == null ? null : SortInfo.ToArray()
+                    );
+            }
+            else
+            {
+                List<AREntry> list = new List<AREntry>();
+                //if StartIndex or RetrieveCount is null, all records should be return
+                if (StartIndex == null || RetrieveCount == null)
+                {
+                    uint startIndex = StartIndex;
+                    int totalm = -1;
+                    do
+                    {
+                        var l = SessionInstance.GetEntryList(SchemaName, Qulification,
+                            FieldIdList == null ? null : FieldIdList.ToArray(),
+                            startIndex, (uint)SERVER_INFO_MAX_ENTRIES, ref totalm, //loop the page
+                            SortInfo == null ? null : SortInfo.ToArray());
+                        if (l.Count <= 0)
+                            break;
+                        list.AddRange(l);
+                        startIndex += (uint)SERVER_INFO_MAX_ENTRIES;
+                    }
+                    while (true);
+                    if (totalMatch != -1)
+                        totalMatch = list.Count;
+
+                }
+                //if both StartIndex and RetrieveCount is not null, only one page should be return
+                else
+                {
+                    uint startIndex2 = (uint)StartIndex;
+                    //we must seperaly use the parameter : totalMatch, in order to get the totalMatch once in this case
+                    var l2 = SessionInstance.GetEntryList(SchemaName, Qulification,
+                        FieldIdList == null ? null : FieldIdList.ToArray(),
+                        startIndex2, (uint)SERVER_INFO_MAX_ENTRIES, ref totalMatch, 
+                        SortInfo == null ? null : SortInfo.ToArray());
+                    int reservedCount = (int)RetrieveCount - SERVER_INFO_MAX_ENTRIES;
+                    startIndex2 += (uint)SERVER_INFO_MAX_ENTRIES;
+                    list.AddRange(l2);
+                    int tlm = -1; //avoid count(*) multiple times
+                    while (reservedCount > 0)
+                    {
+                        List<AREntry> l3;
+                        if (reservedCount > SERVER_INFO_MAX_ENTRIES)
+                        {
+                            l3 = SessionInstance.GetEntryList(SchemaName, Qulification,
+                                    FieldIdList == null ? null : FieldIdList.ToArray(),
+                                    startIndex2, (uint)SERVER_INFO_MAX_ENTRIES, ref tlm,
+                                    SortInfo == null ? null : SortInfo.ToArray());
+                            reservedCount = reservedCount - SERVER_INFO_MAX_ENTRIES;
+                            startIndex2 += (uint)SERVER_INFO_MAX_ENTRIES;
+                        }
+                        else
+                        {
+                            l3 = SessionInstance.GetEntryList(SchemaName, Qulification,
+                                    FieldIdList == null ? null : FieldIdList.ToArray(),
+                                    startIndex2, (uint)reservedCount, ref tlm,
+                                    SortInfo == null ? null : SortInfo.ToArray());
+                            reservedCount = 0;
+                        }
+                        list.AddRange(l3);
+                    }
+ 
+                }
+
+                return list;
+ 
+            }
+
+
         }
 
         public List<ARGroupByStatictisc> GetEntryListStatictisc(
@@ -104,6 +211,25 @@ namespace NRemedy
             SessionInstance.SetImpersonatedUser(user);
         }
 
+
+
+        public void BeginBulkEntryTransaction()
+        {
+            CheckSessionNull();
+            SessionInstance.BeginBulkEntryTransaction();
+        }
+
+        public ARTransactionResult CommitBulkEntryTransaction()
+        {
+            CheckSessionNull();
+            return SessionInstance.EndBulkEntryTransaction(1);
+        }
+
+        public void CancelBulkEntryTransaction()
+        {
+            CheckSessionNull();
+            SessionInstance.EndBulkEntryTransaction(2);
+        }
     }
 
 }

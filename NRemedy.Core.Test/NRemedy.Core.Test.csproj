@@ -60,6 +60,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ContextConfig.cs" />
+    <Compile Include="`[99]MutiEntry_Test_MaxEntriesConsider.cs" />
     <Compile Include="[8]ARProxyLambdaExtension.GetList.Test.cs" />
     <Compile Include="[7]ARProxyLambdaExtension.Get.Test.cs" />
     <Compile Include="[22]MutiEntry_Test_Set.cs" />

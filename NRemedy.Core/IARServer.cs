@@ -20,9 +20,9 @@ namespace NRemedy
         //ArrayList GetListField(string formName);
         //Field GetField(string formName, uint id);
 
-        //void BeginBulkEntryTransaction();
-        //ArrayList CancelBulkEntryTransaction();
-        //ArrayList SendBulkEntryTransaction();
+        void BeginBulkEntryTransaction();
+        ARTransactionResult CommitBulkEntryTransaction();
+        void CancelBulkEntryTransaction();
 
         string CreateEntry(string form, List<ARFieldValue> fieldValueList);
         void DeleteEntry(string form, string entryId, int deleteOption = 0);

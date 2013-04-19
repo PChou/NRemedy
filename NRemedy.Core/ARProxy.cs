@@ -236,21 +236,24 @@ namespace NRemedy
         public void SetEntry(string EntryId, List<ARFieldValue> FieldValueList)
         {
             string formName = _metaProvider.GetFormNameFromModelType();
-            ModelMeteData<T> metaData = new ModelMeteData<T>();
-            //metaData.FieldValeList = FieldValueList;
 
-            var properties = _metaProvider.GetPropertyInfoes(BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null);
-            List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
-            foreach (var p in properties)
-            {
-                if (FieldValueList.Find(delegate(ARFieldValue arfv) { return arfv.FieldId == p.DatabaseId; }) != null)
-                    props.Add(p);
-            }
+            loginContext.ServerInstance.SetEntry(formName, EntryId, FieldValueList);
 
-            metaData.Properties = props;
-            metaData.FormName = formName;
-            metaData.EntryId = EntryId;
-            SetEntry(metaData);
+            //ModelMeteData<T> metaData = new ModelMeteData<T>();
+            ////metaData.FieldValeList = FieldValueList;
+
+            //var properties = _metaProvider.GetPropertyInfoes(BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance, null);
+            //List<PropertyAndField<T>> props = new List<PropertyAndField<T>>();
+            //foreach (var p in properties)
+            //{
+            //    if (FieldValueList.Find(delegate(ARFieldValue arfv) { return arfv.FieldId == p.DatabaseId; }) != null)
+            //        props.Add(p);
+            //}
+
+            //metaData.Properties = props;
+            //metaData.FormName = formName;
+            //metaData.EntryId = EntryId;
+            //SetEntry(metaData);
         }
 
         public void SetEntry(T entry, PropertyFilterDelegate filter)
