@@ -49,4 +49,6 @@ extern void _FreeAREntryListFieldValueList(AREntryListFieldValueList* , ARBoolea
 
 extern void _FreeARLocStruct(ARLocStruct* , ARBoolean);
 
+extern void _FreeARServerInfoRequestList(ARServerInfoRequestList*, ARBoolean);
+
 #endif

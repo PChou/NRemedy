@@ -99,6 +99,11 @@ namespace ARNative {
 		BULK_ENTRY_XMLDELETE=			7*/
 	};
 
+
+	public enum class ServerInfoType{
+		SERVER_INFO_MAX_ENTRIES=		28
+	};
+
 //copy String to char safely, but invoker should response to free char*
 extern char* MarshalStringCopyToChar(String^ Source);
 //copy String to char unsafely,invoker should garantee the char* is safe to contain the string,usually for stack char[]

@@ -180,3 +180,17 @@ void _FreeARSortList(ARSortList* sortList, ARBoolean freeSelf)
 		sortList = NULL;
 	}
 }
+
+void _FreeARServerInfoRequestList(ARServerInfoRequestList* infoList, ARBoolean freeSelf)
+{
+	if(infoList == NULL)
+		return;
+	delete[] infoList->requestList;
+	infoList->requestList = NULL;
+	infoList->numItems = 0;
+
+	if(freeSelf == TRUE){
+		delete infoList;
+		infoList = NULL;
+	}
+}

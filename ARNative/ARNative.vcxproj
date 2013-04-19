@@ -148,6 +148,7 @@
     <ClInclude Include="h\ARException.h" />
     <ClInclude Include="h\ARFieldValue.h" />
     <ClInclude Include="h\ARGroupByStatictisc.h" />
+    <ClInclude Include="h\ARServerInfo.h" />
     <ClInclude Include="h\ARSession.h" />
     <ClInclude Include="h\ARSortInfo.h" />
     <ClInclude Include="h\ARTransactionResult.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="cpp\ARException.cpp" />
     <ClCompile Include="cpp\ARFieldValue.cpp" />
     <ClCompile Include="cpp\ARGroupByStatictisc.cpp" />
+    <ClCompile Include="cpp\ARServerInfo.cpp" />
     <ClCompile Include="cpp\ARSession.cpp" />
     <ClCompile Include="cpp\ARSortInfo.cpp" />
     <ClCompile Include="cpp\IntelligentARStruct.cpp" />

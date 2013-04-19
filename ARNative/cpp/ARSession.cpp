@@ -597,7 +597,44 @@ ARTransactionResult^ ARSession::EndBulkEntryTransaction(UInt32 ActionType)
 	return TransactionResult;
 }
 
+List<ARServerInfo^>^ ARSession::GetServerInfo(array<UInt32>^ TypeList)
+{
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	IntelligentARStructAR<ARStatusList> statuslist;//auto ~
+	IntelligentARStructLocal<ARServerInfoRequestList> inputList;
+	IntelligentARStructAR<ARServerInfoList> resultList;
 
+	(&inputList)->requestList = (unsigned int*)calloc(TypeList->Length,sizeof(unsigned int));
+	(&inputList)->numItems = 0;
+
+	for(int j = 0 ; j < TypeList->Length ; j++)
+	{
+		(&inputList)->requestList[j] = TypeList[j];
+		(&inputList)->numItems++;
+	}
+
+
+	if(AR_OPERATION_FIALED(ARGetServerInfo,(
+			this->session,	//session
+			&inputList,
+			&resultList,
+			&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+
+	List<ARServerInfo^>^ infoes = gcnew List<ARServerInfo^>();
+	int count = (&resultList)->numItems;
+	ARServerInfoStruct* p = (&resultList)->serverInfoList;
+	for(int i = 0; i < count ; i++, p++)
+	{
+		ARServerInfo^ info = ARServerInfo::ConstructARServerInfo(p);
+		infoes->Add(info);
+	}
+
+	return infoes;
+}
 
 
 }

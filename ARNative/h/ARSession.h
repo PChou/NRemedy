@@ -18,6 +18,7 @@
 #include "ARSortInfo.h"
 #include "ARBulkResult.h"
 #include "ARTransactionResult.h"
+#include "ARServerInfo.h"
 
 //for memset function
 #include <cstring>
@@ -87,7 +88,9 @@ namespace ARNative
 		//AR Transaction API
 		void BeginBulkEntryTransaction();
 		ARTransactionResult^ EndBulkEntryTransaction(UInt32 ActionType);
-		//
+		//AR Server Info API
+		List<ARServerInfo^>^ GetServerInfo(array<UInt32>^ TypeList);
+
 	private:
 		//store the AR session
 		ARControlStruct* session;
