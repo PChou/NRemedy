@@ -18,7 +18,8 @@ ARException^ ARException::ConstructARException(const ARStatusList* statusList)
 	}
 	else
 	{
-		return gcnew ARException();
+		//return gcnew ARException();
+		return nullptr;
 	}
 }
 

@@ -143,12 +143,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="h\ARAttachment.h" />
+    <ClInclude Include="h\ARBulkResult.h" />
     <ClInclude Include="h\AREntry.h" />
     <ClInclude Include="h\ARException.h" />
     <ClInclude Include="h\ARFieldValue.h" />
     <ClInclude Include="h\ARGroupByStatictisc.h" />
     <ClInclude Include="h\ARSession.h" />
     <ClInclude Include="h\ARSortInfo.h" />
+    <ClInclude Include="h\ARTransactionResult.h" />
     <ClInclude Include="h\IntelligentARStruct.h" />
     <ClInclude Include="h\Util.h" />
     <ClInclude Include="h\_Free.h" />
@@ -156,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cpp\ARAttachment.cpp" />
+    <ClCompile Include="cpp\ARBulkResult.cpp" />
     <ClCompile Include="cpp\AREntry.cpp" />
     <ClCompile Include="cpp\ARException.cpp" />
     <ClCompile Include="cpp\ARFieldValue.cpp" />

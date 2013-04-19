@@ -43,6 +43,8 @@ public:
 			FreeAREntryListFieldValueList((AREntryListFieldValueList*)&_Struct,False);
 		else if(strcmp(typeName,"struct ARLocStruct") == 0)
 			FreeARLocStruct((ARLocStruct*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARBulkEntryReturnList") == 0)
+			FreeARBulkEntryReturnList((ARBulkEntryReturnList*)&_Struct,False);
 #ifdef _DEBUG
 		else //always should not be here,which means no suitable FreeFunction
 			assert(strcmp(typeName,"Missing Type FreeFunction.") == 0);

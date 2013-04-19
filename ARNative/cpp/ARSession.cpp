@@ -548,4 +548,56 @@ void ARSession::SetImpersonatedUser(String^ UserName)
 	}
 }
 
+
+void ARSession::BeginBulkEntryTransaction()
+{
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	IntelligentARStructAR<ARStatusList> statuslist;//auto ~
+
+	if(AR_OPERATION_FIALED(ARBeginBulkEntryTransaction,(
+			this->session,	//session
+			&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+}
+
+
+ARTransactionResult^ ARSession::EndBulkEntryTransaction(UInt32 ActionType)
+{
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	IntelligentARStructAR<ARStatusList> statuslist;//auto ~
+	IntelligentARStructAR<ARBulkEntryReturnList> returnlist;
+	(&returnlist)->numItems = 0;
+
+	ARTransactionResult^ TransactionResult = gcnew ARTransactionResult();
+	TransactionResult->Success = true;
+
+	if(AR_OPERATION_FIALED(AREndBulkEntryTransaction,(
+			this->session,	//session
+			ActionType,
+			&returnlist,
+			&statuslist)))
+	{
+		if((&statuslist)->numItems > 0 && (&statuslist)->statusList[0].messageNum == 9713)
+			TransactionResult->Success = false;
+		else
+			throw ARException::ConstructARException(&statuslist);
+	}
+
+	TransactionResult->ResultList = gcnew List<ARBulkResult^>();
+	int count = (&returnlist)->numItems;
+	ARBulkEntryReturn* r = (&returnlist)->entryReturnList;
+	for(int i = 0 ; i < count ; i++ , r++){
+		TransactionResult->ResultList->Add(ARBulkResult::ConstructARBulkResult(r));
+	}
+
+	return TransactionResult;
+}
+
+
+
+
 }

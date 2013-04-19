@@ -89,7 +89,15 @@ namespace ARNative {
 		SORT_DESCENDING=       2
 	};
 
-
+	public enum class EntryCallType{
+		BULK_ENTRY_CREATE=				1,
+		BULK_ENTRY_SET=                 2,
+		BULK_ENTRY_DELETE=				3,
+		/*BULK_ENTRY_MERGE=               4,
+		BULK_ENTRY_XMLCREATE=           5,
+		BULK_ENTRY_XMLSET=				6,
+		BULK_ENTRY_XMLDELETE=			7*/
+	};
 
 //copy String to char safely, but invoker should response to free char*
 extern char* MarshalStringCopyToChar(String^ Source);

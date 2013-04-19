@@ -16,6 +16,8 @@
 #include "ARException.h"
 #include "AREntry.h"
 #include "ARSortInfo.h"
+#include "ARBulkResult.h"
+#include "ARTransactionResult.h"
 
 //for memset function
 #include <cstring>
@@ -82,6 +84,10 @@ namespace ARNative
 			UInt32 AttachFieldId);
 
 		void SetImpersonatedUser(String^ UserName);
+		//AR Transaction API
+		void BeginBulkEntryTransaction();
+		ARTransactionResult^ EndBulkEntryTransaction(UInt32 ActionType);
+		//
 	private:
 		//store the AR session
 		ARControlStruct* session;
