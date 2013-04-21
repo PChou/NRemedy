@@ -27,5 +27,7 @@ _ReSharper*/
 *.suo
 *.opensdf
 *.sdf
+!publish/x86/pdb/*.pdb
+!publish/x64/pdb/*.pdb
 _site/
 posts.db.txt
