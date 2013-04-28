@@ -15,20 +15,21 @@ namespace NRemedy.Linq
         where T : ARBaseForm
     {
         protected object context;
+        protected ITypeMetaProvider<T> metaProvider = new DefaultTypeMetaProvider<T>();
         //protected object factory;
 
         //dictionary cache of model and property and id
         //Form
             //property1 100001
             //property2 100002
-        protected static Dictionary<string, Dictionary<string, uint>> _Cache;
+        //protected static Dictionary<string, Dictionary<string, uint>> _Cache;
 
         public ARQueryProvider(object context)
         {
             this.context = context;
-            //this.factory = factory;
-            if(_Cache == null)
-                _Cache = new Dictionary<string, Dictionary<string, uint>>();
+            ////this.factory = factory;
+            //if(_Cache == null)
+            //    _Cache = new Dictionary<string, Dictionary<string, uint>>();
         }
 
         public TranslateResult ExecuteOnlyTranslate(Expression expression)
@@ -49,21 +50,26 @@ namespace NRemedy.Linq
             TranslateResult tr = this.Translate(expression);
 
             //T is model of AR,cache the id and property name map
-            if(!_Cache.ContainsKey(typeof(T).FullName))
-            {
-                Dictionary<string,uint> propertry = new Dictionary<string,uint>();
-                _Cache.Add(typeof(T).FullName,propertry);
-                foreach (PropertyInfo prop in typeof(T).GetProperties
-                //unbinder need at least readable property
-               (BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance))
-                {
-                    var fieldAttribute = GetARAttributeField(prop, ModelBinderAccessLevel.OnlyUnBind | ModelBinderAccessLevel.OnlyBind);
-                    if (fieldAttribute == null) continue;
-                    propertry.Add(prop.Name,fieldAttribute.DatabaseID);
-                }
-            }
-            
-            string formName = typeof(T).FullName;
+            //if(!_Cache.ContainsKey(typeof(T).FullName))
+            //{
+            //    Dictionary<string,uint> propertry = new Dictionary<string,uint>();
+            //    _Cache.Add(typeof(T).FullName,propertry);
+            //    foreach (PropertyInfo prop in typeof(T).GetProperties
+            //    //unbinder need at least readable property
+            //   (BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance))
+            //    {
+            //        var fieldAttribute = GetARAttributeField(prop, ModelBinderAccessLevel.OnlyUnBind | ModelBinderAccessLevel.OnlyBind);
+            //        if (fieldAttribute == null) continue;
+            //        propertry.Add(prop.Name,fieldAttribute.DatabaseID);
+            //    }
+            //}
+            //string formName = typeof(T).FullName;
+
+            //get metadata
+            var properties = metaProvider.GetPropertyInfoes(
+                 (BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance),
+                 null);
+
             //if no group by and no statictisc
             //we should invoke GetEntryList
             if (!tr.HasGroupBy && !tr.HasStatictisc)
@@ -71,15 +77,33 @@ namespace NRemedy.Linq
                 ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
                 //get select
                 List<uint> fieldIds = new List<uint>();
+
                 if(tr.HasSelect && tr.SelectedProperties.Count > 0){
-                    foreach(var s in tr.SelectedProperties){
-                        fieldIds.Add(_Cache[formName][s.SourceMemberName]);
+                    foreach (var p in properties)
+                    {
+                        if (tr.SelectedProperties.Find(s => s.SourceMemberName == p.Property.Name) == null)
+                            continue;
+                        fieldIds.Add(p.DatabaseId);
                     }
                 }
-                else{
-                    foreach(var d in _Cache[formName])
-                        fieldIds.Add(d.Value);
+                else
+                {
+                    foreach (var p in properties)
+                    {
+                        fieldIds.Add(p.DatabaseId);
+                    }
                 }
+
+
+                //if(tr.HasSelect && tr.SelectedProperties.Count > 0){
+                //    foreach(var s in tr.SelectedProperties){
+                //        fieldIds.Add(_Cache[formName][s.SourceMemberName]);
+                //    }
+                //}
+                //else{
+                //    foreach(var d in _Cache[formName])
+                //        fieldIds.Add(d.Value);
+                //}
 
                 //get paged
                 uint StartIndex = 0;
@@ -94,12 +118,26 @@ namespace NRemedy.Linq
                 //get order by
                 List<ARSortInfo> sort = new List<ARSortInfo>();
                 if(tr.HasOrderBy){
-                    foreach(var s in tr.OrderByList){
-                        sort.Add(new ARSortInfo{
-                            FieldId = _Cache[formName][s.Property],
-                            Order = s.Method == "OrderBy" ? SortOrder.SORT_ASCENDING : SortOrder.SORT_DESCENDING
+
+                    foreach (var p in properties)
+                    {
+                        var ss = tr.OrderByList.Find(s => s.Property == p.Property.Name);
+                        if (ss == null)
+                            continue;
+                        sort.Add(new ARSortInfo
+                        {
+                            FieldId = p.DatabaseId,
+                            Order = ss.Method == "OrderBy" ? SortOrder.SORT_ASCENDING : SortOrder.SORT_DESCENDING
                         });
                     }
+
+
+                    //foreach(var s in tr.OrderByList){
+                    //    sort.Add(new ARSortInfo{
+                    //        FieldId = _Cache[formName][s.Property],
+                    //        Order = s.Method == "OrderBy" ? SortOrder.SORT_ASCENDING : SortOrder.SORT_DESCENDING
+                    //    });
+                    //}
                 }
 
                 IList<T> resultList = proxy.GetEntryList(

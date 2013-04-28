@@ -70,6 +70,7 @@ namespace NRemedy.Core.Test
             ARLoginContext context = null;
             try
             {
+                //login will be perform in the construct of ARLoginContext
                 context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             }
             catch (Exception ex)
@@ -132,6 +133,7 @@ namespace NRemedy.Core.Test
             }
             catch (ARException ex)
             {
+                //can not establish the connect of AR
                 Assert.AreEqual(90, ex.MessageNumber); //183977-ErrorMsgs-7604.pdf page  72
             }
             finally

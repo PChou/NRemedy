@@ -12,6 +12,20 @@ namespace NRemedy.Linq
     /// </summary>
     public class TranslateResult : ConditionResult
     {
+        public ConditionResult ConditionResult { get; set; }
+
+        public SelectResult SelectResult { get; set; }
+
+        public NoQueryableResult NoQueryableResult { get; set; }
+
+        public OrderByResult OrderByResult { get; set; }
+
+
+
+
+
+
+
         //indicate if the linq expression contains where clause
         public bool HasWhere { get; set; }
         //build result of qulification for where clause,inherit from base class
@@ -57,13 +71,6 @@ namespace NRemedy.Linq
         public List<MemberMap> GroupedProperties { get; set; }
         //group type
         public Type GroupType { get; set; }
-
-
-
-
-
-
-
 
 
         //public LambdaExpression OrderByExpression { get; set; }

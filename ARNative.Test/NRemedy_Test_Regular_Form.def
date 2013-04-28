@@ -1,15 +1,15 @@
-﻿char-set: UTF-8
+char-set: UTF-8
 #
-#  File exported Tue Jan 15 15:34:21 2013
+#  File exported Thu Apr 25 18:36:48 2013
 #
 begin schema
    name           : NRemedy_Test_Join_Form
    core-version   : 2
    upgrade-version: 0
    num-fields     : 6
-   timestamp      : 1357894976
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    default-vui    : Default Administrator View
    num-vuis       : 1
    export-version : 11
@@ -19,15 +19,19 @@ begin schema
       join-option : 0
       join-query  : 4\1\1\536870915\99\536870915\
    next-field-id  : 536870912
+   archive        : 0\0\0
+      arch-time   : 0\0\0\0
+      arch-from   : 
+   audit          : 0\0\0\0\
 vui  {
    id             : 536870912
    name           : Default Administrator View
    label          : Default Administrator View
-   timestamp      : 1357894645
+   timestamp      : 1365433764
    vui-locale     : 
    vui-type       : 1
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    display-prop   : 1\20\4\26\Default Administrator View\
 }
 field {
@@ -39,11 +43,11 @@ field {
       mapfield    : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894645
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
-   maxlength      : 15
+   maxlength      : 255
    clob-store-opt : 0
    menu-style     : 2
    qbe-match-op   : 1
@@ -63,9 +67,9 @@ field {
       mapfield    : 8
    create-mode    : 1
    option         : 1
-   timestamp      : 1357894667
+   timestamp      : 1365433764
    owner          : Demo
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -89,9 +93,9 @@ field {
       mapfield    : 20000001
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894667
+   timestamp      : 1365433764
    owner          : Demo
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -114,9 +118,9 @@ field {
       mapfield    : 21000001
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894667
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -139,9 +143,9 @@ field {
       mapfield    : 8
    create-mode    : 1
    option         : 1
-   timestamp      : 1357894667
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -165,9 +169,9 @@ field {
       mapfield    : 536870915
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894975
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -185,23 +189,27 @@ begin schema
    core-version   : 2
    upgrade-version: 0
    num-fields     : 11
-   timestamp      : 1357894554
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    default-vui    : Default Administrator View
    num-vuis       : 1
    export-version : 11
    schema-type    : 1
    next-field-id  : 536870912
+   archive        : 0\0\0
+      arch-time   : 0\0\0\0
+      arch-from   : 
+   audit          : 0\0\0\0\
 vui  {
    id             : 536870912
    name           : Default Administrator View
    label          : Default Administrator View
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    vui-locale     : 
    vui-type       : 1
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    display-prop   : 1\20\4\26\Default Administrator View\
 }
 field {
@@ -211,9 +219,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 15
    clob-store-opt : 0
@@ -233,9 +241,9 @@ field {
    fieldtype      : 1
    create-mode    : 1
    option         : 1
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -256,9 +264,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
    permission     : 3\1
    permission     : 4\1
@@ -272,9 +280,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -294,9 +302,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -316,9 +324,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
    permission     : 3\1
    permission     : 4\1
@@ -332,9 +340,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 1
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    enum-value     : New
    enum-value     : Assigned
    enum-value     : Fixed
@@ -354,9 +362,9 @@ field {
    fieldtype      : 1
    create-mode    : 1
    option         : 1
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 254
    clob-store-opt : 0
@@ -377,9 +385,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
    permission     : 3\1
    permission     : 4\1
@@ -391,9 +399,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894553
+   timestamp      : 1365433763
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -413,9 +421,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894553
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -431,10 +439,10 @@ begin schema
    name           : NRemedy_Test_Regular_Form
    core-version   : 2
    upgrade-version: 0
-   num-fields     : 19
-   timestamp      : 1357894449
+   num-fields     : 20
+   timestamp      : 1365588002
    owner          : Demo
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    default-vui    : Default Administrator View
    num-vuis       : 1
    export-version : 11
@@ -442,11 +450,15 @@ begin schema
    next-field-id  : 536870912
    permission     : 0\1
    object-prop    : 2\60050\2\1\60062\2\1\
+   archive        : 0\0\0
+      arch-time   : 0\0\0\0
+      arch-from   : 
+   audit          : 0\0\0\0\
 vui  {
    id             : 536870912
    name           : Default Administrator View
    label          : Default Administrator View
-   timestamp      : 1356341483
+   timestamp      : 1365433764
    vui-locale     : 
    vui-type       : 1
    owner          : Demo
@@ -460,7 +472,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -482,7 +494,7 @@ field {
    fieldtype      : 1
    create-mode    : 1
    option         : 1
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -505,7 +517,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    permission     : 0\2
@@ -521,7 +533,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -543,7 +555,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -565,7 +577,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    permission     : 0\2
@@ -581,7 +593,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 1
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    enum-value     : New
@@ -603,7 +615,7 @@ field {
    fieldtype      : 1
    create-mode    : 1
    option         : 1
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -626,7 +638,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 3
-   timestamp      : 1356342136
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    permission     : 0\2
@@ -640,9 +652,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356575638
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
  display-instance : 536870912\16\3\41\2\6186\36200\30595\38300\4\6\1\5\6\2\7\40\2147483652\14\40\1\20\4\10\Time Field\21\41\2\0\400\5736\2100\66\41\2\22047\0\24409\2100\143\40\4&
  display-instance : 294967295\151\41\2\6299\0\21484\2100\170\40\0\231\6\0\288\6\0\289\4\4\0x00\290\4\4\0x00\310\6\0\
@@ -654,7 +666,7 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356342137
+   timestamp      : 1365433764
    owner          : Demo
    last-changed   : Demo
    length-units   : 0
@@ -676,9 +688,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356494625
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    range-low      : -2147483647
    range-high     : 2147483647
    permission     : 0\2
@@ -692,9 +704,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356575638
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
  display-instance : 536870912\16\3\41\2\2924\30100\30483\32200\4\6\1\5\6\2\7\40\2147483650\14\40\1\20\4\15\Date/Time Field\21\41\2\0\400\8886\2100\66\41\2\25196\0\27558\2100\143&
  display-instance : \40\4294967295\151\41\2\9448\0\24633\2100\170\40\0\231\6\0\288\6\0\289\4\4\0x00\290\4\4\0x00\310\6\0\
@@ -706,9 +718,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356575638
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\2
  display-instance : 536870912\16\3\41\2\5961\33200\30370\35300\4\6\1\5\6\2\7\40\2147483651\14\40\1\20\4\10\Date Field\21\41\2\0\400\5736\2100\66\41\2\22047\0\24409\2100\143\40\4&
  display-instance : 294967295\151\41\2\6299\0\21484\2100\170\40\0\231\6\0\288\6\0\289\4\4\0x00\290\4\4\0x00\310\6\0\
@@ -720,9 +732,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356577821
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    range-low      : -18450000000000000000.00000000
    range-high     : 18450000000000000000.00000000
    precision      : 8
@@ -737,9 +749,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1356575638
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    range-low      : -99999999999999999999999999.99
    range-high     : 99999999999999999999999999.99
    precision      : 2
@@ -754,9 +766,9 @@ field {
    fieldtype      : 0
    create-mode    : 2
    option         : 4
-   timestamp      : 1357784457
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    permission     : 0\1
  display-instance : 536870912\16\3\41\2\53093\24700\92013\35200\4\6\1\7\40\2147483655\14\40\1\20\4\15\Attachment Pool\143\40\4294967295\170\40\0\232\4\3\Add\233\4\6\Delete\234\4&
  display-instance : \7\Display\235\4\4\Save\236\4\11\Attach Name\237\4\9\File Name\238\4\8\Max Size\271\4\8\Deselect\310\6\0\
@@ -768,9 +780,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1357784457
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    maxsize        : 0
    attachtype     : 1
    fulltext-optns : 0
@@ -784,9 +796,9 @@ field {
    fieldtype      : 1
    create-mode    : 2
    option         : 2
-   timestamp      : 1357894448
+   timestamp      : 1365433764
    owner          : parkerz.admin
-   last-changed   : parkerz.admin
+   last-changed   : Demo
    length-units   : 0
    maxlength      : 255
    clob-store-opt : 0
@@ -796,5 +808,22 @@ field {
    permission     : 0\2
  display-instance : 536870912\18\3\41\2\47469\2700\75140\4800\4\6\1\5\6\2\7\40\2147483656\14\40\1\20\4\4\GUID\21\41\2\0\400\8998\2100\60\40\1\66\41\2\25309\0\27671\2100\143\40\4&
  display-instance : 294967295\151\41\2\9561\0\24746\2100\170\40\0\231\6\0\288\6\0\289\4\4\0x00\290\4\4\0x00\310\6\0\5116\6\0\
+}
+field {
+   id             : 20000009
+   name           : Radio Button Field
+   datatype       : 6
+   fieldtype      : 1
+   create-mode    : 2
+   option         : 2
+   timestamp      : 1365588002
+   owner          : Demo
+   last-changed   : Demo
+   enum-value     : First
+   enum-value     : Second
+   default        : 0
+   permission     : 0\2
+ display-instance : 536870912\17\3\41\2\47581\6000\68615\7800\4\6\1\5\6\2\7\40\2147483657\14\40\1\20\4\18\Radio Button Field\21\41\2\0\400\10123\1800\60\40\1\64\6\1\143\40\42949&
+ display-instance : 67295\151\41\2\10686\400\21034\2200\170\40\0\230\4\18\2\0\First\1\Second\288\6\0\289\4\4\0x00\290\4\4\0x00\310\6\0\
 }
 end

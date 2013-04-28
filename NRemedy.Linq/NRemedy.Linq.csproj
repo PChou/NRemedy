@@ -56,6 +56,12 @@
     <Compile Include="Query.cs" />
     <Compile Include="QueryProvider.cs" />
     <Compile Include="QueryVisitor.cs" />
+    <Compile Include="SelectExpressionVisitor.cs" />
+    <Compile Include="SelectResult.cs" />
+    <Compile Include="NoQueryableExpressionVisitor.cs" />
+    <Compile Include="NoQueryableResult.cs" />
+    <Compile Include="TakeExpressionVisitor.cs" />
+    <Compile Include="OrderByResult.cs" />
     <Compile Include="TranslateResult.cs" />
     <Compile Include="TypeSystem.cs" />
   </ItemGroup>

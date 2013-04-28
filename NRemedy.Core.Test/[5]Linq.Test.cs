@@ -76,7 +76,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('Character Field' = \"Hello Remedy\")", tr.Qulification.ToString());
+                Assert.AreEqual("('20000001' = \"Hello Remedy\")", tr.Qulification.ToString());
 
             }
 
@@ -94,7 +94,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('Integer Field' > 1)", tr.Qulification.ToString());
+                Assert.AreEqual("('20000002' > 1)", tr.Qulification.ToString());
 
             }
 
@@ -112,7 +112,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('Decimal Number Field' < 2)", tr.Qulification.ToString());
+                Assert.AreEqual("('20000007' < 2)", tr.Qulification.ToString());
             }
 
         }
@@ -131,7 +131,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual(string.Format("('Date/Time Field' >= \"{0}\")", str)
+                Assert.AreEqual(string.Format("('20000003' >= \"{0}\")", str)
                     , tr.Qulification.ToString());
             }
 
@@ -151,7 +151,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('Real Number Field' <= 3.14)"
+                Assert.AreEqual("('20000006' <= 3.14)"
                     , tr.Qulification.ToString());
             }
 
@@ -169,7 +169,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('Character Field' LIKE \"%Hello world%\")"
+                Assert.AreEqual("('20000001' LIKE \"%Hello world%\")"
                     , tr.Qulification.ToString());
 
             }
@@ -189,7 +189,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("(('Character Field' LIKE \"%Hello world%\") AND ('Integer Field' = 65535))"
+                Assert.AreEqual("(('20000001' LIKE \"%Hello world%\") AND ('20000002' = 65535))"
                     , tr.Qulification.ToString());
 
             }
@@ -208,7 +208,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
                 Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("(('Character Field' LIKE \"%Hello world%\") AND (('Integer Field' = 65535) OR ('Integer Field' > 65535)))"
+                Assert.AreEqual("(('20000001' LIKE \"%Hello world%\") AND (('20000002' = 65535) OR ('20000002' > 65535)))"
                     , tr.Qulification.ToString());
             }
 

@@ -21,14 +21,7 @@ namespace NRemedy.Linq
         internal ConditionResult Translate(Expression expression)
         {
             this.Visit(expression);
-            return tr; 
-        }
- 
-        private static Expression StripQuotes(Expression e) {
-            while (e.NodeType == ExpressionType.Quote) {
-                e = ((UnaryExpression)e).Operand;
-            }
-            return e;
+            return tr;
         }
 
         public override Expression Visit(Expression node)
@@ -49,8 +42,8 @@ namespace NRemedy.Linq
                 tr.Qulification.Append(")");
                 return m;
             }
-            
-            throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+
+            throw new NotSupportedException(string.Format("The method '{0}' is not supported in ConditionExpressionVisitor", m.Method.Name));
         }
  
         protected override Expression VisitUnary(UnaryExpression u) {
@@ -179,13 +172,13 @@ namespace NRemedy.Linq
                     string.Format("No ARFieldAttribute is found on Property : {0}.", node.Member.Name));
             ARFieldAttribute attr = (ARFieldAttribute)attrs.First();
 
-            string arFieldName = attr.DatabaseName;
-            if (string.IsNullOrEmpty(arFieldName)) throw new CustomAttributeFormatException(
-                    string.Format("DatabaseName in ARFieldAttribute is found on Property : {0}.", node.Member.Name)
+            uint arFieldId = attr.DatabaseID;
+            if (arFieldId == default(uint)) throw new CustomAttributeFormatException(
+                    string.Format("Invalid DatabaseId in ARFieldAttribute is found on Property : {0}.", node.Member.Name)
                 );
 
             tr.Qulification.Append("'");
-            tr.Qulification.Append(arFieldName);
+            tr.Qulification.Append(arFieldId);
             tr.Qulification.Append("'");
 
             return node;

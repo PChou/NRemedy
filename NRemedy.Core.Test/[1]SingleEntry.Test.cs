@@ -52,11 +52,14 @@ namespace NRemedy.Core.Test
             ARLoginContext context = new ARLoginContext(TestServer, TestAdmin, TestAdminPwd);
             try
             {
+                //create a generic type proxy to perform API
                 ARProxy<NRemedy_Test_Regular_Form> proxy = new ARProxy<NRemedy_Test_Regular_Form>(context);
+                //simply use a model instance to create an entry
                 string entryId = proxy.CreateEntry(new NRemedy_Test_Regular_Form {
                     CharacterField = TestCharacterFieldValue
                 });
                 Assert.AreNotEqual(null, entryId);
+                //also use a entryid(request id) to get entry from AR
                 NRemedy_Test_Regular_Form model = proxy.GetEntry(entryId);
                 Assert.AreEqual(TestCharacterFieldValue, model.CharacterField);
             }
