@@ -18,10 +18,12 @@ namespace NRemedy.Linq
         }
 
 
-        internal NoQueryableResult Translate(Expression expression)
+        internal void Translate(Expression expression,TranslateResult translateResult)
         {
+            if (expression == null || translateResult == null)
+                return;
             this.Visit(expression);
-            return sr;
+            translateResult.NoQueryableResult = sr; ;
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression m)

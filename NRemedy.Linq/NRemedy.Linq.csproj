@@ -60,7 +60,7 @@
     <Compile Include="SelectResult.cs" />
     <Compile Include="NoQueryableExpressionVisitor.cs" />
     <Compile Include="NoQueryableResult.cs" />
-    <Compile Include="TakeExpressionVisitor.cs" />
+    <Compile Include="OrderByExpressionVisitor.cs" />
     <Compile Include="OrderByResult.cs" />
     <Compile Include="TranslateResult.cs" />
     <Compile Include="TypeSystem.cs" />

@@ -15,13 +15,18 @@ namespace NRemedy.Linq
         public SelectExpressionVisitor()
         {
             tr = new SelectResult();
-            tr.SelectedProperties = new List<MemberMap>();
+            tr.SelectedProperties = new List<string>();
         }
 
-        internal SelectResult Translate(Expression expression)
+        internal void Translate(LambdaExpression expression,TranslateResult translateResult)
         {
-            this.Visit(expression);
-            return tr;
+            if (expression == null || translateResult == null)
+                return;
+            this.Visit(expression.Body);//get selected properties
+
+            tr.TargetType = expression.ReturnType;
+            tr.SelectExpression = expression;
+            translateResult.SelectResult = tr;
         }
 
         public override Expression Visit(Expression node)
@@ -31,11 +36,7 @@ namespace NRemedy.Linq
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            tr.SelectedProperties.Add(new MemberMap
-            {
-                SourceMemberName = node.Member.Name
-            });
-
+            tr.SelectedProperties.Add(node.Member.Name);
             return node;
         }
     }

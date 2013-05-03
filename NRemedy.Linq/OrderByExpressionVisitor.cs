@@ -18,10 +18,20 @@ namespace NRemedy.Linq
             direction = OrderDirection;
         }
 
-        internal OrderByResult Translate(Expression expression)
+        internal void Translate(Expression expression, TranslateResult translateResult)
         {
+            if (expression == null || translateResult == null)
+                return;
             this.Visit(expression);
-            return sr;
+            if (translateResult.OrderByResult == null)
+                translateResult.OrderByResult = sr;
+            else
+            {
+                foreach (var i in sr.OrderByList)
+                {
+                    translateResult.OrderByResult.OrderByList.Add(i);
+                }
+            }
         }
 
         protected override Expression VisitMember(MemberExpression node)

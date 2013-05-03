@@ -75,8 +75,8 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('20000001' = \"Hello Remedy\")", tr.Qulification.ToString());
+                Assert.IsTrue(tr.ConditionResult != null);
+                Assert.AreEqual("('20000001' = \"Hello Remedy\")", tr.ConditionResult.Qulification.ToString());
 
             }
 
@@ -93,8 +93,8 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('20000002' > 1)", tr.Qulification.ToString());
+                Assert.IsTrue(tr.ConditionResult != null);
+                Assert.AreEqual("('20000002' > 1)", tr.ConditionResult.Qulification.ToString());
 
             }
 
@@ -111,8 +111,8 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
-                Assert.AreEqual("('20000007' < 2)", tr.Qulification.ToString());
+                Assert.IsTrue(tr.ConditionResult != null);
+                Assert.AreEqual("('20000007' < 2)", tr.ConditionResult.Qulification.ToString());
             }
 
         }
@@ -130,9 +130,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
+                Assert.IsTrue(tr.ConditionResult != null);
                 Assert.AreEqual(string.Format("('20000003' >= \"{0}\")", str)
-                    , tr.Qulification.ToString());
+                    , tr.ConditionResult.Qulification.ToString());
             }
 
         }
@@ -150,9 +150,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
+                Assert.IsTrue(tr.ConditionResult != null);
                 Assert.AreEqual("('20000006' <= 3.14)"
-                    , tr.Qulification.ToString());
+                    , tr.ConditionResult.Qulification.ToString());
             }
 
         }
@@ -168,9 +168,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
+                Assert.IsTrue(tr.ConditionResult != null);
                 Assert.AreEqual("('20000001' LIKE \"%Hello world%\")"
-                    , tr.Qulification.ToString());
+                    , tr.ConditionResult.Qulification.ToString());
 
             }
 
@@ -188,9 +188,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
+                Assert.IsTrue(tr.ConditionResult != null);
                 Assert.AreEqual("(('20000001' LIKE \"%Hello world%\") AND ('20000002' = 65535))"
-                    , tr.Qulification.ToString());
+                    , tr.ConditionResult.Qulification.ToString());
 
             }
 
@@ -207,9 +207,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasWhere);
+                Assert.IsTrue(tr.ConditionResult != null);
                 Assert.AreEqual("(('20000001' LIKE \"%Hello world%\") AND (('20000002' = 65535) OR ('20000002' > 65535)))"
-                    , tr.Qulification.ToString());
+                    , tr.ConditionResult.Qulification.ToString());
             }
 
         }
@@ -224,14 +224,14 @@ namespace NRemedy.Core.Test
                         select s.CharacterField;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasSelect);
+                Assert.IsTrue(tr.SelectResult != null);
 
                 NRemedy_Test_Regular_Form tmp = new NRemedy_Test_Regular_Form();
                 tmp.CharacterField = "tmp";
 
-                var fun = tr.SelectExpression.Compile();
+                var fun = tr.SelectResult.SelectExpression.Compile();
                 Assert.AreEqual("tmp", (string)fun.DynamicInvoke(tmp));
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "CharacterField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "CharacterField") != null);
             }
         }
 
@@ -249,20 +249,20 @@ namespace NRemedy.Core.Test
                         };
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasSelect);
+                Assert.IsTrue(tr.SelectResult != null);
 
                 DateTime dt = DateTime.Now;
                 NRemedy_Test_Regular_Form tmp = new NRemedy_Test_Regular_Form();
                 tmp.RealNumberField = 3.14;
                 tmp.DateTimeField = dt;
 
-                var fun = tr.SelectExpression.Compile();
+                var fun = tr.SelectResult.SelectExpression.Compile();
                 dynamic dymic = fun.DynamicInvoke(tmp);
                 Assert.AreEqual(3.14, dymic.RealNumberField);
                 Assert.AreEqual(dt, dymic.DateTimeField);
 
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "RealNumberField") != null);
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "DateTimeField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "RealNumberField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "DateTimeField") != null);
             }
         }
 
@@ -282,7 +282,7 @@ namespace NRemedy.Core.Test
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 //var tr2 = ((ARQueryProvider<NRemedy_Test_Regular_Form>)q.Provider).ExecuteOnlyTranslate(q.Expression);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasSelect);
+                Assert.IsTrue(tr.SelectResult != null);
 
                 DateTime dt = DateTime.Now;
                 NRemedy_Test_Regular_Form tmp = new NRemedy_Test_Regular_Form();
@@ -290,15 +290,15 @@ namespace NRemedy.Core.Test
                 tmp.DateTimeField = dt;
                 tmp.DecimalNumberField = 3.14m;
 
-                var fun = tr.SelectExpression.Compile();
+                var fun = tr.SelectResult.SelectExpression.Compile();
                 Temp temp = (Temp)fun.DynamicInvoke(tmp);
                 Assert.AreEqual("3.14", temp.Str);
                 Assert.AreEqual(dt, temp.dt);
                 Assert.AreEqual(3.14m, temp.de);
 
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "CharacterField") != null);
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "DateTimeField") != null);
-                Assert.IsTrue(tr.SelectedProperties.First(m => m.SourceMemberName == "DecimalNumberField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "CharacterField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "DateTimeField") != null);
+                Assert.IsTrue(tr.SelectResult.SelectedProperties.First(m => m == "DecimalNumberField") != null);
             }
         }
 
@@ -313,9 +313,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasSkip);
-                Assert.IsNotNull(tr.Skip);
-                Assert.AreEqual(10, tr.Skip);
+                Assert.IsTrue(tr.NoQueryableResult.HasSkip);
+                Assert.IsNotNull(tr.NoQueryableResult.Skip);
+                Assert.AreEqual(10, tr.NoQueryableResult.Skip);
 
             }
         }
@@ -331,9 +331,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasSkip);
-                Assert.IsNotNull(tr.Skip);
-                Assert.AreEqual(10, tr.Skip);
+                Assert.IsTrue(tr.NoQueryableResult.HasSkip);
+                Assert.IsNotNull(tr.NoQueryableResult.Skip);
+                Assert.AreEqual(10, tr.NoQueryableResult.Skip);
 
             }
         }
@@ -371,9 +371,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasTake);
-                Assert.IsNotNull(tr.Take);
-                Assert.AreEqual(11, tr.Take);
+                Assert.IsTrue(tr.NoQueryableResult.HasTake);
+                Assert.IsNotNull(tr.NoQueryableResult.Take);
+                Assert.AreEqual(11, tr.NoQueryableResult.Take);
 
             }
         }
@@ -390,9 +390,9 @@ namespace NRemedy.Core.Test
                         select s;
                 Assert.IsTrue(q.Provider is ARQueryProvider<NRemedy_Test_Regular_Form>);
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasTake);
-                Assert.IsNotNull(tr.Take);
-                Assert.AreEqual(10, tr.Take);
+                Assert.IsTrue(tr.NoQueryableResult.HasTake);
+                Assert.IsNotNull(tr.NoQueryableResult.Take);
+                Assert.AreEqual(10, tr.NoQueryableResult.Take);
 
             }
         }
@@ -429,10 +429,10 @@ namespace NRemedy.Core.Test
                 var q = from s in set.Take(10).Skip(2)
                         select s;
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasTake);
-                Assert.IsTrue(tr.HasSkip);
-                Assert.AreEqual(10, tr.Take);
-                Assert.AreEqual(2, tr.Skip);
+                Assert.IsTrue(tr.NoQueryableResult.HasTake);
+                Assert.IsTrue(tr.NoQueryableResult.HasSkip);
+                Assert.AreEqual(10, tr.NoQueryableResult.Take);
+                Assert.AreEqual(2, tr.NoQueryableResult.Skip);
 
             }
         }
@@ -447,9 +447,9 @@ namespace NRemedy.Core.Test
                         orderby s.CharacterField
                         select s;
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasOrderBy);
-                Assert.AreEqual("CharacterField", tr.OrderByList.First().Property);
-                Assert.AreEqual("OrderBy", tr.OrderByList.First().Method);
+                Assert.IsTrue(tr.OrderByResult != null);
+                Assert.AreEqual("CharacterField", tr.OrderByResult.OrderByList.First().Property);
+                Assert.AreEqual("OrderBy", tr.OrderByResult.OrderByList.First().Method);
 
             }
         }
@@ -464,9 +464,9 @@ namespace NRemedy.Core.Test
                         orderby s.CharacterField descending
                         select s;
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasOrderBy);
-                Assert.AreEqual("CharacterField", tr.OrderByList.First().Property);
-                Assert.AreEqual("OrderByDescending", tr.OrderByList.First().Method);
+                Assert.IsTrue(tr.OrderByResult != null);
+                Assert.AreEqual("CharacterField", tr.OrderByResult.OrderByList.First().Property);
+                Assert.AreEqual("OrderByDescending", tr.OrderByResult.OrderByList.First().Method);
 
             }
         }
@@ -482,11 +482,11 @@ namespace NRemedy.Core.Test
                         orderby s.IntegerField
                         select s;
                 TranslateResult tr = q.Translate<NRemedy_Test_Regular_Form>();
-                Assert.IsTrue(tr.HasOrderBy);
-                Assert.AreEqual("CharacterField", tr.OrderByList.First().Property);
-                Assert.AreEqual("OrderByDescending", tr.OrderByList.First().Method);
-                Assert.AreEqual("IntegerField", tr.OrderByList[1].Property);
-                Assert.AreEqual("OrderBy", tr.OrderByList[1].Method);
+                Assert.IsTrue(tr.OrderByResult != null);
+                Assert.AreEqual("CharacterField", tr.OrderByResult.OrderByList.First().Property);
+                Assert.AreEqual("OrderByDescending", tr.OrderByResult.OrderByList.First().Method);
+                Assert.AreEqual("IntegerField", tr.OrderByResult.OrderByList[1].Property);
+                Assert.AreEqual("OrderBy", tr.OrderByResult.OrderByList[1].Method);
 
             }
         }

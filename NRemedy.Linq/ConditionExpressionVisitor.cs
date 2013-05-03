@@ -20,8 +20,19 @@ namespace NRemedy.Linq
 
         internal ConditionResult Translate(Expression expression)
         {
+            if (expression == null)
+                return null;
             this.Visit(expression);
             return tr;
+        }
+
+        internal void Translate(Expression expression,TranslateResult translateResult)
+        {
+            if (expression == null || translateResult == null)
+                return;
+            this.Visit(expression);
+
+            translateResult.ConditionResult = tr;
         }
 
         public override Expression Visit(Expression node)

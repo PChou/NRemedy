@@ -70,18 +70,17 @@ namespace NRemedy.Linq
                  (BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance),
                  null);
 
-            //if no group by and no statictisc
+            //if no statictisc
             //we should invoke GetEntryList
-            if (!tr.HasGroupBy && !tr.HasStatictisc)
+            if (tr.HasStatictisc == false)
             {
                 ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
                 //get select
                 List<uint> fieldIds = new List<uint>();
 
-                if(tr.HasSelect && tr.SelectedProperties.Count > 0){
-                    foreach (var p in properties)
-                    {
-                        if (tr.SelectedProperties.Find(s => s.SourceMemberName == p.Property.Name) == null)
+                if(tr.SelectResult != null && tr.SelectResult.SelectedProperties.Count > 0){
+                    foreach (var p in properties){
+                        if (tr.SelectResult.SelectedProperties.Find(s => s == p.Property.Name) == null)
                             continue;
                         fieldIds.Add(p.DatabaseId);
                     }
@@ -108,20 +107,18 @@ namespace NRemedy.Linq
                 //get paged
                 uint StartIndex = 0;
                 uint? RetrieveCount = null;
-                if(tr.HasSkip)
-                    StartIndex = (uint)tr.Skip.Value;
-                if(tr.HasTake)
-                    RetrieveCount = (uint)tr.Take.Value;
-                //do not return count
-                //int total = -1;
+                if (tr.NoQueryableResult != null && tr.NoQueryableResult.HasSkip)
+                    StartIndex = (uint)tr.NoQueryableResult.Skip.Value;
+                if (tr.NoQueryableResult != null && tr.NoQueryableResult.HasTake)
+                    RetrieveCount = (uint)tr.NoQueryableResult.Take.Value;
 
                 //get order by
                 List<ARSortInfo> sort = new List<ARSortInfo>();
-                if(tr.HasOrderBy){
+                if(tr.OrderByResult != null && tr.OrderByResult.OrderByList.Count > 0){
 
                     foreach (var p in properties)
                     {
-                        var ss = tr.OrderByList.Find(s => s.Property == p.Property.Name);
+                        var ss = tr.OrderByResult.OrderByList.Find(s => s.Property == p.Property.Name);
                         if (ss == null)
                             continue;
                         sort.Add(new ARSortInfo
@@ -130,18 +127,10 @@ namespace NRemedy.Linq
                             Order = ss.Method == "OrderBy" ? SortOrder.SORT_ASCENDING : SortOrder.SORT_DESCENDING
                         });
                     }
-
-
-                    //foreach(var s in tr.OrderByList){
-                    //    sort.Add(new ARSortInfo{
-                    //        FieldId = _Cache[formName][s.Property],
-                    //        Order = s.Method == "OrderBy" ? SortOrder.SORT_ASCENDING : SortOrder.SORT_DESCENDING
-                    //    });
-                    //}
                 }
 
                 IList<T> resultList = proxy.GetEntryList(
-                    tr.Qulification.ToString(),
+                    tr.ConditionResult == null ? null : tr.ConditionResult.Qulification.ToString(),
                     fieldIds,
                     StartIndex,
                     RetrieveCount,
@@ -149,17 +138,17 @@ namespace NRemedy.Linq
                     sort
                     );
 
-                if (tr.TargetType == null || !tr.HasSelect) //means no explict select clause
+                if (tr.SelectResult == null || tr.SelectResult.TargetType == null) //means no explict select clause
                 {
                     return resultList;
                 }
                 else
                 {
-                    Type[] typeArgs = { tr.TargetType, typeof(T) };
+                    Type[] typeArgs = { tr.SelectResult.TargetType, typeof(T) };
                     return (IEnumerable)Activator.CreateInstance(
                             typeof(Enumerator<,>).MakeGenericType(typeArgs),
                             resultList,
-                            tr.SelectExpression);
+                            tr.SelectResult.SelectExpression);
                 }
             }
             else if (tr.HasStatictisc && tr.StatictiscVerb == "Count")
@@ -167,7 +156,7 @@ namespace NRemedy.Linq
                 ARProxy<T> proxy = new ARProxy<T>((ARLoginContext)context);
                 List<UInt32> groups = null;
                 var list = proxy.GetListEntryStatictisc(
-                    tr.Qulification.ToString(),
+                    tr.ConditionResult == null ? null : tr.ConditionResult.Qulification.ToString(),
                     ARStatictisc.STAT_OP_COUNT,
                     null,
                     groups);
@@ -175,7 +164,6 @@ namespace NRemedy.Linq
                     throw new Exception("GetListEntryStatictisc returns invalid result.");
                 T entry = list[0];
                 return Convert.ToInt32((entry as ARBaseForm).Statictisc);
- 
             }
             else
             {
