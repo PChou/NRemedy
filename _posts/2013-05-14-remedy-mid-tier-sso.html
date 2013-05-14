@@ -1,0 +1,111 @@
+---
+layout: default
+title: Remedy Mid-tier SSO
+description: 需要在Mid-tier环境和非Mid-tier环境之间进行SSO的话，可以参考本文给出的方案。与此同时，本文也针对SSO现在常用的方案进行了一些简单的整理。
+categories: [BMC, Web]
+tags: [BMC, Mid-Tier, Remedy, SSO]
+---
+{% include post.container.begin %}
+<script type="text/javascript" src="{{ site.baseurl }}/assert/js/shCore.js"></script><script type="text/javascript" src="{{ site.baseurl }}/assert/js/shBrushJava.js"></script><link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/assert/css/shCore.css"><link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/assert/css/shThemeDefault.css"> <p>SSO（Single-Sign-On）单点登录，是指在一个网站中登录后能够无登录的以相同的身份访问另一个站点的资源。在之前的项目中遇到了如何在有Mid-tier的系统中实现SSO，这主要分为两种情况：</p> <ul> <li>在非Mid-tier站点中登录后，无登录进入Mid-tier站点  <li>在Mid-tier站点登录后，无登录进入非Mid-tier站点</li></ul> <p>由于Mid-tier几乎是个黑盒的产品，所以要实现SSO需要一些技巧，当然，本文提到方法只是可选的方案，仅供参考，安全方面的问题也不是本文讨论的重点。</p> <p>&nbsp;</p> <h2><font style="font-weight: bold">单点登录的基础问题（纯理论，可跳过）</font></h2> <p>登录本质上是服务器端保持用户会话的行为，不同的web框架有不同的实现方式，但session这个概念似乎被广为接受，是一个专用名词了。session本质上需要跟cookie一起使用，才能在服务器端标识用户。</p> <p>我们自底向上考虑这个问题，如果我们的多个站点能够共享session的话那么单点登录就十分容易了，典型的方式是将session保存在共享缓存（memcache）或者数据库中，具体的细节笔者没有实现过，所以不多提了。</p> <p>其次，标准的SSO方案应该是包含一个第三方认证服务器的，这个服务器负责实现验证和鉴权，其他服务器都从这个服务器上获取用户登录信息，这个方式有些像上面这种共享session的方式，但是显然这种方式灵活度更大，但是成本也比较高，是一种标准的SSO方案：图片来源（<a href="http://www.cnblogs.com/yupeng/archive/2012/05/24/2517317.html">http://www.cnblogs.com/yupeng/archive/2012/05/24/2517317.html</a>）</p> <p><img src="http://pic002.cnblogs.com/images/2012/51154/2012052423261381.gif"></p> <p>上面两种方法看起来十分出色，但是实际上难以实现，因为SSO往往是一个系统集成的问题，系统在规划阶段不太可能考虑这样的需求，如果改造系统的话成本比较高。在现实的情况下，单点登录的问题可以认为就是跨域问题：</p> <p>虽然cookie不能跨域（浏览器限制），但是如果两个站点在同一个父域内的话，利用cookie可以在父域中共享的特点可以实现SSO。cookie有一个Domain属性，很多web框架默认是写入当前域的，我们可以自己重载，写入父域。比如：A.company.com和站点B.company.com，用户登录A.company.com的时候将其登录信息写入cookie，并将Domain设置为*.company.com，这样B.company.com站点就可以看到这个cookie了。</p> <p>如果不在同一个父域怎么解决呢？</p> <p>流行的做法是利用iframe的src或者是&lt;script&gt;的src属性，现在流行的JSONP就是利用script的src可以“跨域”的特性，实现的ajax跨域。在实现单点登录的时候，也可以利用这一点。关于JSONP可以查看这里：<a href="http://www.cnblogs.com/dowinning/archive/2012/04/19/json-jsonp-jquery.html">【原创】说说JSON和JSONP，也许你会豁然开朗，含jQuery用例</a>。</p> <p>另外，P3P在这里也扮演重要的角色。简单的说，假设你是从A.company.com访问B.company.com，也就是说Header的Referer不是当前域话，B.company.com无法在第一时间写入利用Set Cookie写入cookie，浏览器会认为这是不安全和不可靠的。但是利用P3P协议有时可以实现，但在浏览器兼容方面需要考虑很多。参考<a href="http://sjolzy.cn/PHP-Using-P3P-to-achieve-cross-domain.html">PHP - 利用P3P实现跨域</a></p> <p>最近比较流行的OAuth也可以用来解决单点登录问题。</p> <p>由于本文的重点不在这里，出于完整性的考虑补充到此。好，接下来进入正题。</p> <p>&nbsp;</p> <h2><strong>在非Mid-tier站点中登录后，无登录进入Mid-tier站点</strong></h2> <p>BMC有一份关于Mid-tier SSO的文档Integrating BMC Remedy Action Request System with Single Sign-On (SSO) 。要实现这一点就需要利用Mid-tier的这个特性。由于Mid-tier是java开发的，所以下面的代码跟java有关。</p> <p>在Mid-tier的实现中有一个接口<strong>com.remedy.arsys.session.Authenticator</strong></p> <p>该接口有如下方法：</p> <ul> <li>void <strong>init</strong>(Map cfg)  <li>UserCredentials <strong>getAuthenticatedCredentials</strong>(HttpServletRequest request, HttpServletResponse response)  <li>void <strong>destroy</strong>()</li></ul> <p>Mid-tier会在恰当的时候调用该接口的实现，以获取用户的登录信息<strong>UserCredentials</strong>，<strong>UserCredentials</strong>是一个保存有UserName、Password、AuthString的结构。然后，Mid-tier会将用这个把这个结构抛给AR认证，AR如何认证跟Mid-tier就没关系了。默认情况下，Mid-tier有一个<strong>DefaultAuthenticator</strong>的实现，这个实现就是从<strong>HttpServletRequest</strong>中获取特定键值对应的用户名和密码以及AuthString，然后构造<strong>UserCredentials</strong>并返回。这个键值可以是Form中的，也可以是QueryString中的，这也就是为什么通过在url上添加username=&amp;pwd=也可以登录的原因。如果在处理中出错或者无法获得合法的<strong>UserCredentials</strong>，会重定向到login页面。</p> <p>既然核心的接口暴露出来了，那么假如我们重写这个实现，就可以避免使用键值的方式来获取登录信息，比如可以从cookie、Header中获取。也就是说，如果A.company.com的cookie可以被B.company.com（Mide-tier）获取，那么通过重写这个<strong>Authenticator</strong>就可以获取cookie中的用户信息，从而“欺骗”Mid-tier用户已经登录了。</p> <p>但是接下来的问题是，由于<strong>UserCredentials</strong>会被传到AR端进行身份验证，所以需要保证“伪造”的这个<strong>UserCredentials</strong>能够通过AR验证。而在AR端，进行身份验证有多种方式，比如LDAP集成验证，或者AR的Form验证。而cookie一般不适合保存密码，所以构造的这个<strong>UserCredentials</strong>的时候也不能获得用户的密码，一般情况下可以设置一个所有用户都能通过验证的密码，简称“默认密码”。</p> <p>因此，当AR是以Form验证方式设置的时候，这种方案就不可取了。但是仍然可以通过重写AR端的AREA认证模块来实现，但是在Mid-tier端的原理是一样的。下图归纳了上述过程，并给出了一种实现：</p> <p><img style="background-image: none; border-bottom: 0px; border-left: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top: 0px; border-right: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-05-14-img2.png" width="640" height="264"></p> <p>上图为我们描述了下面的场景</p> <ol> <li>浏览器访问Mid-tier前，设置<a href="http://zh.wikipedia.org/zh-cn/HTTP%E5%9F%BA%E6%9C%AC%E8%AE%A4%E8%AF%81" target="_blank">HTTP basic Authentication</a>，于是在访问Mid-tier时有Authorization头  <li>Mid-tier初步处理请求  <li>Mid-tier根据config.properties的配置加载<strong>Authenticator</strong>的一个自定义实现<strong>SSOAuthenticator</strong>  <li>SSOAuthenticator根据Authorization头和sso.properties的配置信息，构造<strong>UserCredentials</strong>传给AR，这个<strong>UserCredentials</strong>用了一个固定的密码  <li>由于AR在arconfig中配置了用AREA认证，而且启用了ARhub模式，所以优先用一个自定义的AREA SSO Plugin  <li>这个AREA SSO Plugin根据areasso.cfg中的配置验证Mid-tier的IP是否是白名单，并验证密码是否是固定密码  <li>如果SSO认证失败，则由于hub的作用，继续通过AREA LDAP Plugin认证  <li>AR验证这个用户是否系统用户还是访客</li></ol> <p>接下来根据上述实现给出核心代码，主要是Mid-tier端SSOAuthenticator的代码</p><pre class="brush: java; auto-links: true; class-name: csharpcodeprovider; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">package com.remedy.arsys.sso;
+
+import com.remedy.arsys.session.Authenticator;
+import com.remedy.arsys.session.UserCredentials;
+import java.io.*;
+import javax.servlet.http.*;
+import java.util.*;
+//import java.net.*;
+import com.remedy.arsys.log.Log;
+
+
+
+public class SSOAuthenticator implements Authenticator
+
+{
+
+public void init(Map cfg)
+    {
+
+…
+}
+
+public void destroy()
+{
+}
+
+
+public UserCredentials getAuthenticatedCredentials(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        String username;
+        // Use getRemoteuser call to get username
+        if (usermethod != null &amp;&amp; usermethod.equalsIgnoreCase("remoteuser"))
+        {
+            String remoteUser = request.getRemoteUser();
+            if(remoteUser != null &amp;&amp; !remoteUser.equals(""))
+            {
+                if(debug){
+                    mtLog.fine("SSO: Remote User Name (including domain): "+ remoteUser);
+                }
+                // Use removedomain to parse domain name from getRemoteUser call
+                if(removedomain != null &amp;&amp; removedomain.equalsIgnoreCase("T"))
+                {
+                    int startpoint = remoteUser.indexOf("\\") + 1;
+                    int endpoint = remoteUser.length();
+                    String rUserNoDomain = remoteUser.substring(startpoint, endpoint);
+                    //remoteUser = remoteUser.substring(startpoint, endpoint);
+                    if(debug){
+                        mtLog.fine("SSO: Remote User Name (no domain): "+ rUserNoDomain);
+                    }
+                    username = rUserNoDomain;
+                    return new UserCredentials(getUserName(username), PASS_STRING, getAuthString(remoteUser));
+                }
+                else
+                {
+                    username = remoteUser;
+                    return new UserCredentials(getUserName(username), PASS_STRING, getAuthString(remoteUser));
+                }
+            }
+            else
+            {
+                mtLog.fine("SSO ERROR: RemoteUser name is null or empty. Using default login page");
+                return new UserCredentials(null, null, null);
+            }
+        }
+
+else
+        {
+            // No setting (in sso.properties) was provided to get the username
+            mtLog.fine("SSO ERROR: No valid method defined in sso.properties to get username. Using default login page");
+            return new UserCredentials(null, null, null);
+        }
+
+}
+
+}
+
+</pre>
+<p>在部署的时候，将代码编译打包成jar，复制到Mid-tier的WEB-INF\lib目录下，修改Mid-tier的config.properties配置文件，将</p>
+<p><strong>arsystem.authenticator=com.remedy.arsys.session.DefaultAuthenticator</strong>改为<strong>arsystem.authenticator=com.remedy.arsys.sso.SSOAuthenticator</strong>，这样Mid-tier在实例化接口时能用自定义的实现 
+<p>另外，Init方法传入的Map对象，是Mid-tier为这个接口实现预留的配置文件入口，可以通过配置<strong>config.properties</strong>的arsystem.authenticator.config.file=XXX.properties中来指定，而配置文件需要复制到WEB-INF\classes目录下。 
+<p>上述实现在AR端也需要一个自定义的AREA Plug-in，代码可以在最后的下载链接中下载。不过需要说明的是笔者并没有仔细对这个AREA Plug-in进行测试，而且这种方案较为复杂，慎用。简单起见还是用cookie和配置所有用户为同一个form密码来做比较保险。 
+<p>&nbsp; <p>&nbsp; <h2><font style="font-weight: bold">在Mid-tier站点登录后，无登录进入非Mid-tier站点</font></h2>
+<p>这种情况相对来说处理简单些，因为非Mid-tier站点一般是自定义开发的，所以有比较大的灵活度。我所采用的方法是这样的：</p>
+<p><img style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-05-14-img1.png" width="319" height="347"></p>
+<p>1、在Mid-tier端放置一个jsp文件，首先通过链接引导用户访问这个jsp，这个文件通过<strong>UserCredentials</strong>对象获取当前登录人的User</p><pre class="brush: java; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">&lt;%@ page import="com.remedy.arsys.session.*" %&gt;
+&lt;%
+String user = "";
+Object obj = session.getAttribute("usercredentials");
+if (obj == null) {
+        response.sendRedirect("login.jsp"); 
+}else{
+        UserCredentials usercredentials = (UserCredentials)obj;
+        user = usercredentials.getUser();
+}
+%&gt; </pre>
+<p>2、返回一段带有脚本的页面，该脚本将自动向非Mid-tier站点post数据，并能够带上UserName</p>
+<p>3、用户获取到这个页面后，浏览器自动post非Mid-tier站点</p>
+<p>4、非Mid-tier站点在post的数据域中检测到登录用户名，将之存在session中，表示登录</p>
+<p>5、处理程序返回页面，此时，用户已在非Mid-tier中登录，以后的访问都将是登录后的访问</p>
+<p>为了安全起见，可以对这个机制稍作强化：在2步中可以将用户名加密返回，加密机制可以适当的强化；在第4步中，可以重复验证一下，用户是否是合法用户。</p><script type="text/javascript">
+      		 SyntaxHighlighter.all();
+      	</script>
+<p>下载区</p><a href="{{ site.baseurl }}/assert/download/sso.zip">sso.zip</a>{% include post.container.end %}
