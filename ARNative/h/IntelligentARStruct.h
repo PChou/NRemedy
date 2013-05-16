@@ -47,6 +47,8 @@ public:
 			FreeARBulkEntryReturnList((ARBulkEntryReturnList*)&_Struct,False);
 		else if(strcmp(typeName,"struct ARServerInfoList") == 0)
 			FreeARServerInfoList((ARServerInfoList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARGroupInfoList") == 0)
+			FreeARGroupInfoList((ARGroupInfoList*)&_Struct,False);
 #ifdef _DEBUG
 		else //always should not be here,which means no suitable FreeFunction
 			assert(strcmp(typeName,"Missing Type FreeFunction.") == 0);

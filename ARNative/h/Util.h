@@ -104,6 +104,18 @@ namespace ARNative {
 		SERVER_INFO_MAX_ENTRIES=		28
 	};
 
+	public enum class GroupType{
+		NONE=			0,
+		VIEW=			1,
+		CHANGE=			2
+	};		 
+
+	public enum class GroupCategory{
+		REGULAR=		0,
+		COMPUTED=		1,
+		DYNAMIC=		2
+	};	
+
 //copy String to char safely, but invoker should response to free char*
 extern char* MarshalStringCopyToChar(String^ Source);
 //copy String to char unsafely,invoker should garantee the char* is safe to contain the string,usually for stack char[]

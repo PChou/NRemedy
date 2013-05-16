@@ -67,6 +67,7 @@
     <Compile Include="ARSession.BLOB.Test.cs" />
     <Compile Include="ARSession.Transaction.Test.cs" />
     <Compile Include="ARSession.ServerInfo.Test.cs" />
+    <Compile Include="ARSession.Group.Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Filter.def" />

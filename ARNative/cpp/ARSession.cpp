@@ -643,5 +643,38 @@ List<ARServerInfo^>^ ARSession::GetServerInfo(array<UInt32>^ TypeList)
 	return infoes;
 }
 
+List<ARGroupInfo^>^ ARSession::GetUserGroupList(String^ UserName)
+{
+	char n_userName[AR_MAX_NAME_SIZE + 1];
+	MarshalStringCopyToCharStack(n_userName,UserName);
+	IntelligentARStructAR<ARStatusList> statuslist;//auto ~
+	IntelligentARStructAR<ARGroupInfoList> groups;
+
+	(&groups)->numItems = 0;
+	(&groups)->groupList = 0;
+
+	if(AR_OPERATION_FIALED(ARGetListGroup,(
+		this->session,	//session
+		n_userName,	//form name
+		NULL,		//target request id list,only one if regular form,multiple for join form
+		&groups,		//result fieldValueList return by api dll
+		&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+
+	List<ARGroupInfo^>^ groupList = gcnew List<ARGroupInfo^>();
+	int count = (&groups)->numItems;
+	ARGroupInfoStruct *p = (&groups)->groupList;
+	for(int i = 0 ; i < count ; i++,p++)
+	{
+		ARGroupInfo^ group = ARGroupInfo::ConstructARGroupInfo(p);
+		groupList->Add(group);
+	}
+
+	return groupList;
+
+}
+
 
 }

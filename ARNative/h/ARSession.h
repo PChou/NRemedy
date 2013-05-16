@@ -19,6 +19,7 @@
 #include "ARBulkResult.h"
 #include "ARTransactionResult.h"
 #include "ARServerInfo.h"
+#include "ARGroupInfo.h"
 
 //for memset function
 #include <cstring>
@@ -90,7 +91,8 @@ namespace ARNative
 		ARTransactionResult^ EndBulkEntryTransaction(UInt32 ActionType);
 		//AR Server Info API
 		List<ARServerInfo^>^ GetServerInfo(array<UInt32>^ TypeList);
-
+		//AR Get GroupList
+		List<ARGroupInfo^>^ GetUserGroupList(String^ UserName);
 	private:
 		//store the AR session
 		ARControlStruct* session;
