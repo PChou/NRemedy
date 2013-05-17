@@ -48,5 +48,7 @@ namespace NRemedy
             );
 
         void SetImpersonatedUser(string user);
+
+        List<ARGroupInfo> GetListGroup(string user);      
     }
 }
