@@ -651,7 +651,7 @@ List<ARGroupInfo^>^ ARSession::GetUserGroupList(String^ UserName)
 	IntelligentARStructAR<ARGroupInfoList> groups;
 
 	(&groups)->numItems = 0;
-	(&groups)->groupList = 0;
+	(&groups)->groupList = NULL;
 
 	if(AR_OPERATION_FIALED(ARGetListGroup,(
 		this->session,	//session

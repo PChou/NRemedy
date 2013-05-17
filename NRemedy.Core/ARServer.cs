@@ -230,6 +230,12 @@ namespace NRemedy
             CheckSessionNull();
             SessionInstance.EndBulkEntryTransaction(2);
         }
+
+        public List<ARGroupInfo> GetListGroup(string user)
+        {
+            CheckSessionNull();
+            return SessionInstance.GetUserGroupList(user);
+        }
     }
 
 }
