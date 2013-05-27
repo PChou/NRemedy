@@ -32,7 +32,7 @@ namespace NRemedy
         private ARAttachment _Attachment;
         private Nullable<Radio_Button_Field_Enum> _Radio_Button_Field;
         [NRemedy.ARFieldAttribute(DatabaseID = 1u, DatabaseName = "Request ID", DataType = ARType.CharacterField, BinderAccess = ModelBinderAccessLevel.OnlyBind)]
-        [NRemedy.AREntryKey]
+        [NRemedy.AREntryKeyAttribute()]
         public String RequestID
         {
             get

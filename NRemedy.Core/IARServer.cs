@@ -15,10 +15,7 @@ namespace NRemedy
     {
         void Login(string server, string user, string password, string authentication);
         void Logout();
-        //ArrayList GetListForm();
-        //ARForm GetForm(string name);
-        //ArrayList GetListField(string formName);
-        //Field GetField(string formName, uint id);
+        
 
         void BeginBulkEntryTransaction();
         ARTransactionResult CommitBulkEntryTransaction();
@@ -48,5 +45,10 @@ namespace NRemedy
             );
 
         void SetImpersonatedUser(string user);
+
+        List<String> GetListForm();
+        ARForm GetForm(string name);
+        List<UInt32> GetListField(string formName);
+        ARField GetField(string formName, uint id);
     }
 }

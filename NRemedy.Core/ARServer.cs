@@ -230,6 +230,32 @@ namespace NRemedy
             CheckSessionNull();
             SessionInstance.EndBulkEntryTransaction(2);
         }
+
+        //wangdi
+        public List<String> GetListForm()
+        {
+            CheckSessionNull();
+            List<String> result = SessionInstance.GetListSchema();
+            return result;
+        }
+        public ARForm GetForm(String formName)
+        {
+            CheckSessionNull();
+            ARForm result = SessionInstance.GetSchema(formName);
+            return result;
+        }
+        public List<UInt32> GetListField(string formName)
+        {
+            CheckSessionNull();
+            List<UInt32> result = SessionInstance.GetListField(formName);
+            return result;
+        }
+        public ARField GetField(String formName, UInt32 feildID)
+        {
+            CheckSessionNull();
+            ARField result = SessionInstance.GetField(formName, feildID);
+            return result;
+        }
     }
 
 }

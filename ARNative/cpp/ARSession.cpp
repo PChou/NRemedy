@@ -643,5 +643,254 @@ List<ARServerInfo^>^ ARSession::GetServerInfo(array<UInt32>^ TypeList)
 	return infoes;
 }
 
+//wangdi
+List<String^>^ ARSession::GetListSchema()
+{
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	List<String^>^ result = gcnew List<String^>();
+	IntelligentARStructAR<ARNameList> nameList;
+	IntelligentARStructAR<ARStatusList> statuslist;
+	
+	if(AR_OPERATION_FIALED(ARGetListSchema, 
+		(this->session,
+		0,  // changedSince  Specify 0 for this parameter to retrieve forms with any modification timestamp.
+		0|1024,  // schemaType    0 means Retrieve all form types (AR_LIST_SCHEMA_ALL).
+		NULL,// name
+		NULL,//fieldIdList
+		NULL,//objPropList
+		&nameList,
+		&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+	for(int i=0;i<(&nameList)->numItems;i++)
+	{
+		String^ namestr = MarshalCharCopyToString((&nameList)->nameList[i]);
+		result->Add(namestr);
+	}
+	return result;
+}
+
+ARForm^ ARSession::GetSchema(String^ SchemaName)
+{
+	if(SchemaName == nullptr || SchemaName == String::Empty)
+		throw gcnew Exception("SchemaName should not be null.");
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	ARForm^ result = gcnew ARForm();
+	//SchemaName
+	char _schemaName[AR_MAX_NAME_SIZE + 1];
+	MarshalStringCopyToCharStack(_schemaName,SchemaName);
+	IntelligentARStructAR<ARCompoundSchema> schematype;
+	IntelligentARStructAR<ARPermissionList> assignedGroupList;
+	IntelligentARStructAR<ARPermissionList> groupList;
+    IntelligentARStructAR<ARInternalIdList> admingrpList;
+	IntelligentARStructAR<AREntryListFieldList> getListFields;
+	IntelligentARStructAR<ARSortList> sortList;
+	IntelligentARStructAR<ARAuditInfoStruct> auditInfo;
+	char _defaultVui[AR_MAX_NAME_SIZE + 1];
+	ARTimestamp timestamp;
+	char _owner[AR_MAX_ACCESS_NAME_SIZE + 1];
+	char _lastChanged[AR_MAX_ACCESS_NAME_SIZE + 1];
+	IntelligentARStructAR<ARPropList> objPropList;
+	IntelligentARStructAR<ARStatusList> statuslist;
+
+	if(AR_OPERATION_FIALED(ARGetSchema, 
+		(this->session,
+		_schemaName,  //name
+		&schematype,   //schema
+		NULL,         //schemaInheritanceList
+		&assignedGroupList, //assignedGroupList  A list of zero or more groups that are directly assigned permission to the form.
+		&groupList,    //groupList    A list of zero or more groups who can access the form, including the inheritance hierarchy in the case of hierarchical groups.
+		               //           Access to this information is limited to users with AR System administrator privileges.
+		&admingrpList, //admingrpList   A list of zero or more groups who can administer this form (and the associated filters, escalations, and active links).
+		&getListFields,//getListFields
+		&sortList,     //sortList
+		NULL,         //indexList
+		NULL,         //archiveInfo
+		&auditInfo,    //auditInfo
+		_defaultVui,   //defaultVui
+		NULL,         //helpText
+		&timestamp,    //timestamp
+		_owner,        //owner
+		_lastChanged,  //lastChanged
+		NULL,         //changeDiary
+		&objPropList,  //objPropList
+		&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+	result->formName = SchemaName;
+	result->formtype = (&schematype)->schemaType;
+    for(int i=0;i<(&assignedGroupList)->numItems;i++)
+	{
+		unsigned long values = ((&assignedGroupList)->permissionList[i]).groupId;
+		result->assignedGroupList->Add(values);
+	}
+	for(int i=0;i<(&groupList)->numItems;i++)
+	{
+		unsigned long values = ((&groupList)->permissionList[i]).groupId;
+		result->groupList->Add(values);
+	}
+	for(int i=0;i<(&admingrpList)->numItems;i++)
+	{
+		unsigned long values = ((&admingrpList)->internalIdList[i]);
+		result->admingrpList->Add(values);
+	}
+	for(int i=0;i<(&getListFields)->numItems;i++)
+	{
+		unsigned long values = ((&getListFields)->fieldsList[i]).fieldId;
+		result->getListFields->Add(values);
+	}
+	for(int i=0;i<(&sortList)->numItems;i++)
+	{
+		unsigned long values = ((&sortList)->sortList[i]).fieldId;
+		result->sortList->Add(values);
+	}
+	result->auditInfo = (&auditInfo)->style;
+	result->defaultVui = MarshalCharCopyToString(_defaultVui);
+	result->timestamp = timestamp;
+	result->owner = MarshalCharCopyToString(_owner);
+	result->lastChanged = MarshalCharCopyToString(_lastChanged);
+	return result;
+}
+List<unsigned long>^ ARSession::GetListField(String^ SchemaName)
+{
+	if(SchemaName == nullptr || SchemaName == String::Empty)
+		throw gcnew Exception("SchemaName should not be null.");
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	List<unsigned long>^ result = gcnew List<unsigned long>();
+	char _schemaName[AR_MAX_NAME_SIZE + 1];
+	MarshalStringCopyToCharStack(_schemaName,SchemaName);
+	IntelligentARStructAR<ARStatusList> statuslist;
+	IntelligentARStructAR<ARInternalIdList> idList;
+	if(AR_OPERATION_FIALED(ARGetListField, 
+		(this->session,
+		_schemaName,     //schema
+		1,               //fieldType   Bit 0: Retrieve data fields (AR_FIELD_TYPE_DATA).
+		0,               //changedSince
+		NULL,
+		&idList,         //idList
+		&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+	for(int i=0;i<(&idList)->numItems;i++)
+	{
+		unsigned long values = (&idList)->internalIdList[i];
+		result->Add(values);
+	}
+	return result;
+}
+ARField^ ARSession::GetField(String^ SchemaName, unsigned long FieldID)
+{
+	if(SchemaName == nullptr || SchemaName == String::Empty)
+		throw gcnew Exception("SchemaName should not be null.");
+	if(this->session == NULL)
+		throw gcnew Exception("Login should not be performed before any other operation.");
+	ARField^ result = gcnew ARField();
+	char _schemaName[AR_MAX_NAME_SIZE + 1];
+	MarshalStringCopyToCharStack(_schemaName,SchemaName);
+	char _fieldName[AR_MAX_NAME_SIZE + 1];
+	unsigned int dataType;
+	unsigned int option;
+	unsigned int createMode;
+	unsigned int fieldOption;
+	IntelligentARStructAR<ARValueStruct> defaultVal;
+	IntelligentARStructAR<ARPermissionList> assignedGroupList;
+	IntelligentARStructAR<ARPermissionList> permissions;
+	IntelligentARStructAR<ARFieldLimitStruct> limit;
+	ARTimestamp timestamp;
+	char _owner[AR_MAX_ACCESS_NAME_SIZE + 1];
+	char _lastChanged[AR_MAX_ACCESS_NAME_SIZE + 1];
+	IntelligentARStructAR<ARStatusList> statuslist;
+	if(AR_OPERATION_FIALED(ARGetField,
+		(this->session,
+		_schemaName,
+		FieldID,
+		_fieldName,
+		NULL,
+		&dataType,
+		&option,
+		&createMode,
+		&fieldOption,
+		&defaultVal,
+		&assignedGroupList,
+		&permissions,
+		&limit,
+		NULL,
+		NULL,
+		&timestamp,
+		_owner,
+		_lastChanged,
+		NULL,
+		NULL,
+		&statuslist)))
+	{
+		throw ARException::ConstructARException(&statuslist);
+	}
+	bool _isenum = false;
+	result->fieldId=FieldID;
+	result->fieldName = MarshalCharCopyToString(_fieldName);
+	result->dataType = (ARNative::ARDataType)dataType;
+	result->option = option;
+	result->createMode = createMode;
+	result->fieldOption = fieldOption;
+	ARFieldValue^ fieldValue = ARFieldValue::ConstructARValue(FieldID,&defaultVal);
+	result->defaultVal = fieldValue;
+	for(int i=0;i<(&assignedGroupList)->numItems;i++)
+	{
+		unsigned long values = ((&assignedGroupList)->permissionList[i]).groupId;
+		result->assignedGroupList->Add(values);
+	}
+	for(int i=0;i<(&permissions)->numItems;i++)
+	{
+		unsigned long values = ((&permissions)->permissionList[i]).groupId;
+		result->permissions->Add(values);
+	}
+	result->timestamp = timestamp;
+	result->owner = MarshalCharCopyToString(_owner);
+	result->lastChanged = MarshalCharCopyToString(_lastChanged);
+	ARFieldLimit^ _limit = gcnew ARFieldLimit();
+	unsigned int ardataType = (&limit)->dataType;
+	if(ardataType==6)
+	{
+		AREnumList^ enumlimit = gcnew AREnumList();
+		AREnumLimitsStruct arenumLimits = (&limit)->u.enumLimits;
+		unsigned int arlistStyle = arenumLimits.listStyle;
+		if(arlistStyle==1)
+		{
+			_isenum = true;
+			ARNameList arregularList = arenumLimits.u.regularList;
+			ARNameType *nameList = arregularList.nameList;
+			for(int i=0;i<arregularList.numItems;i++)
+	        {
+				AREnum^ myenum = gcnew AREnum();
+				myenum->itemNumber = i;
+				myenum->itemName = MarshalCharCopyToString(nameList[i]);
+				enumlimit->enumList->Add(myenum);
+			}
+		}
+		else if(arlistStyle==2)
+		{
+			_isenum = true;
+			AREnumItemList arcustomList = arenumLimits.u.customList;
+			AREnumItemStruct *enumItemList = arcustomList.enumItemList;
+			for(int i=0;i<arcustomList.numItems;i++)
+	        {
+				AREnum^ myenum = gcnew AREnum();
+				myenum->itemNumber = enumItemList[i].itemNumber;
+				myenum->itemName = MarshalCharCopyToString(enumItemList[i].itemName);
+				enumlimit->enumList->Add(myenum);
+			}
+		}
+		_limit->enumlimit = enumlimit;
+	}
+	result->limit = _limit;
+	result->isenum = _isenum;
+	return result;
+}
 
 }

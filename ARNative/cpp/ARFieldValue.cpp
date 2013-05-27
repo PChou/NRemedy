@@ -34,5 +34,16 @@ void ARFieldValue::ConstructARFieldValueStruct(ARFieldValueStruct* des , ARField
 	ObjToARValueStruct(des->value,src->Value,src->DataType);
 }
 
+ARFieldValue^ ARFieldValue::ConstructARValue(UInt32 fieldId,const ARValueStruct* fvs)
+{
+	if(fvs == NULL)
+		return nullptr;
+	ARFieldValue^ arFieldValue = gcnew ARFieldValue();
+	arFieldValue->FieldId = fieldId;
+	arFieldValue->DataType = (ARNative::ARDataType)fvs->dataType;
+	arFieldValue->Value = ARValueStructToObj(*fvs);
+	return arFieldValue;
+}
+
 
 }

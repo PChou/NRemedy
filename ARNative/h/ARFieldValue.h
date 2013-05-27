@@ -18,6 +18,7 @@ public:
 	ARFieldValue(UInt32 fieldId,Object^ value,ARDataType dataType);
 	static ARFieldValue^ ConstructARFieldValue(const ARFieldValueStruct* fvs);
 	static void ConstructARFieldValueStruct(ARFieldValueStruct* des , ARFieldValue^ src);
+	static ARFieldValue^ ConstructARValue(UInt32 fieldId,const ARValueStruct* fvs);
 public:
 	property UInt32 FieldId;
 	property Object^ Value;

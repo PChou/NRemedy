@@ -147,7 +147,10 @@
     <ClInclude Include="h\ARBulkResult.h" />
     <ClInclude Include="h\AREntry.h" />
     <ClInclude Include="h\ARException.h" />
+    <ClInclude Include="h\ARField.h" />
+    <ClInclude Include="h\ARFieldLimit.h" />
     <ClInclude Include="h\ARFieldValue.h" />
+    <ClInclude Include="h\ARForm.h" />
     <ClInclude Include="h\ARGroupByStatictisc.h" />
     <ClInclude Include="h\ARServerInfo.h" />
     <ClInclude Include="h\ARSession.h" />
@@ -163,7 +166,10 @@
     <ClCompile Include="cpp\ARBulkResult.cpp" />
     <ClCompile Include="cpp\AREntry.cpp" />
     <ClCompile Include="cpp\ARException.cpp" />
+    <ClCompile Include="cpp\ARField.cpp" />
+    <ClCompile Include="cpp\ARFieldLimit.cpp" />
     <ClCompile Include="cpp\ARFieldValue.cpp" />
+    <ClCompile Include="cpp\ARForm.cpp" />
     <ClCompile Include="cpp\ARGroupByStatictisc.cpp" />
     <ClCompile Include="cpp\ARServerInfo.cpp" />
     <ClCompile Include="cpp\ARSession.cpp" />

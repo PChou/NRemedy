@@ -24,6 +24,9 @@
 #include <cstring>
 #include <string>
 
+#include "ARForm.h"
+#include "ARField.h"
+
 using namespace System;
 using namespace System::Collections::Generic;
 
@@ -90,6 +93,11 @@ namespace ARNative
 		ARTransactionResult^ EndBulkEntryTransaction(UInt32 ActionType);
 		//AR Server Info API
 		List<ARServerInfo^>^ GetServerInfo(array<UInt32>^ TypeList);
+		//wangdi
+		List<String^>^ ARSession::GetListSchema();
+		ARForm^ ARSession::GetSchema(String^ SchemaName);
+		List<unsigned long>^ ARSession::GetListField(String^ SchemaName);
+		ARField^ ARSession::GetField(String^ SchemaName, unsigned long FieldID);
 
 	private:
 		//store the AR session

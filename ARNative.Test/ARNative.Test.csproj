@@ -61,6 +61,7 @@
     <Compile Include="ARSession.ImpersonatUser.Test.cs" />
     <Compile Include="ARSession.Login.Test.cs" />
     <Compile Include="ARSessionConfig.cs" />
+    <Compile Include="ARSession_GetARSchema_Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ARSession.CreateEntry.Test.cs" />
     <Compile Include="ARSession.EntryList.Test.cs" />

@@ -47,6 +47,24 @@ public:
 			FreeARBulkEntryReturnList((ARBulkEntryReturnList*)&_Struct,False);
 		else if(strcmp(typeName,"struct ARServerInfoList") == 0)
 			FreeARServerInfoList((ARServerInfoList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARNameList") == 0)
+			FreeARNameList((ARNameList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARCompoundSchema") == 0)
+			FreeARCompoundSchema((ARCompoundSchema*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARPermissionList") == 0)
+			FreeARPermissionList((ARPermissionList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARInternalIdList") == 0)
+			FreeARInternalIdList((ARInternalIdList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARIndexList") == 0)
+			FreeARIndexList((ARIndexList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARAuditInfoStruct") == 0)
+			FreeARAuditInfoStruct((ARAuditInfoStruct*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARPropList") == 0)
+			FreeARPropList((ARPropList*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARValueStruct") == 0)
+			FreeARValueStruct((ARValueStruct*)&_Struct,False);
+		else if(strcmp(typeName,"struct ARFieldLimitStruct") == 0)
+			FreeARFieldLimitStruct((ARFieldLimitStruct*)&_Struct,False);
 #ifdef _DEBUG
 		else //always should not be here,which means no suitable FreeFunction
 			assert(strcmp(typeName,"Missing Type FreeFunction.") == 0);
