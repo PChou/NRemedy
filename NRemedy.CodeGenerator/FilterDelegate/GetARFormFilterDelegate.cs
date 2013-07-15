@@ -1,7 +1,7 @@
 ﻿
 using System.Text.RegularExpressions;
 using ARNative;
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GetARFormFilterDelegate
     {

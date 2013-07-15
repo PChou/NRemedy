@@ -39,8 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AR\ARSchema.cs" />
-    <Compile Include="AR\ARTypeConvert.cs" />
+    <Compile Include="ARSource\ARSchema.cs" />
+    <Compile Include="ARSource\ARTypeConvert.cs" />
+    <Compile Include="CodeStructure.cs" />
     <Compile Include="CSharpModelGenerator.cs" />
     <Compile Include="CSharpModelGeneratorDefaultFactory.cs" />
     <Compile Include="FilterDelegate\ARFieldFilterDelegate.cs" />
@@ -49,14 +50,18 @@
     <Compile Include="FilterDelegate\GetARFormFilterDelegate.cs" />
     <Compile Include="Genarators\GenerateAttribute.cs" />
     <Compile Include="Genarators\GenerateClass.cs" />
+    <Compile Include="Genarators\GenerateCodeStructure.cs" />
     <Compile Include="Genarators\GenerateField.cs" />
     <Compile Include="Genarators\GenerateImportNamespace.cs" />
     <Compile Include="Genarators\GenerateNameResolver.cs" />
     <Compile Include="Genarators\GenerateProperty.cs" />
     <Compile Include="Genarators\GenerateRootNamespace.cs" />
-    <Compile Include="AR\IARSchema.cs" />
+    <Compile Include="ARSource\IARSchema.cs" />
+    <Compile Include="GenerateModelByARServer.cs" />
+    <Compile Include="GenerateModelByXML.cs" />
     <Compile Include="Interface\IGenerateClass.cs" />
     <Compile Include="Interface\IGenerateAttribute.cs" />
+    <Compile Include="Interface\IGenerateCodeStructure.cs" />
     <Compile Include="Interface\IGenerateField.cs" />
     <Compile Include="Interface\IGenerateImportNamespace.cs" />
     <Compile Include="Interface\IGenerateNameResolver.cs" />

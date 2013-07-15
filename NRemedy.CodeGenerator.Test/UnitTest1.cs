@@ -11,7 +11,7 @@ namespace NRemedy.CodeGenerator.Test
     [TestClass]
     public class UnitTest1
     {
-        protected static string TestServer = "172.16.137.13";
+        protected static string TestServer = "192.168.21.15";
         protected static string TestAdmin = "Demo";
         protected static string TestAdminPwd = "123abc";
         [TestMethod]
@@ -22,9 +22,9 @@ namespace NRemedy.CodeGenerator.Test
             {
                 _context.Login();
                 CodeCompileUnit ccu = new CodeCompileUnit();
-                CSharpModelGenerator cmgc = new CSharpModelGenerator(_context);
+                GenerateModelByARServer cmgc = new GenerateModelByARServer(_context);
                 CSharpModelGeneratorDefaultFactory factory = new CSharpModelGeneratorDefaultFactory();
-                ccu = cmgc.GenerateModelCCU("ARNative_Test_Form", factory);
+                ccu = cmgc.GenerateModelCCU("TMS:FlowTemplate", factory);
                 CSharpCodeProvider cprovider = new CSharpCodeProvider();//提供对 C# 代码生成器和代码编译器的实例的访问
                 ICodeGenerator gen = cprovider.CreateGenerator();//C# 代码生成器的实例。
                 ICodeCompiler compiler = cprovider.CreateCompiler();//C# 代码编译器的实例。

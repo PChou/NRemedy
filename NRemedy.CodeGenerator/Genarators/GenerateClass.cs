@@ -5,21 +5,20 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GenerateClass : IGenerateClass
     {
-        public void Create(CodeNamespace rootNamespace, string className, string formName, IGenerateAttribute attributeGenerator)
+        public void Create(CodeNamespace rootNamespace, ClassStructure classDefinition, IGenerateAttribute attributeGenerator)
         {
             //parameter check
             if (rootNamespace == null) throw new ArgumentNullException("rootNamespace");
-            if (string.IsNullOrEmpty(className)) throw new ArgumentNullException("className");
-            if (string.IsNullOrEmpty(formName)) throw new ArgumentNullException("formName");
-
-            if (className.Contains(".")) throw new InvalidOperationException("className should not contains '.'");
+            if (classDefinition == null) throw new ArgumentNullException("classDefinition");
             if (attributeGenerator == null) throw new ArgumentNullException("attributeGenerator");
+            if (string.IsNullOrEmpty(classDefinition.ClassName)) throw new ArgumentNullException("classDefinition.ClassName");
+            if (classDefinition.ClassName.Contains(".")) throw new InvalidOperationException("className should not contains '.'");
 
-            CodeTypeDeclaration classType = new CodeTypeDeclaration(className);
+            CodeTypeDeclaration classType = new CodeTypeDeclaration(classDefinition.ClassName);
             //指定这是一个Class
             classType.IsClass = true;
             //指定该类为Partial
@@ -28,10 +27,7 @@ namespace NRemedy
             //define MemberAttributes
             classType.Attributes = MemberAttributes.Public;
             //add attribute
-
-            Dictionary<string, object> _attributeProperties = new Dictionary<string, object>();
-            _attributeProperties.Add("FormName", formName);
-            attributeGenerator.CreateCLassAttribute(classType, typeof(ARFormAttribute), _attributeProperties);
+            attributeGenerator.CreateCLassAttribute(classType, classDefinition.ClassAttributeList);
 
             rootNamespace.Types.Add(classType);
         }

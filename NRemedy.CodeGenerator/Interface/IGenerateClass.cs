@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public interface IGenerateClass
     {
-        void Create(CodeNamespace rootNamespace, string className, string formName, IGenerateAttribute attributeGenerator);
+        void Create(CodeNamespace rootNamespace, ClassStructure classDefinition, IGenerateAttribute attributeGenerator);
     }
 }

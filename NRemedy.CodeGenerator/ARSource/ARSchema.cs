@@ -6,7 +6,7 @@ using BMC.ARSystem;
 using System.Collections;
 using ARNative;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class ARSchema : IARSchema
     {

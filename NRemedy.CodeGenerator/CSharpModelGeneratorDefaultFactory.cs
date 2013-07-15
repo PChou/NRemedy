@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class CSharpModelGeneratorDefaultFactory
     {
-        public virtual IGenerateNameResolver CreateGenerateNameResolver()
+        public virtual IGenerateCodeStructure CreateGenerateDefaultCodeStructure()
         {
-            return new GenerateNameResolver();
+            return new GenerateCodeStructure();
         }
 
         public virtual IGenerateRootNamespace CreateGenerateRootNamespace()
@@ -42,9 +42,9 @@ namespace NRemedy
             return new GenerateProperty();
         }
 
-        public virtual IARSchema CreateARSchema(ARLoginContext context)
+        public virtual IGenerateNameResolver CreateGenerateNameResolver()
         {
-            return new ARSchema(context);
+            return new GenerateNameResolver();
         }
 
         public virtual ARFieldFilterDelegate CreateARFieldFilterDelegate()

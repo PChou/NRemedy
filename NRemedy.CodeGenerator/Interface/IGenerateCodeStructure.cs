@@ -3,11 +3,12 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ARNative;
 
 namespace NRemedy.CodeGenerator
 {
-    public interface IGenerateRootNamespace
+    public interface IGenerateCodeStructure
     {
-        void Create(CodeCompileUnit codeCompileUnit, NamespaceStructure rootNamespace);
+        CodeStructure Create(string FormName, List<ARField> Fields, IGenerateNameResolver gnr);
     }
 }

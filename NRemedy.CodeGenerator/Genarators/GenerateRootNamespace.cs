@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GenerateRootNamespace : IGenerateRootNamespace
     {
-        private string __namespace = "NRemedy";
-
-        public void Create(CodeCompileUnit codeCompileUnit)
+        public void Create(CodeCompileUnit codeCompileUnit, NamespaceStructure rootNamespace)
         {
             if (codeCompileUnit == null) throw new ArgumentNullException("codeCompileUnit");
-            codeCompileUnit.Namespaces.Add(new CodeNamespace(__namespace));
+            if (rootNamespace == null) throw new ArgumentNullException("rootNamespace");
+            if (string.IsNullOrEmpty(rootNamespace.NamespaceName)) throw new ArgumentNullException("rootNamespace.NamespaceName");
+            codeCompileUnit.Namespaces.Add(new CodeNamespace(rootNamespace.NamespaceName));
         }
     }
 }

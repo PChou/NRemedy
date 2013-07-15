@@ -1,5 +1,5 @@
 ﻿
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public interface IGenerateNameResolver
     {

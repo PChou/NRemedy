@@ -4,34 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GenerateField : IGenerateField
     {
-        public void CreateField(CodeTypeDeclaration classType, string fieldName, string fieldType, bool isnullable)
+        public void CreateField(CodeTypeDeclaration classType, FieldStructure MemberField)
         {
             if (classType == null) throw new ArgumentNullException("classType");
-            if (string.IsNullOrEmpty(fieldName)) throw new ArgumentNullException("fieldName");
-            if (string.IsNullOrEmpty(fieldType)) throw new ArgumentNullException("fieldType");
+            if (MemberField == null) throw new ArgumentNullException("MemberField");
+            if (string.IsNullOrEmpty(MemberField.FieldName)) throw new ArgumentNullException("FieldName");
+            if (MemberField.FieldType == null) throw new ArgumentNullException("FieldType");
 
 
             CodeMemberField _field = new CodeMemberField();
-            _field.Name = fieldName;
-            if (isnullable)
-            {
-                fieldType = "Nullable<" + fieldType + ">";
-            }
-            _field.Type = new CodeTypeReference(fieldType);
+            _field.Name = MemberField.FieldName;
+
+            _field.Type = new CodeTypeReference(MemberField.FieldTypeName);
             _field.Attributes = MemberAttributes.Private | MemberAttributes.Final;
             classType.Members.Add(_field);
         }
 
-        public void CreateSelectionField(CodeTypeDeclaration classType, string fieldName, string fieldType, bool isnullable)
+        public void CreateSelectionField(CodeTypeDeclaration classType, FieldStructure MemberField)
         {
-            CreateField(classType, fieldName, fieldType, isnullable);
+            CreateField(classType, MemberField);
         }
 
-        public void CreateDiaryField(CodeTypeDeclaration classType, string fieldName, string fieldType, bool isnullable)
+        public void CreateDiaryField(CodeTypeDeclaration classType, FieldStructure MemberField)
         {
             
         }

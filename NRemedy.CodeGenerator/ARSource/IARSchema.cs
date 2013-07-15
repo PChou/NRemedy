@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using ARNative;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public interface IARSchema
     {

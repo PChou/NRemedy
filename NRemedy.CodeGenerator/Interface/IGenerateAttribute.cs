@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public interface IGenerateAttribute
     {
-        void CreateAttribute(CodeTypeMember targetType, Type attributeType, Dictionary<string, object> properties);
-        void CreateCLassAttribute(CodeTypeDeclaration classType, Type attributeType, Dictionary<string, object> properties);
-        void CreatePropertyAttribute(CodeMemberProperty propertyType, Type attributeType, Dictionary<string, object> properties);
+        void CreateAttribute(CodeTypeMember targetType, List<AttributeStructure> Attributes);
+        void CreateCLassAttribute(CodeTypeDeclaration classType, List<AttributeStructure> Attributes);
+        void CreatePropertyAttribute(CodeMemberProperty propertyType, List<AttributeStructure> Attributes);
     }
 }

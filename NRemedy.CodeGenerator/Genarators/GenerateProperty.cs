@@ -6,52 +6,55 @@ using System.Text;
 using System.Text.RegularExpressions;
 using ARNative;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GenerateProperty : IGenerateProperty
     {
-        public void CreateProperty(CodeTypeDeclaration classType, string propertyName, string propertyType, bool isnullable, Dictionary<string, object> attributePropertyValues, IGenerateAttribute attributeGenerator)
+        public void CreateProperty(CodeTypeDeclaration classType, PropertyStructure Property, IGenerateAttribute attributeGenerator)
         {
             if (classType == null) throw new ArgumentNullException("classType");
-            if (string.IsNullOrEmpty(propertyName)) throw new ArgumentNullException("propertyName");
-            if (string.IsNullOrEmpty(propertyType)) throw new ArgumentNullException("propertyType");
-            if (attributePropertyValues == null) throw new ArgumentNullException("attributePropertyValues");
+            if (Property == null) throw new ArgumentNullException("Property");
+            if (string.IsNullOrEmpty(Property.PropertyName)) throw new ArgumentNullException("propertyName");
+            if (Property.PropertyType == null) throw new ArgumentNullException("propertyType");
             if (attributeGenerator == null) throw new ArgumentNullException("attributeGenerator");
 
             GenerateNameResolver gnr = new GenerateNameResolver();
             CodeMemberProperty _property = new CodeMemberProperty();
-            _property.Name = propertyName;
-            if (isnullable)
-            {
-                propertyType = "Nullable<" + propertyType + ">";
-            }
-            _property.Type = new CodeTypeReference(propertyType);
+            _property.Name = Property.PropertyName;
+            _property.Type = new CodeTypeReference(Property.PropertyTypeName);
             _property.Attributes = MemberAttributes.Public | MemberAttributes.Final;
-            string fieldName = propertyName;
+            string fieldName = Property.MemberField.FieldName;
             _property.GetStatements.Add(new CodeMethodReturnStatement(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), fieldName)));
             _property.SetStatements.Add(new CodeAssignStatement(new CodeFieldReferenceExpression(new CodeThisReferenceExpression(), fieldName), new CodePropertySetValueReferenceExpression()));
-            _property.SetStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeThisReferenceExpression(), "OnPropertyChanged"), new CodeExpression[] { new CodePrimitiveExpression(propertyName) }));
+            _property.SetStatements.Add(new CodeMethodInvokeExpression(new CodeMethodReferenceExpression(new CodeThisReferenceExpression(), "OnPropertyChanged"), new CodeExpression[] { new CodePrimitiveExpression(Property.PropertyName) }));
 
             //add attribute
-            attributeGenerator.CreatePropertyAttribute(_property, typeof(ARFieldAttribute), attributePropertyValues);
-            if (attributePropertyValues["DatabaseID"].ToString() == "1")
+            attributeGenerator.CreatePropertyAttribute(_property, Property.PropertyAttributeList);
+            foreach(AttributeStructure Attribute in Property.PropertyAttributeList)
             {
-                attributeGenerator.CreatePropertyAttribute(_property, typeof(AREntryKeyAttribute), null);
+                if (Attribute.AttributeArguments["DatabaseID"] != null && Attribute.AttributeArguments["DatabaseID"].ToString() == "1")
+                {
+                    AttributeStructure entrykeyattr = new AttributeStructure();
+                    entrykeyattr.AttributeType = typeof(AREntryKeyAttribute);
+                    List<AttributeStructure> AttrList = new List<AttributeStructure>();
+                    AttrList.Add(entrykeyattr);
+                    attributeGenerator.CreatePropertyAttribute(_property, AttrList);
+                }
             }
             classType.Members.Add(_property);
         }
-        public void CreateSelectionProperty(CodeTypeDeclaration classType, string propertyName, string propertyType, bool isnullable, ARFieldLimit limit, Dictionary<string, object> attributePropertyValues, IGenerateAttribute attributeGenerator)
+        public void CreateSelectionProperty(CodeTypeDeclaration classType, PropertyStructure Property, IGenerateAttribute attributeGenerator)
         {
-            if (limit == null) throw new ArgumentNullException("ARFieldLimit");
+            if (Property.SelectionLimit == null) throw new ArgumentNullException("ARFieldLimit");
 
-            CreateProperty(classType, propertyName, propertyType, isnullable, attributePropertyValues, attributeGenerator);
+            CreateProperty(classType, Property, attributeGenerator);
 
             //add enum
-            AREnumList arenumlist = limit.enumlimit;
+            AREnumList arenumlist = Property.SelectionLimit.enumlimit;
             if (arenumlist != null)
             {
                 List<AREnum> enumList = arenumlist.enumList;
-                CodeTypeDeclaration enCode = new CodeTypeDeclaration(propertyType);
+                CodeTypeDeclaration enCode = new CodeTypeDeclaration(Property.PropertyTypeName);
                 enCode.IsEnum = true;
                 enCode.Attributes = MemberAttributes.Public | MemberAttributes.Final;
                 for (int i = 0; i < enumList.Count; i++)
@@ -72,7 +75,7 @@ namespace NRemedy
 
         }
 
-        public void CreateDiaryProperty(CodeTypeDeclaration classType, string propertyName, string propertyType, bool isnullable, Dictionary<string, object> attributePropertyValues, IGenerateAttribute attributeGenerator)
+        public void CreateDiaryProperty(CodeTypeDeclaration classType, PropertyStructure Property, IGenerateAttribute attributeGenerator)
         {
             
         }

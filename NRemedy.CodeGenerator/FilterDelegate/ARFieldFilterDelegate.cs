@@ -1,6 +1,6 @@
 ﻿
 using ARNative;
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public delegate bool ARFieldFilterDelegate(ARField field);
 }

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class GenerateNameResolver : IGenerateNameResolver
     {

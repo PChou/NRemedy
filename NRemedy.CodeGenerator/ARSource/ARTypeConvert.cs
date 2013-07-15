@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NRemedy
+namespace NRemedy.CodeGenerator
 {
     public class ARTypeConvert
     {
