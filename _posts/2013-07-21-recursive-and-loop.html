@@ -1,0 +1,80 @@
+---
+layout: default
+title: 函数式编程和过程式编程--对递归和循环的思考
+description: 递归和循环能够相互替代，递归代表的函数式编程倾向于”做什么”，而循环代表的过程式编程倾向于”怎么做”
+categories: [algorithm, C-Cpp]
+tags: [algorithm, CPP]
+---
+{% include post.container.begin %}
+<p>本文的代码更关注算法思想，不关注边界条件</p> <p>考虑经典的斐波那契数列问题1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ...，我们很容易从数列本身的定义得到一个递推式：f(n)=f(n-1)+f(n-2)，因此可以很容易的写出一个递归的函数来完成求该数列的第n项的值：</p><pre class="brush: cpp; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">long fib(int n)
+{
+	if (n==0) return 0;
+	if (n==1) return 1;
+	if (n&gt;1) return fib(n-1)+fib(n-2);
+}</pre>
+<p>在考虑阶乘的问题，n的阶乘记为n!，按照定义n!=n*(n-1)*(n-2)…*1，我们很容易的根据定义设计一个循环来计算n的阶乘：</p><pre class="brush: cpp; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">int factorial(int n)
+{
+        int result = 1;
+        while (n &gt; 0) {
+                result = result * n;
+                n = n - 1;
+        }
+        return result;
+}</pre>
+<p>十分简单的两个问题，一个是递归实现，一个是循环实现。递归是一种函数式编程思想，而循环是传统过程式编程的思想。我想大部分的同仁在看到这两个问题的时候应该都首先想到的上述代码是实现方法。那么现在我们分别换一种实现方式。</p>
+<p>斐波那契数列用循环来实现。思路，欲求n项的值，就要知道n-1和n-2项的值，这种依赖最终会到第0项和第1项，于是返回来迭代，根据第0项和第1项能算出第2项，同时将第1项和第2项再作为新的n-2和n-1计算第3项…直到迭代到第n项：</p><pre class="brush: cpp; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">long fib(int n)
+{
+	if (n==0) return 0;
+	if (n==1) return 1;
+	int i=2;
+	int n_1=1;//n-1的值
+	int n_2=0;//n-2的值
+	int tmp_n_1=0;
+	while(i&lt;n){
+		tmp_n_1=n_1;//保存n-1的值
+		n_1=n_2+n_1;//计算新的n-1的值
+		n_2=tmp_n_1;//n-2的值为上次n-1的值
+		i++;
+	}
+	return n_1+n_2;
+}</pre>
+<p>下面用递归来实现阶乘。要用递归来做事情，那么必须先归纳出一个“<strong>递推关系</strong>”，阶乘的递推关系可以归纳为</p>
+<blockquote>
+<p>n!=n*(n-1)! 当n=0时，结果为1</p></blockquote>
+<p>于是代码就非常直观了</p><pre class="brush: cpp; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">int factorial(int n)
+{
+	if(n==0) return 1;
+	return n*factorial(n-1);
+}</pre>
+<p>到此，可以发现使用递归来实现程序，明显“简单”很多，而且符合人们直观的理解，而使用循环来实现程序很难一目了然的知道程序在做什么。这便是函数式编程的一大优势：是你在告诉程序要做什么，而不是告诉程序怎么去做。当然从内存占用和效率这个角度考虑，循环要比递归高效些。</p>
+<p>那么为什么诸如阶乘这样的问题，人们的第一想法是用循环来考虑呢？这也许是最初学习编程的时候“先入为主”造成的，而且阶乘的递推关系不是十分直观，因为你要向一个不知道阶乘是何物的人解释什么是阶乘，恐怕不会使用递推关系来解释；返过来对斐波那契数列，就比较适合用递归关系来解释。</p>
+<p>在实际的编程过程中我们很少用递归来解决问题，我想，一方面是受到传统过程式编程思维的影响，另一方面，大部分问题更容易用过程化的思维来思考。所以，我一直信奉“编程语言会影响人的思维方式，思维方式也会影响对语言的学习”。比如，我到现在都不是能很好的掌握javascript。于是我开始思考如何在两种思维间自如的切换呢？是否有通用的方法论呢？</p>
+<p>现在尝试归纳上面的例子，并再试着举几个子：</p>
+<p>1）斐波那契数列问题</p>
+<ul>
+<li>循环实现，从1开始<strong>迭代</strong>，计算n-1和n-2，并<strong>迭代替换</strong>，<strong>直到</strong>n</li>
+<li>递归实现，归纳出<strong>递推式</strong>f(n)=f(n-1)+f(n-2),<strong>当</strong> n=0时为0，n=1时为1</li></ul>
+<p>2）阶乘问题</p>
+<ul>
+<li>循环实现，从1开始<strong>迭代</strong>，并将迭代的结果乘法<strong>聚合</strong>，<strong>直到</strong>n</li>
+<li>递归实现，归纳出<strong>递推式</strong>n!=n*(n-1)! <strong>当</strong>n=0时，结果为1</li></ul>
+<p>3）求n以内正整数的和:1+2+3+…+n</p>
+<ul>
+<li>循环实现，从1开始<strong>迭代</strong>，并将迭代的结果加法<strong>聚合</strong>，<strong>直到</strong>n</li>
+<li>递归实现，归纳出<strong>递推式</strong>sum(n)=n+sum(n-1), <strong>当</strong>n=1时为1</li></ul>
+<p>4）求两个数的最大公约数（<a href="http://baike.baidu.com/view/79315.htm" target="_blank">Euclid算法</a>）</p>
+<ul>
+<li>循环实现，<strong>迭代</strong>计算a%b，将a<strong>替换</strong>为b，b<strong>替换</strong>为a%b，<strong>直到</strong>a%b=0</li>
+<li>递归实现，<strong>如果</strong>a能整除b，那么b既是最大公约数，否则<strong>递推式</strong>gcd(a,b)=gcd(b,a%b)</li></ul>
+<p>5）数组倒置（这里不讨论首尾互换的特殊算法），1234567变成7654321</p>
+<ul>
+<li>循环实现，从a[n]开始<strong>迭代</strong>，将结果<strong>聚合</strong>成新的数组，<strong>直到</strong>迭代到1</li>
+<li>递归实现，归纳出<strong>递推式</strong>r(a[n])=r(a[n-1]) + a[1] <strong>当</strong>n=0时为空，n=1时为a[1]</li></ul>
+<p>&nbsp;</p>
+<p>上面的问题都是很简单的问题，但是从中我们可以看到，两种思路的关键点：</p>
+<ul>
+<li><strong>循环的关键思路在于，进行<font color="#ff0000">迭代</font>，直到满足某个条件，在迭代的过程中进行<font color="#ff0000"> 迭代替换</font> 或者<font color="#ff0000">聚合</font></strong></li>
+<li><strong>递归的关键思路在于，归纳<font color="#ff0000">递推式</font>，并且设置<font color="#ff0000">边界</font>，以便递归结束</strong></li></ul>
+<p>&nbsp;</p>
+<h2><font style="font-weight: bold">总结</font></h2>
+<p>到这里是本文想要阐述的所有内容。本文有感而发，随想而写，总结如下：递归和循环能够相互替代，递归代表的函数式编程倾向于”做什么”，而循环代表的过程式编程倾向于”怎么做”。两种方式对应着不同的程序设计思路，本文通过几个例子，简单总结了两种思路的不同之处以及关键点。希望对熟悉传统编程语言的人们掌握新兴的编程语言有所帮助。</p>{% include post.container.end %}
