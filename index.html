@@ -1,24 +1,38 @@
 ---
 layout: default
-title: P_Chou's Tech Space
+title: P_Chou Tech Space
 ---
-{% for post in site.posts %}
-<div class="post main">
-	<div class="date">		
-		<div class="background">
-			<span class="day">{{ post.date | date_to_string | truncatewords: 2 | remove: '...' }}</span><br>
-			<span class="month">{{ post.date | date_to_string | split: ' ' | last }}</span><br>
-		</div>
-	</div>
-	<div class="detail">
-		<h2 class="title"><strong><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></strong></h2>
-		<a href="{{ site.baseurl }}{{ post.url }}#disqus_thread"></a>
-		<div class="article">
-			{{ post.description }}
-		</div>
-	</div>	
-	<div style="clear:both"></div>			
-</div>
-{% endfor %}
 
-{% include disqus %}
+<div class='container' style='padding-top:58px;'>
+	<div class="row home-list">
+		{% for post in site.posts %}
+		<div class="col-xs-12 col-sm-6 col-md-4 home-list-block">
+		    <div class="thumbnail">
+		      <img style='height:200px;' src="{{ site.baseurl }}/assert/img/{{ post.thumbimg }}" alt="{{ post.thumbimg }}">
+		      <div class="caption fix-height">
+		        <h3><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h3>
+		        <p>{{ post.description }}</p>
+		      </div>
+		      <div class="caption">
+			      <ul class='list-inline'>
+			        	<li>{{ post.date | date_to_string | truncatewords: 2 | remove: '...' }} {{ post.date | date_to_string | split: ' ' | last }}</li>
+			        	<li>
+			        		<span class="article_comment"><a href="{{ site.baseurl }}{{ post.url }}#disqus_thread"></a></span>
+			        	</li>
+
+			        </ul>
+			    </div>
+			  	<ul class='list-inline'>
+					{% for cat in post.categories %}
+						<li><a class="label label-danger" href="{{ site.baseurl }}/category.html#{{ cat }}">{{ cat }}</a></li>
+					{% endfor %}
+		        </ul>	        	
+		    </div>
+		  </div>
+		  {% endfor %}
+	</div>
+	{% include disqus %}
+</div>
+
+
+
