@@ -8,7 +8,7 @@ title: P_Chou Tech Space
 		{% for post in site.posts %}
 		<div class="col-xs-12 col-sm-6 col-md-4 home-list-block">
 		    <div class="thumbnail">
-		      <img style='height:200px;' src="{{ site.baseurl }}/assert/img/{{ post.thumbimg }}" alt="{{ post.thumbimg }}">
+		      <img style='height:200px;' data-url="{{ site.baseurl }}/assert/img/{{ post.thumbimg }}" alt="{{ post.thumbimg }}">
 		      <div class="caption fix-height">
 		        <h3><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h3>
 		        <p>{{ post.description }}</p>
