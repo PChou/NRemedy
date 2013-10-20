@@ -6,7 +6,6 @@ thumbimg: 1346208288725.jpg
 categories: [web-build]
 tags: [github-page, jekyll, Ruby]
 ---
-{% include post.container.begin %}
 
 <p>前几篇介绍了GitHub-Page的基本原理和使用方法，还介绍了如何将购买的域名绑定博客主页。然而，当需要正儿八经的将一个博客构建起来，不仅要知道如何上传我们的文件，还要能够高效的更好的设计博客。因此，必须能够在上传之前在本地完成测试；另一方面，完全靠html来编辑博客，显然工作量太大，随着博客越来越复杂，简直不可能维护，因此，需要用jekyll这个模板引擎来帮忙。本篇先介绍如何搭建一个本地的测试环境。</p>
 <p>&nbsp;</p>
@@ -52,5 +51,3 @@ tags: [github-page, jekyll, Ruby]
 <div style="background-color: rgb(0,0,0); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(192,192,192)" class="source"><span style="color: rgb(192,192,192)">jekyll</span> <span style="color: rgb(192,192,192)">--</span><span style="color: rgb(192,192,192)">server</span> <span style="color: rgb(192,192,192)">--</span><span style="color: rgb(192,192,192)">safe</span><br></div>
 <p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-04-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-04-img0.png" width="481" height="311"></a></p>
 <p>jekyll此时会在localhost的4000端口监听http请求，用浏览器访问<a href="http://localhost:4000/projectname/index.html">http://localhost:4000/projectname/index.html</a>，之前的页面出现了！</p>
-
-{% include post.container.end %}

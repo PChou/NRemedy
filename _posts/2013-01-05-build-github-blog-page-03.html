@@ -6,7 +6,6 @@ thumbimg: 1346208288725.jpg
 categories: [web-build]
 tags: [github-page]
 ---
-{% include post.container.begin %}
 
 <h2><font style="font-weight: bold">域名扫盲</font></h2>
 <p>说实话，虽然明白什么是域名以及域名解析的原理，但是在实际的互联网环境中，域名的问题其实比理论上说的要复杂些。这里对一些概念稍作整理。</p>
@@ -37,5 +36,3 @@ tags: [github-page]
 <p>baseurl :</p></blockquote>
 <p>这取决于你的模板如何引用baseurl，总之指向根目录就好了。</p>
 <p>刚开始的时候我比较困惑的是，为什么A记录都指向的是同一个IP，GitHub是如何知道应该返回哪个用户的页面的。其实很简单，秘密就是上面提到的CNAME文件，GitHub应该会缓存所有gh-pages分支中的CNAME文件，用户对域名的请求被定向到GitHub住服务器的IP地址后，再根据用户请求的域名，判断对应哪个gh-pages，而且它会自动带上项目名，所以baseurl需要改为更目录。</p>
-
-{% include post.container.end %}

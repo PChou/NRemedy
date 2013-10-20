@@ -1,7 +1,0 @@
-<div class="page-header container" style='padding-top:18px;'>
-	<code>摘要</code>
-  <small>{{ page.description }}</small>
-</div>
-
-
-<div class='container'>

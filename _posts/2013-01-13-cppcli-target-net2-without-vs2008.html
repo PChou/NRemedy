@@ -6,7 +6,6 @@ categories: [C-Cpp]
 thumbimg: 157222808237574677.jpg
 tags: [CPP, dot NET, Compiler]
 ---
-{% include post.container.begin %}
 
 <p>自从vs2010开始，vs调整了对C++编译的策略，使用MSBuild模式，该模式对于将早期的vs2008开发的项目迁移至vs2010是有利的，但是如果用户没有vs2008，但有vs2010，却不能将C++/CLI项目编译成.net 2.0，只能是4.0。查遍网上的解决方案，几乎一致的方案是安装vs2008（3G+）。本文针对这个问题，给出一个不安装vs2008的绿色环保方案（大约200多M）。拯救我们的硬盘空间吧！</p>
 <p>&nbsp;</p>
@@ -49,6 +48,3 @@ tags: [CPP, dot NET, Compiler]
 <li>nmake：vc的make工具，能够根据nmake格式的配置文件自动编译和链接，类似于GNU的make</li></ul>
 <p>这些工具都在bin目录下能够找到，使用并不是很难，可以参考相关的文档学习使用，关于c++的编译原理可以参考我的文章：<a href="{{ site.baseurl }}/C-Cpp/2013/01/12/net-cpp-hobby-02.html">http://pchou.info/C-Cpp/2013/01/12/net-cpp-hobby-02.html</a></p>
 <p>偷懒的话，可以从vs2008里面把编译和链接的命令行参数copy出来哦～</p>
-
-
-{% include post.container.end %}

@@ -6,7 +6,6 @@ thumbimg: Services-network-cloud.jpg
 categories: [network]
 tags: [FTP, NAT]
 ---
-{% include post.container.begin %}
 
 <h2><font style="font-weight: bold">FTP基础知识 </font></h2>
 <p><strong></strong>FTP是File Transfer Protocol（文件传输协议）的缩写，用来在两台计算机之间互相传送文件。相比于HTTP，FTP协议要复杂得多。复杂的原因，是因为FTP协议要用到两个TCP连接，一个是命令链路，用来在FTP客户端与服务器之间传递命令；另一个是数据链路，用来上传或下载数据。通常在访问FTP服务端之初指定的是FTP命令链路的端口，默认为21，客户端向服务器的FTP端口发送连接请求，服务器接受连接，建立一条命令链路，之后的所有命令都是在这个端口上进行的。</p>
@@ -31,5 +30,3 @@ tags: [FTP, NAT]
 <p>还有一种办法就是用PASV模式，这取决于服务端是否支持，并且windows的FTP命令行工具没有该功能。</p>
 <p>另外，IE8以上的浏览器可以作为FTP客户端，并且支持PASV模式：</p>
 <p><a href="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png"><img style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="ftp-notwork-in-nat-img0" border="0" alt="ftp-notwork-in-nat-img0" src="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png" width="375" height="477"></a></p>
-
-{% include post.container.end %}

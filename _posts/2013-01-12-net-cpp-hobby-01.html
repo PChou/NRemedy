@@ -6,7 +6,6 @@ thumbimg: 157222808237574677.jpg
 categories: [C-Cpp]
 tags: [CPP]
 ---
-{% include post.container.begin %}
 
 本文为原创，首发于我的cnblog：<a href="http://www.cnblogs.com/P_Chou/archive/2012/05/24/2517255.html">.NET程序员的C情结</a>
 <p>即将两年的.NET经验，一年的BMC经验，作为一个电子专业的人来说，心中仍然保留着对C和C++的情结。</p>
@@ -41,5 +40,3 @@ tags: [CPP]
 <p><strong>9、获取系统变量和环境变量</strong></p>
 <div><div id="highlighter_205066" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">//同样可以通过调用两次来获取缓冲区长度</code></div><div class="line number2 index1 alt1"><code class="cpp plain">dwSize = GetEnvironmentVariable(TEXT(</code><code class="cpp string">"HOMEDRIVE"</code><code class="cpp plain">),NULL,0);</code></div><div class="line number3 index2 alt2"><code class="cpp plain">szHomeDrive = </code><code class="cpp keyword bold">new</code> <code class="cpp color1 bold">TCHAR</code><code class="cpp plain">[dwSize+1];</code></div><div class="line number4 index3 alt1"><code class="cpp plain">GetEnvironmentVariable(TEXT(</code><code class="cpp string">"HOMEDRIVE"</code><code class="cpp plain">),szHomeDrive,dwSize+1);</code></div></div></td></tr></tbody></table></div></div>
 <p><strong>10、C多文件编译、作用域和存储周期</strong></p>
-
-{% include post.container.end %}

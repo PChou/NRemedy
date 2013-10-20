@@ -6,7 +6,7 @@ thumbimg: W020110914489795789471.jpg
 categories: [algorithm, C-Cpp]
 tags: [algorithm, CPP]
 ---
-{% include post.container.begin %}
+
 <p>本文的代码更关注算法思想，不关注边界条件</p> <p>考虑经典的斐波那契数列问题1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, ...，我们很容易从数列本身的定义得到一个递推式：f(n)=f(n-1)+f(n-2)，因此可以很容易的写出一个递归的函数来完成求该数列的第n项的值：</p><pre class="brush: cpp; auto-links: true; collapse: false; first-line: 1; gutter: true; html-script: false; light: false; ruler: false; smart-tabs: true; tab-size: 4; toolbar: true;">long fib(int n)
 {
 	if (n==0) return 0;
@@ -78,4 +78,4 @@ tags: [algorithm, CPP]
 <li><strong>递归的关键思路在于，归纳<font color="#ff0000">递推式</font>，并且设置<font color="#ff0000">边界</font>，以便递归结束</strong></li></ul>
 <p>&nbsp;</p>
 <h2><font style="font-weight: bold">总结</font></h2>
-<p>到这里是本文想要阐述的所有内容。本文有感而发，随想而写，总结如下：递归和循环能够相互替代，递归代表的函数式编程倾向于”做什么”，而循环代表的过程式编程倾向于”怎么做”。两种方式对应着不同的程序设计思路，本文通过几个例子，简单总结了两种思路的不同之处以及关键点。希望对熟悉传统编程语言的人们掌握新兴的编程语言有所帮助。</p>{% include post.container.end %}
+<p>到这里是本文想要阐述的所有内容。本文有感而发，随想而写，总结如下：递归和循环能够相互替代，递归代表的函数式编程倾向于”做什么”，而循环代表的过程式编程倾向于”怎么做”。两种方式对应着不同的程序设计思路，本文通过几个例子，简单总结了两种思路的不同之处以及关键点。希望对熟悉传统编程语言的人们掌握新兴的编程语言有所帮助。</p>
