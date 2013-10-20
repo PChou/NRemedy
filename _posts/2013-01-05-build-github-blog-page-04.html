@@ -51,3 +51,15 @@ tags: [github-page, jekyll, Ruby]
 <div style="background-color: rgb(0,0,0); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(192,192,192)" class="source"><span style="color: rgb(192,192,192)">jekyll</span> <span style="color: rgb(192,192,192)">--</span><span style="color: rgb(192,192,192)">server</span> <span style="color: rgb(192,192,192)">--</span><span style="color: rgb(192,192,192)">safe</span><br></div>
 <p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-04-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-04-img0.png" width="481" height="311"></a></p>
 <p>jekyll此时会在localhost的4000端口监听http请求，用浏览器访问<a href="http://localhost:4000/projectname/index.html">http://localhost:4000/projectname/index.html</a>，之前的页面出现了！</p>
+<p><code>更新</code></p>
+<pre>
+	1.根据网友的反应，需要注意的是Ruby的版本和RubyDevKit的版本要对应，不要装错；
+	2.另外，目前新版的Ruby自带gem了，所以gem安装可以跳过；
+	3.由于国内的网络（你们懂的），gem官方的源基本上是没法用了，参考文中的链接，使用淘宝的镜像比较靠谱；
+	4.jekyll有一个问题，可能需要修改下面这个文件
+		D:\Ruby193\lib\ruby\gems\1.9.1\gems\jekyll-1.2.1\lib\jekyll\convertible.rb
+		将它改成
+		self.content = File.read(File.join(base, name),:encoding => "utf-8")
+	5.最新的jekyll修改了命令行参数，需使用如下命令行
+		jekyll serve --safe --watch
+</pre>

@@ -13,6 +13,9 @@
 	      <script src="../../docs-assets/js/respond.min.js"></script>
 	    <![endif]-->
   		<script src="https://code.jquery.com/jquery.js"></script>
+  		<script type="text/javascript" src="{{ site.baseurl }}/assert/js/jquery.qrcode.min.js"></script>
+  		<script src="{{ site.baseurl }}/assert/js/Modernizr.js"></script>
+  		<script src="{{ site.baseurl }}/assert/js/custom.js">></script>
 	    <!--google analyse-->
 	    <script type="text/javascript">
 		  var _gaq = _gaq || [];
@@ -86,6 +89,13 @@
 		<div class='container'>
 			<div id="disqus_thread"></div>
 			{% include disqus %}
+		</div>
+		<div id="gBtn" class="gbtn">
+			<a href="#" class="ewm" id='ewm' title="在手机上慢慢读" >&nbsp;</a>
+			<div id="gEwm" class="gewm" style="left: 1165px;">
+				<div id="qrcode"></div>
+				<a href="#" id="close" class="close" title="关闭"></a>
+			</div>
 		</div>
 	    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	</body>

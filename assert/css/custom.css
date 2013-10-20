@@ -62,3 +62,61 @@
 .container .credit{
 	margin: 20px 0;
 }
+
+@media (min-width: 768px){
+	.gbtn {
+		top: 188px;
+		position: fixed;
+		right: 0;
+		width: 38px;
+		z-index: 10009;
+		-position: absolute;
+	}
+
+		.gbtn .ewm {
+			display: block;
+			background-position: -39px -106px;
+		}
+		.gbtn .ewm:hover {
+			background-position: -156px -106px;
+		}
+
+		.gbtn a {
+			position: relative;
+			display: block;
+			margin: 0 0 5px 0;
+			padding: 0;
+			width: 38px;
+			height: 38px;
+			background: url('../img/global4_29893.png') no-repeat 0 -106px;
+			text-decoration: none;
+		}
+
+		.gbtn #qrcode{
+			position: relative;
+			top:20px;
+		}
+	.gewm {
+		display: block;
+		position: fixed;
+		bottom: 20px;
+		width: 102px;
+		border: 1px solid #EDEDED;
+		z-index: 10009;
+		-position: absolute;
+		-bottom: auto;
+	}
+
+		.gewm .close {
+			position: absolute;
+			right: 8px;
+			top: 8px;
+			display: block;
+			width: 8px;
+			height: 8px;
+			background: url('../img/global4_29893.png') no-repeat -43px -68px;
+			z-index: 2;
+			overflow: hidden;
+			text-decoration: none;
+		}
+}
