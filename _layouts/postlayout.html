@@ -65,8 +65,28 @@
   			</div>
 		</header>
 
-		{{ content }}
-		
+		<div class="page-header container" style='padding-top:18px;'>
+			<code>摘要</code>
+		  <small>{{ page.description }}</small>
+		</div>
+
+		<div class='container'>
+			{{ content }}
+			<p><span class="glyphicon glyphicon-paperclip"></span>
+			{% for cat in page.categories %}
+				<a class="label label-danger" href="{{ site.baseurl }}/category.html#{{ cat }}">{{ cat }}</a>
+			{% endfor %}
+			</p>
+			<p><span class="glyphicon glyphicon-tag"></span>
+			{% for tag in page.tags %}
+				<a class="label label-info" href="{{ site.baseurl }}/tag.html#{{ tag }}">{{ tag }}</a>
+			{% endfor %}
+			</p>
+		</div>
+		<div class='container'>
+			<div id="disqus_thread"></div>
+			{% include disqus %}
+		</div>
 	    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	</body>
 </html>
