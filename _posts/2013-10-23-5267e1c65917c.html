@@ -6,7 +6,7 @@ thumbimg: 1346208288725.jpg
 categories: [web-build]
 tags: [PHP,github-page]
 ---
-<p>在<a href="http://pchou.info/web-build/2013/10/23/526712a543031.html" target="_blank">上一篇</a>中介绍了系统的运行机制，本文将引导读者一步步部署并使用。首先，假设您已经完成了github博客的搭建工作，并理解基本的博客维护方式以及jekyll的基本原理和使用方法。</p> <p>&nbsp;</p> <h2>部署本地的PHP站点</h2> <p>PHP项目的主页地址：<a href="https://github.com/PChou/xmlrpc4ww">https://github.com/PChou/xmlrpc4ww</a></p> <p>用您自己的帐户登录github，在浏览器中键入上述地址，点击页面右上方的<code>Fork</code>。Fork的意思是将这个项目复制到您自己的代码仓库中，您就可以自由的修改编辑了，还能在需要的时候对源代码仓库贡献代码，或者同步源代码仓库的变化。</p> <p>将Fork出来的仓库clone到本地,，这地址应该想下面这样：</p><pre>git clone <a title="https://github.com/PChou2/xmlrpc4ww.git" href="https://github.com/{yourusername}/xmlrpc4ww.git">https://github.com/<em>{yourusername}</em>/xmlrpc4ww.git</a></pre>
+<p>在<a href="http://pchou.info/web-build/2013/10/23/526712a543031.html" target="_blank">上一篇</a>中介绍了系统的运行机制，本文将引导读者一步步部署并使用。首先，假设您已经完成了github博客的搭建工作，并理解基本的博客维护方式以及jekyll的基本原理和使用方法。</p> <p>&nbsp;</p> <h2>部署本地的PHP站点</h2> <p>PHP项目的主页地址：<a href="https://github.com/PChou/xmlrpc4ww">https://github.com/PChou/xmlrpc4ww</a></p> <p>用您自己的帐户登录github，在浏览器中键入上述地址，点击页面右上方的<code>Fork</code>。Fork的意思是将这个项目复制到您自己的代码仓库中，您就可以自由的修改编辑了，还能在需要的时候对原代码仓库贡献代码，或者同步原代码仓库的变化。</p> <p>将Fork出来的仓库clone到本地,，这地址应该像下面这样：</p><pre>git clone https://github.com/<em>{yourusername}</em>/xmlrpc4ww.git</pre>
 <p>项目目录中的文件结构如下（省略无关紧要的文件）</p><pre>/xmlrpc4ww
   |--content //存放js和css
   |--db
@@ -29,7 +29,7 @@ define("DEFAULT_LAYOUT", "postlayout");		      \\每个post的jekyll模板使用
 
 define("BLOGNAME", "ghpage");			     \\blog名称，可以不作修改
 define("BLOGID","67322");			     \\blogid，可以不作修改
-define("BLOGURL","{{ site.baseurl }}");            \\blog地址，不要修改
+define("BLOGURL","{{ site.baseurl }}");            \\blog地址，不要修改，保持fakelocalhost
 
 
 </pre>
@@ -47,27 +47,27 @@ define("BLOGURL","{{ site.baseurl }}");            \\blog地址，不要修改
   |--server.php     //writer服务提供页面和文章列表入口
   |--util2.php      //支持方法
 </pre>
-<p>接下来要做的是配置一个php运行环境，如果您已经配置过php环境，那么恭喜你，可以跳过这个步骤来。下载并安装php环境，读者可参考<a href="http://www.cnblogs.com/zengxiangzhan/archive/2010/03/05/1679286.html">http://www.cnblogs.com/zengxiangzhan/archive/2010/03/05/1679286.html</a></p>
+<p>接下来要做的是配置一个php运行环境，如果您已经配置过php环境，那么恭喜你，可以跳过这个步骤了。下载并安装php环境，读者可参考<a href="http://www.cnblogs.com/zengxiangzhan/archive/2010/03/05/1679286.html">http://www.cnblogs.com/zengxiangzhan/archive/2010/03/05/1679286.html</a></p>
 <p>&nbsp;</p>
 <p>在IIS中创建一个站点，指向xmlrpc4ww，启动该网站，并用浏览器访问<a href="http://localhost{:port}/server.php">http://localhost<em>{:port}</em>/server.php</a>，看到如下页面说明php站点部署完毕（请注意，您的端口可能与我不同）</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="559EHMUA36]Z76X}}OP0V`L" border="0" alt="559EHMUA36]Z76X}}OP0V`L" src="{{ site.baseurl }}/assert/img/2013-10-23-5267e1c64ed6a.jpeg" width="638" height="28"> 
+<p><img title="559EHMUA36]Z76X}}OP0V`L" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="559EHMUA36]Z76X}}OP0V`L" src="{{ site.baseurl }}/assert/img/2013-10-23-5267e1c64ed6a.jpeg" width="638" height="28"> 
 <p>&nbsp;</p>
 <h2>配置Windows Writer</h2>
-<p>点击“添加日志帐户”，选择“其他服务”</p><img class="img-responsive" style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/2013-01-20-build-github-blog-page-07-img1.png" width="403" height="379"> 
+<p>点击“添加日志帐户”，选择“其他服务”</p><img title="image" class="img-responsive" style="display: inline" alt="image" src="{{ site.baseurl }}/assert/img/2013-01-20-build-github-blog-page-07-img1.png" width="403" height="379"> 
 <p>按照下图输入日志网址，注意，你本机的PHP站点的端口可能与我不同，用户名和密码随便填，无所谓，暂时不要记住密码</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3153e36.png" width="398" height="375"></p>
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3153e36.png" width="398" height="375"></p>
 <p>点击“下一步”，按下图填写，注意这里的远程发布网址是关键点，必须填写正确，还是一样，请注意您本机的端口可能与我不同</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c315bb38.png" width="402" height="379"></p>
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c315bb38.png" width="402" height="379"></p>
 <p>点击“下一步”，windows writer会开始检测服务端设置</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3165392.png" width="403" height="380"></p>
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3165392.png" width="403" height="380"></p>
 <p>最后会成功提示如下，可以点击Yes，发布一个测试日志，如下图。至此Writer和PHP站点打通了</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c316efd4.png" width="419" height="179"></p>
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c316efd4.png" width="419" height="179"></p>
 <p>将来发布日志的时候请选择ghpage发布</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c317594e.png" width="220" height="84"> 
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c317594e.png" width="220" height="84"> 
 <p>&nbsp;</p>
 <h2>将日志发布到本地的gh-page</h2>
 <p>用浏览器访问<a href="http://localhost{:port}/server.php">http://localhost<em>{:port}</em>/server.php</a>，应该看到多出一条记录，这条记录就是刚刚发布的临时日志。点击“编辑和发布”，显示类似下面的页面</p>
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="JWAF752I~RH(OCJT5(`P`NT" border="0" alt="JWAF752I~RH(OCJT5(`P`NT" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c317c2c7.jpeg" width="295" height="267"> 
+<p><img title="JWAF752I~RH(OCJT5(`P`NT" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="JWAF752I~RH(OCJT5(`P`NT" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c317c2c7.jpeg" width="295" height="267"> 
 <p>我们知道基于jekyll的post都应该有如下开头： <pre>---
 layout: postlayout
 title: Hello GitHub!
@@ -88,14 +88,19 @@ tags: [github-page, jekyll]
 <p>如果您的变量与我不同的话，需要自己修改php代码和数据库文件来支持。如果您希望修改的话，请将你fork的仓库地址发在下面的留言板里面，我可能考虑帮你修改。当然也许将来的版本我会发布一个可配置的版本</p></blockquote>
 <p>配置完成后，点击“保存并生成”，如果显示“成功”的话，恭喜您，文章已经在您本地的git仓库中拉。</p>
 <p>接下来您可以用本地的jekyll测试和发布你刚刚发布的文章，具体可以参考<a href="http://pchou.info/web-build/2013/01/05/build-github-blog-page-04.html">一步步在GitHub上创建博客主页(4)</a>以及相关的系列文章 
-<p>让我们来查看一下/xmlprc4ww/db/blogs.txt，此时，该文件应该已经包含了刚刚发布的日志以及post变量的配置等。顺便说一下，这个文件就是blogs的数据库文件，将来Writer从PHP站点获取或者写入的日志内容都将存放在这个文件中。 该文件除了前三行外，其他行都是数据，每一行由多个字段组成，每个字段用”#“区隔，详见：<a href="http://www.c-worker.ch/txtdbapi/index.php">http://www.c-worker.ch/txtdbapi/index.php</a>&nbsp; <p>编辑修改文章 
+<p>让我们来查看一下/xmlprc4ww/db/blogs.txt，此时，该文件应该已经包含了刚刚发布的日志以及post变量的配置等。顺便说一下，这个文件就是blogs的数据库文件，将来Writer从PHP站点获取或者写入的日志内容都将存放在这个文件中。 该文件除了前三行外，其他行都是数据，每一行由多个字段组成，每个字段用”#“区隔，详见：<a href="http://www.c-worker.ch/txtdbapi/index.php">http://www.c-worker.ch/txtdbapi/index.php</a>&nbsp; <h2>&nbsp;</h2>
+<h2>编辑修改文章 </h2>
 <p>如果您的文章已经从Writer发布到PHP站点，甚至是发布到了github，但是此时需要修改一下，怎么办呢？很简单，您只需要在Writer中打开需要修改的文章，编辑好之后，点击发布，循环上面的步骤就可以了。 
 <blockquote>
 <p>您可能会发现再次打开后图片无法正常显示，这没关系，如果这导致Writer崩溃的话，请下载最新的Writer客户端；另外如果文章有图片的话在发布前请将图片“格式”设置成“链接至无”，否则会有两张图片上传到服务端</p></blockquote>
-<p>如果您只是用上面配置好的机器来编写博客的话，至此就足够了，下面介绍多客户端该怎么协同编辑 
+<p>如果您只是用上面配置好的机器来编写博客的话，至此就足够了，下面介绍多客户端该怎么协同编辑。
 <p>&nbsp; <h2>多客户端编辑</h2>
-<p>也许读者已经猜到了，没错，只要将xmlrpc4ww这个项目也push到github的仓库就可以了！上文提到，xmlprc4ww/db/blogs.txt保存了文章的内容，该内容是与本地Writer的内容同步的，于是只要将这个文件push到github上，然后在另外一台机器上pull过来，就可以获得文章内容了。而在Writer的客户端上只要点击“打开最近使用过的日志”就可以从“另一个服务端”上获取文章内容了： 
-<p><img class="img-responsive" style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="image" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3183411.png" width="390" height="285"> 
+<p>也许读者已经猜到了，没错，只要将xmlrpc4ww这个项目也push到github的仓库就可以了！上文提到，xmlprc4ww/db/blogs.txt保存了文章的内容，该内容是与本地Writer的内容同步的，于是只要将这个文件push到github上，然后在另外一台机器上pull过来，并且重复一次配置工作（包括站点配置、writer配置）就可以获得文章内容了。而在Writer的客户端上只要点击“打开最近使用过的日志”就可以从“另一个服务端”上获取文章内容了： 
+<p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3183411.png" width="390" height="285"> 
+<blockquote>
+<p>特别需要注意的是，您PC2上的日志仓库可能与PC1不同，在配置PHP站点的时候需要特别留意 </p></blockquote>
 <p>&nbsp;</p>
 <h2>删除文章</h2>
 <p>xmlrpc4ww没有实现删除的功能，您可能需要手动完成，除了把github page所在的仓库中的日志文件和对应图片删除外，还需要删除xmlprc4ww/db/blogs.txt中的对应记录行。</p>
+<p>&nbsp;</p>
+<p>本文详细介绍了<a href="https://github.com/PChou/xmlrpc4ww" target="_blank">xmlrpc4ww</a>这个工具的使用方法，如果读者有任何问题，可以给我发邮件或者在下面留言，您的意见或建议是完善这个工具重要的途径，当然您也可以帮忙共享您的代码，发扬开源精神。</p>
