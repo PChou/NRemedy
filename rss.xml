@@ -5,8 +5,7 @@ title: P_Chou Tech Space
 {% for post in site.posts %}
 　　<item> 
 	　　<title>{{ post.title }}</title>
-	　　<link>{{ site.baseurl }}{{ post.url }}</link>
+	　　<link>http://pchou.info{{ site.baseurl }}{{ post.url }}</link>
 	　　<description>{{ post.description }}</description>
-		<author>parkerzhou2010@gmail.com</author>
 　　</item>
 {% endfor %}
