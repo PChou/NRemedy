@@ -11,8 +11,8 @@ tags: [PHP,github-page]
   |--content //存放js和css
   |--db
       |--blog	//文本数据库
-           |--__blog.txt //数据文件模板
-           |--blog.txt	//数据文件
+           |--__blogs.txt //数据文件模板
+           |--blogs.txt	//数据文件
   |--txtdb	//文本数据库支持库
   |--xmlrpc	//xmlrpc api支持库
   |--__config.php   //配置文件模板
@@ -34,11 +34,11 @@ define("BLOGURL","{{ site.baseurl }}");            \\blog地址，不要修改�
 
 </pre>
 <p><font color="#ff0000">注意：上面的前三项务必配置准确，否则将无法正常使用</font></p>
-<p>删除<code>db/blog/blog.txt</code>，将<code>__blog.txt</code>重命名为<code>blog.txt</code>。原先的blog.txt是我的文章数据库，您需要的是空的数据库文件，所以从__blog.txt这个空的数据文件模板开始，完成之后您的目录结构将是这样：</p><pre>/xmlrpc4ww
+<p>删除<code>db/blog/blogs.txt</code>，将<code>__blogs.txt</code>重命名为<code>blogs.txt</code>。原先的blogs.txt是我的文章数据库，您需要的是空的数据库文件，所以从__blogs.txt这个空的数据文件模板开始，完成之后您的目录结构将是这样：</p><pre>/xmlrpc4ww
   |--content //存放js和css
   |--db
-      |--blog	//文本数据库
-           |--blog.txt	//空数据文件
+      |--blogs	//文本数据库
+           |--blogs.txt	//空数据文件
   |--txtdb	//文本数据库支持库
   |--xmlrpc	//xmlrpc api支持库
   |--config.php     //配置文件模板
@@ -93,7 +93,7 @@ tags: [github-page, jekyll]
 <p>如果您的文章已经从Writer发布到PHP站点，甚至是发布到了github，但是此时需要修改一下，怎么办呢？很简单，您只需要在Writer中打开需要修改的文章，编辑好之后，点击发布，循环上面的步骤就可以了。 
 <blockquote>
 <p>您可能会发现再次打开后图片无法正常显示，这没关系，如果这导致Writer崩溃的话，请下载最新的Writer客户端；另外如果文章有图片的话在发布前请将图片“格式”设置成“链接至无”，否则会有两张图片上传到服务端</p></blockquote>
-<p>如果您只是用上面配置好的机器来编写博客的话，至此就足够了，下面介绍多客户端该怎么协同编辑。
+<p>如果您只是用上面配置好的机器来编写博客的话，至此就足够了，下面介绍多客户端该怎么协同编辑。 
 <p>&nbsp; <h2>多客户端编辑</h2>
 <p>也许读者已经猜到了，没错，只要将xmlrpc4ww这个项目也push到github的仓库就可以了！上文提到，xmlprc4ww/db/blogs.txt保存了文章的内容，该内容是与本地Writer的内容同步的，于是只要将这个文件push到github上，然后在另外一台机器上pull过来，并且重复一次配置工作（包括站点配置、writer配置）就可以获得文章内容了。而在Writer的客户端上只要点击“打开最近使用过的日志”就可以从“另一个服务端”上获取文章内容了： 
 <p><img title="image" class="img-responsive" style="border-left-width: 0px; border-right-width: 0px; background-image: none; border-bottom-width: 0px; padding-top: 0px; padding-left: 0px; display: inline; padding-right: 0px; border-top-width: 0px" border="0" alt="image" src="{{ site.baseurl }}/assert/img/2013-10-24-52692c3183411.png" width="390" height="285"> 
