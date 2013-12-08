@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" xmlns:wb="http://open.weibo.com/wb">
 	<head>
-		<title>P_Chou Tech Space</title>
+		<title>{{ page.title }} -- P_Chou Tech Space</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta property="wb:webmaster" content="fc37c668f0f3fb9d" />
 		<meta charset='UTF-8'>
@@ -28,6 +28,8 @@
 		  ga('send', 'pageview');
 
 		</script>
+		<!-- weibo -->
+		<script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body style='font-family:"Microsoft YaHei"'>
 		<header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner">
@@ -72,7 +74,7 @@
 		</header>
 
 		<div class="page-header container" style='padding-top:18px;'>
-			<code>摘要</code>
+			<code>摘要</code><wb:share-button appkey="2preDW" addition="number" type="button"></wb:share-button>
 		  <small>{{ page.description }}</small>
 		</div>
 
