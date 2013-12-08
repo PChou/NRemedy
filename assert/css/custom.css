@@ -33,6 +33,35 @@
 	margin-top: 10px;
 }
 
+span.castname{
+		font-size: 18px;
+	}
+	
+.W_ico16{
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url("/assert/img/icon.png");
+	background-repeat: no-repeat;
+	margin: 0 0 0 5px;
+}
+
+.icon_sw_movie {
+	background-position: -275px -50px;
+}
+
+.icon_sw_link {
+	background-position: -175px -25px;
+}
+
+div#new div{
+	border-bottom: #CC50CC;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+}
+
+
+
 @media (min-width: 768px) {
 	.thumbnail .fix-height {
 		height: 160px;
