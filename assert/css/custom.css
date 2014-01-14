@@ -1,3 +1,14 @@
+caption {
+	text-align: left;
+	font-weight: bold;
+	font-size: 18px;
+}
+
+tr.headers {
+	color: #fff;
+	background-color: #555;
+}
+
 .bs-docs-nav {
   text-shadow: 0 -1px 0 rgba(0,0,0,.15);
   background-color: #563d7c;
