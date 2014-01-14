@@ -7,4 +7,5 @@ $(function(){
 
 	$('#gEwm').html('').qrcode(opt);
 
+	
 })

@@ -1,0 +1,166 @@
+books = [
+{
+	name:"Windows核心编程（第5版）",
+	img:"http://img35.ddimg.cn/36/11/20351565-1_w.jpg"
+},
+{
+	name:"大数据：互联网大规模数据挖掘与分布式处理",
+	img:"http://img35.ddimg.cn/54/6/22875885-1_w_1.jpg"
+},
+{
+	name:"深入解析SQL Server 2008",
+	img:"http://img32.ddimg.cn/83/26/20884232-1_w_2.jpg"
+},
+{
+	name:"C++反汇编与逆向分析技术揭秘",
+	img:"http://img34.ddimg.cn/24/19/22507674-1_w_1.jpg"
+},
+{
+	name:"Windows程序设计（第5版  珍藏版）",
+	img:"http://img30.ddimg.cn/21/2/20924760-1_w_2.jpg"
+},
+{
+	name:"汇编语言（第2版）",
+	img:"http://img30.ddimg.cn/66/25/20196660-1_w.jpg"
+},
+{
+	name:"编程珠玑（第2版）",
+	img:"http://img39.ddimg.cn/98/25/20359349-1_w_1.jpg"
+},
+{
+	name:"编程珠玑：续",
+	img:"http://img35.ddimg.cn/10/7/21068695-1_w_2.jpg"
+},
+{
+	name:"C++ Primer中文版  第4版",
+	img:"http://img38.ddimg.cn/93/5/9157098-1_w.jpg"
+},
+{
+	name:"数学之美",
+	img:"http://img30.ddimg.cn/84/10/22754640-2_w_1.jpg"
+},
+{
+	name:"TCP/IP详解 (卷2:实现)",
+	img:"http://img39.ddimg.cn/46/35/436339-1_w.jpg"
+},
+{
+	name:"C++编程思想（第2版）第1卷：标准C++导引",
+	img:"http://img37.ddimg.cn/73/7/683767-1_w.jpg"
+},
+{
+	name:"C++编程思想（第2卷）实用编程技术",
+	img:"http://img33.ddimg.cn/41/18/9044483-1_w.jpg"
+},
+{
+	name:"Effective C++ 中文版2nd Edition",
+	img:"http://img31.ddimg.cn/34/22/644821-1_w.jpg"
+},
+{
+	name:"LeX与Yacc（第二版）",
+	img:"http://img39.ddimg.cn/97/16/719629-1_w.jpg"
+},
+{
+	name:"WPF揭秘",
+	img:"http://img37.ddimg.cn/13/11/20204527-1_w.jpg"
+},
+{
+	name:"鸟哥的Linux私房菜 基础学习篇(第三版)",
+	img:"http://img36.ddimg.cn/93/24/20866026-2_w_2.jpg"
+},
+{
+	name:"鸟哥的Linux私房菜:服务器架设篇(第3版)",
+	img:"http://img33.ddimg.cn/13/14/22787833-1_w_1.jpg"
+},
+{
+	name:"深入理解Nginx：模块开发与架构解析",
+	img:"http://img30.ddimg.cn/67/25/23207350-1_w_1.jpg"
+},
+{
+	name:"构建高性能Web站点",
+	img:"http://img38.ddimg.cn/86/23/22805528-1_w_1.jpg"
+},
+{
+	name:".NET框架程序设计",
+	img:"http://img31.ddimg.cn/4/19/8773681-1_w.jpg"
+},
+{
+	name:"C#本质论(第3版)",
+	img:"http://img38.ddimg.cn/74/11/20915408-1_w_2.jpg"
+},
+{
+	name:"HTTP权威指南",
+	img:"http://img37.ddimg.cn/65/20/22840157-1_w_1.jpg"
+},
+{
+	name:"NoSQL精粹",
+	img:"http://img33.ddimg.cn/7/28/23313913-2_w_2.jpg"
+},
+{
+	name:"改变未来的九大算法",
+	img:"http://img38.ddimg.cn/87/4/23250138-2_w_1.jpg"
+},
+{
+	name:"精益创业",
+	img:"http://img31.ddimg.cn/57/27/22840941-2_w_1.jpg"
+},
+{
+	name:"做最好的团队：打造卓越团队的九大黄金法则",
+	img:"http://img33.ddimg.cn/2/2/20978003-1_w_2.jpg"
+},
+{
+	name:"货币战争(升级版）",
+	img:"http://img30.ddimg.cn/86/36/22505360-1_w_1.jpg"
+},
+{
+	name:"Agile Web Development with Rails",
+	img:"http://img38.ddimg.cn/4/26/1249785508-1_w_1.jpg"
+},
+{
+	name:"Pro ASP.NET MVC 2 Framework",
+	img:"http://img38.ddimg.cn/8/22/1204156808-1_w.jpg"
+},
+{
+	name:"非常网管——网络管理从入门到精通",
+	img:"http://img38.ddimg.cn/12/17/20246898-1_w.jpg"
+},
+{
+	name:"Beginning Android Application Development",
+	img:"http://img38.ddimg.cn/8/34/1125669608-1_w_1.jpg"
+},
+{
+	name:"Beginning Wf: Windows Workflow in .Net 4.0",
+	img:"http://img38.ddimg.cn/6/14/1058616708-1_w_1.jpg"
+},
+{
+	name:"硝烟中的Scrum和XP——我们如何实施Scrum",
+	img:"http://img32.ddimg.cn/90/19/21015612-1_w_2.jpg"
+},
+{
+	name:"Visual C++2008入门经典",
+	img:"http://img36.ddimg.cn/78/22/20496246-1_w.jpg"
+},
+{
+	name:"涂抹Oracle--三思笔记之一步一步学Oracle",
+	img:"http://img33.ddimg.cn/14/35/20753483-1_w_2.jpg"
+},
+{
+	name:"Vsto 3.0 for Office 2007 Programming",
+	img:"http://img38.ddimg.cn/6/21/1147875108-1_w_1.jpg"
+},
+{
+	name:"极客：改变世界的创新基因",
+	img:"http://img32.ddimg.cn/55/18/23219812-1_w_1.jpg"
+},
+{
+	name:"JavaScript高级程序设计(第2版)",
+	img:"http://img35.ddimg.cn/76/19/20884225-1_w_2.jpg"
+},
+{
+	name:"设计模式：可复用面向对象软件的基础",
+	img:"http://img38.ddimg.cn/45/6/142308-1_w.jpg"
+},
+{
+	name:"Beginning Css: Cascading Style Sheets For Web",
+	img:"http://img38.ddimg.cn/85/17/1125667408-1_w_1.jpg"
+}
+]

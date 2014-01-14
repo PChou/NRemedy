@@ -3,23 +3,45 @@ layout: default
 title: P_Chou Tech Space
 ---
 
-<div class='container' style='padding-top:58px;'>
-
-	<div class="jumbotron">
-
-		<div class="row">
-			<div class="col-md-6">
-				<img src='{{ site.baseurl }}/assert/img/head2.jpg' class="img-thumbnail" />
-			</div>
-			<div class="col-md-6">
-				<h4 class="media-heading">屌丝程序员一枚，几乎对所有技术都感兴趣：windows c\c++ .net linux web 系统架构 Remedy...</h4>
-				<h4>如果您在本博客上发现任何问题或bug，请给我留言或联系我</h4>
-				<h4><a href='mailto:parkerzhou2010@gmail.com'>mail:parkerzhou2010@gmail.com</a></h4>
-				<h4>QQ:351405586</h4>
-				
-			</div>
-		</div>
+<script src="assert/js/data/books.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
 	
+	$(function () {
+		var container = $('#books');
+		$.each(books,function (i,book) {
+			var bookui = $('<div class="col-xs-12 col-sm-6 col-md-4 book"></div>');
+			var img = $('<img/>');
+			var name = $('<p></p>');
+			img.attr('data-url',book.img);
+			name.text(book.name);
+			bookui.append(img);
+			bookui.append(name);
+			bookui.appendTo(container);
+		});
+
+		$("img").scrollLoading();
+	});
+	
+</script>
+
+<div class='me-mod'>
+
+	<div class='head'>
+		<img src='assert/img/head3.jpg' />
 	</div>
 
+	<div class='description'>
+		前段时间听说这么个名词：全栈程序员，不禁感觉自己貌似也许有点略微也是这么个性质的程序员。Windows，Linux，虚拟机、网络、存储都会点，数据库(mssql、mysql、oracle)及数据库编程，编程语言C#、Python、C/C++、Ruby、javascript、php、node.js或熟练或入门，web开发ASP.NET[MVC]，web前端css也会点，还懂点web架构。写过语言分析器、写过类库，还会点bmc的remedy...虽然涉猎较广，但还是对学过的事物始终饱有一种深入学习的热情，只是限于时间和工作性质的原因；同时对于新的技术也很有热情。十分欢迎技术交流。
+	</div>
+
+	<div class='social'>
+		<wb:follow-button uid="2371992362" type="red_1" width="70" height="30" ></wb:follow-button>
+				<a class='gmail' href='mailto:parkerzhou2010@gmail.com'>
+			<img src="http://www.google.com.hk/favicon.ico">
+		</a>
+	</div>
+	<h4>我的书架</h4>
+	<div id='books' class='books row'>
+	</div>
+	
 </div>
