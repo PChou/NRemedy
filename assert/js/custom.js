@@ -1,6 +1,6 @@
 $(function(){
 	
-	var opt = { text : window.location.href, width:100, height:100 };
+	var opt = { text : window.location.href, width:150, height:150 };
 	if(!Modernizr.canvas){
 		$.extend(opt,{ render : "table" });
 	}

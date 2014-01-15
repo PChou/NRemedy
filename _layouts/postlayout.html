@@ -45,6 +45,14 @@
 					</button>
 	      			<a href="/" class="navbar-brand fix-width">{{ page.title }}</a>
 	    		</div>
+	    		<div class="navbar-header scan">
+	      			<a href="javascript:void(0)" class="navbar-brand fix-width">扫一扫,手机阅读</a>
+  					<span class="down navbar-brand glyphicon glyphicon-chevron-down"></span>
+  					<span class="up navbar-brand glyphicon glyphicon-chevron-up"></span>
+  					<div class="gewm">
+						<div id="gEwm" ></div>
+					</div>
+	    		</div>
 			    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
 			      <ul class="nav navbar-nav">
 			      	<li>
@@ -75,7 +83,7 @@
   			</div>
 		</header>
 
-		<div class="page-header container" style='padding-top:18px;'>
+		<div class="page-header container" style='padding-top:18px;max-width:970px'>
 			<code>摘要</code>
 		  <small>{{ page.description }}</small>
 		  <!-- <wb:share-button appkey="2preDW" addition="number" type="button" ralateUid="2371992362"></wb:share-button> -->
@@ -104,7 +112,7 @@
 
 		</div>
 
-		<div class='container'>
+		<div class='container' style='max-width:970px'>
 			{{ content }}
 			<p><span class="glyphicon glyphicon-paperclip"></span>
 			{% for cat in page.categories %}
@@ -117,7 +125,7 @@
 			{% endfor %}
 			</p>
 		</div>
-		<div class='container'>
+		<div class='container' style='max-width:970px'>
 			<div id="disqus_thread"></div>
 			{% include disqus %}
 		</div>
@@ -128,10 +136,7 @@
 				<a href="#" id="close" class="close" title="关闭"></a>
 			</div>
 		</div> -->
-		<div class="gewm visible-md visible-lg">
-			<p>在手机上阅读</p>
-			<div id="gEwm" ></div>
-		</div>
+		
 	    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	</body>
 </html>

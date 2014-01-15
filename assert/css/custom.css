@@ -9,6 +9,35 @@ tr.headers {
 	background-color: #555;
 }
 
+.scan{
+	display: none;
+	float: right;
+	position: relative;
+}
+
+.scan span.up,.scan:hover span.down {
+	display: none;
+}
+
+.scan:hover span.up,.scan:hover .gewm,.scan .gewm:hover{
+	display: block;
+}
+
+
+.scan .gewm {
+	background-color: #fff;
+	display: none;
+	position: absolute;
+	top: 50px;
+	right: 15px;
+	width: 165px;
+	height: 165px;
+	border: 3px solid #FCBF53;
+	z-index: 10009;
+	padding: 5px;
+}
+
+
 .bs-docs-nav {
   text-shadow: 0 -1px 0 rgba(0,0,0,.15);
   background-color: #563d7c;
@@ -87,27 +116,6 @@ div#new div{
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-
-	.gewm {
-			background-color: #fff;
-			display: block;
-			position: fixed;
-			padding-top: 1px;
-			padding-left: 2px;		
-			bottom: 20px;
-			right:150px;
-			width: 110px;
-			height: 128px;
-			border: 3px solid #FCBF53;
-			z-index: 10009;
-			-position: absolute;
-			-bottom: auto;
-		}
-
-			.gewm p{
-				text-align:center;
-				margin: 0 0px;
-			}
 }
 
 @media (max-width: 767px) {
@@ -209,6 +217,9 @@ div#new div{
 @media (min-width: 993px) {
 	.me-mod .book {
 		height: 305px;
+	}
+	.scan {
+		display: block;
 	}
 }
 

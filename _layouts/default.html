@@ -23,6 +23,9 @@
 				$("img").scrollLoading();
 			});
 		</script>
+		<script type="text/javascript" src="{{ site.baseurl }}/assert/js/jquery.qrcode.min.js"></script>
+  		<script src="{{ site.baseurl }}/assert/js/Modernizr.js"></script>
+  		<script src="{{ site.baseurl }}/assert/js/custom.js">></script>
 		<!--google analyse-->
 		<script>
 		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -48,6 +51,14 @@
 						<span class="icon-bar"></span>
 					</button>
 	      			<a href="/" class="navbar-brand fix-width">P_Chou Tech Space</a>
+	    		</div>
+	    		<div class="navbar-header scan">
+	      			<a href="javascript:void(0)" class="navbar-brand fix-width">扫一扫,手机阅读</a>
+  					<span class="down navbar-brand glyphicon glyphicon-chevron-down"></span>
+  					<span class="up navbar-brand glyphicon glyphicon-chevron-up"></span>
+  					<div class="gewm">
+						<div id="gEwm" ></div>
+					</div>
 	    		</div>
 			    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
 			      <ul class="nav navbar-nav">
