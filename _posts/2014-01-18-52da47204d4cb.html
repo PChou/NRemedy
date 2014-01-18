@@ -1,0 +1,555 @@
+---
+layout: postlayout
+title: 【译】PLY手册Lex部分
+description: PLY是基于Python的lex和yacc实现，由David Beazley开发并维护。相比C语言版的lex和yacc，发挥了Python的语言特点，使得开发类似编译器或解释器变得更轻松。本文是其文档的Lex部分
+thumbimg: Open-Source-Software-.jpg
+categories: [open-source]
+tags: [PLY,Python,Lex,Yacc]
+---
+<p>本文是<a href="http://www.dabeaz.com/ply/ply.html" target="_blank">PLY (Python Lex-Yacc)</a>的中文翻译版。转载请注明出处。</p> <p>如果你从事编译器或解析器的开发工作，你可能对lex和yacc不会陌生，PLY是<a href="http://www.dabeaz.com/" target="_blank">David Beazley</a>实现的基于Python的lex和yacc。作者最著名的成就可能是其撰写的<a href="http://www.dabeaz.com/cookbook.html" target="_blank">Python Cookbook, 3rd Edition</a>。我因为偶然的原因接触了PLY，觉得是个好东西，但是似乎国内没有相关的资料。于是萌生了翻译的想法，虽然内容不算多，但是由于能力有限，很多概念不了解，还专门补习了编译原理，这对我有很大帮助。为了完成翻译，经过初译，复审，排版等，花费我很多时间，最终还是坚持下来了，希望对需要的人有所帮助。另外，第一次大规模翻译英文，由于水平有限，如果错误或者不妥的地方还请指正，非常感谢。</p> <div class="table-responsive"> <table class="table"> <caption>一些翻译约定</caption> <tbody> <tr> <td>token</td> <td>标记</td></tr> <tr> <td>context free grammar</td> <td>上下文无关文法</td></tr> <tr> <td>syntax directed translation</td> <td>语法制导的翻译</td></tr> <tr> <td>ambiguity</td> <td>二义</td></tr> <tr> <td>terminals</td> <td>终结符</td></tr> <tr> <td>non-terminals</td> <td>非终结符</td></tr> <tr> <td>documentation string</td> <td>文档字符串（python中的_docstring_）</td></tr></tbody></table></div> <h3><font style="font-weight: bold">目录</font></h3> <ul> <li><a href="#1">1 前言和预备</a>  <li><a href="#2">2 介绍</a>  <li><a href="#3">3 PLY概要</a>  <li><a href="#4">4 Lex</a>  <ul> <li><a href="#4_1">4.1 Lex的例子</a>  <li><a href="#4_2">4.2 标记列表</a>  <li><a href="#4_3">4.3 标记的规则</a>  <li><a href="#4_4">4.4 标记的值</a>  <li><a href="#4_5">4.5 丢弃标记</a>  <li><a href="#4_6">4.6 行号和位置信息</a>  <li><a href="#4_7">4.7 忽略字符</a>  <li><a href="#4_8">4.8 字面字符</a>  <li><a href="#4_9">4.9 错误处理</a>  <li><a href="#4_10">4.10 构建和使用lexer</a>  <li><a href="#4_11">4.11 @TOKEN装饰器</a>  <li><a href="#4_12">4.12 优化模式</a>  <li><a href="#4_13">4.13 调试</a>  <li><a href="#4_14">4.14 其他方式定义词法规则</a>  <li><a href="#4_15">4.15 额外状态维护</a>  <li><a href="#4_16">4.16 Lexer克隆</a>  <li><a href="#4_17">4.17 Lexer的内部状态</a>  <li><a href="#4_18">4.18 基于条件的扫描和启动条件</a>  <li><a href="#4_19">4.19 其他问题</a></li></ul></li></ul> <p>&nbsp;</p> <p>&nbsp;</p><a name="1"></a> <h3><font style="font-weight: bold">1 前言和预备</font></h3> <p>本文指导你使用PLY进行词法分析和语法解析的，鉴于解析本身是个复杂性的事情，在你使用PLY投入大规模的开发前，我强烈建议你完整地阅读或者浏览本文档。</p> <p>PLY-3.0能同时兼容Python2和Python3。需要注意的是，对于Python3的支持是新加入的，还没有广泛的测试（尽管所有的例子和单元测试都能够在Pythone3下通过）。如果你使用的是Python2，应该使用Python2.4以上版本，虽然，PLY最低能够支持到Python2.2，不过一些可选的功能需要新版本模块的支持。</p> <p>&nbsp;</p><a name="2"></a> <h3><font style="font-weight: bold">2 介绍</font></h3> <p>PLY是纯粹由Python实现的Lex和yacc（流行的编译器构建工具）。PLY的设计目标是尽可能的沿袭传统lex和yacc工具的工作方式，包括支持LALR(1)分析法、提供丰富的输入验证、错误报告和诊断。因此，如果你曾经在其他编程语言下使用过yacc，你应该能够很容易的迁移到PLY上。</p> <p>2001年，我在芝加哥大学教授“编译器简介”课程时开发了的早期的PLY。学生们使用Python和PLY构建了一个类似Pascal的语言的完整编译器，其中的语言特性包括：词法分析、语法分析、类型检查、类型推断、嵌套作用域，并针对SPARC处理器生成目标代码等。学生们最终大约实现了30种不同的编译器！PLY的大多数影响使用的接口设计问题都是学号生们提出的。从2001年以来，PLY继续从用户的反馈中不断改进。为了适应对未来的改进需求，PLY3.0在原来基础上进行了重大的重构。</p> <p>由于PLY是作为教学工具来开发的，你会发现它对于标记和语法规则是相当严谨的，这一定程度上是为了帮助新手用户找出常见的编程错误。不过，高级用户也会反现这也有助于处理真实编程语言的复杂语法。还需要注意的是，PLY没有提供太多花哨的东西（例如，自动构建抽象语法树和遍历树），我也不认为它是个分析框架。相反，你会发现它是一个用Python实现的，基本的，但能够完全胜任的lex/yacc。</p> <p>本文的假设你多少熟悉分析理论、语法制导的翻译、基于其他编程语言使用过类似lex和yacc的编译构建工具。如果你对这些东西不熟悉，你可能需要去学习一些文章的介绍，比如：Aho, Sethi和Ullman的《Compilers: Principles, Techniques, and Tools》（《编译原理》），和O'Reilly'出版的John Levine的《lex and yacc》。事实上，《lex and yacc》和PLY使用的概念几乎相同。</p> <p>&nbsp;</p><a name="3"></a> <h3><font style="font-weight: bold">3 PLY概要</font></h3> <p>PLY包含两个独立的模块：lex.py和yacc.py，都定义在ply包下。lex.py模块用来将输入字符通过一系列的正则表达式分解成标记序列，yacc.py通过一些上下文无关的文法来识别编程语言语法。yacc.py使用LR解析法，并使用LALR(1)算法（默认）或者SLR算法生成分析表。</p> <p>这两个工具是为了一起工作的。lex.py通过向外部提供<code>token()</code>方法作为接口，方法每次会从输入中返回下一个有效的标记。yacc.py将会不断的调用这个方法来获取标记并匹配语法规则。yacc.py的的功能通常是生成抽象语法树(AST)，不过，这完全取决于用户，如果需要，yacc.py可以直接用来完成简单的翻译。</p> <p>就像相应的unix工具，yacc.py提供了大多数你期望的特性，其中包括：丰富的错误检查、语法验证、支持空产生式、错误的标记、通过优先级规则解决二义性。事实上，传统yacc能够做到的PLY都应该支持。</p> <p>yacc.py与Unix下的yacc的主要不同之处在于，yacc.py没有包含一个独立的代码生成器，而是在PLY中依赖反射来构建词法分析器和语法解析器。不像传统的lex/yacc工具需要一个独立的输入文件，并将之转化成一个源文件，Python程序必须是一个可直接可用的程序，这意味着不能有额外的源文件和特殊的创建步骤（像是那种执行yacc命令来生成Python代码）。又由于生成分析表开销较大，PLY会缓存生成的分析表，并将它们保存在独立的文件中，除非源文件有变化，会重新生成分析表，否则将从缓存中直接读取。</p> <p>&nbsp;</p><a name="4"></a> <h3><font style="font-weight: bold">4 Lex</font></h3> <p>lex.py是用来将输入字符串标记化。例如，假设你正在设计一个编程语言，用户的输入字符串如下：</p><pre><code>x = 3 + 42 * (s - t)</code></pre>
+<p>标记器将字符串分割成独立的标记：</p><pre><code>'x','=', '3', '+', '42', '*', '(', 's', '-', 't', ')'</code></pre>
+<p>标记通常用一组名字来命名和表示：</p><pre><code>'ID','EQUALS','NUMBER','PLUS','NUMBER','TIMES','LPAREN','ID','MINUS','ID','RPAREN'</code></pre>
+<p>将标记名和标记值本身组合起来：</p><pre><code>('ID','x'), ('EQUALS','='), ('NUMBER','3'),('PLUS','+'), ('NUMBER','42), ('TIMES','*'),('LPAREN','('), ('ID','s'),('MINUS','-'),('ID','t'), ('RPAREN',')</code></pre>
+<p>正则表达式是描述标记规则的典型方法，下一节展示如何用lex.py实现。</p>
+<p>&nbsp;</p><a name="4_1"></a>
+<h4><font style="font-weight: bold">4.1 Lex的例子</font></h4>
+<p>下面的例子展示了如何使用lex.py对输入进行标记</p><pre><code>
+# ------------------------------------------------------------
+# calclex.py
+#
+# tokenizer for a simple expression evaluator for
+# numbers and +,-,*,/
+# ------------------------------------------------------------
+import ply.lex as lex
+
+# List of token names.   This is always required
+tokens = (
+   'NUMBER',
+   'PLUS',
+   'MINUS',
+   'TIMES',
+   'DIVIDE',
+   'LPAREN',
+   'RPAREN',
+)
+
+# Regular expression rules for simple tokens
+t_PLUS    = r'\+'
+t_MINUS   = r'-'
+t_TIMES   = r'\*'
+t_DIVIDE  = r'/'
+t_LPAREN  = r'\('
+t_RPAREN  = r'\)'
+
+# A regular expression rule with some action code
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)    
+    return t
+
+# Define a rule so we can track line numbers
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+# A string containing ignored characters (spaces and tabs)
+t_ignore  = ' \t'
+
+# Error handling rule
+def t_error(t):
+    print "Illegal character '%s'" % t.value[0]
+    t.lexer.skip(1)
+
+# Build the lexer
+lexer = lex.lex()
+</code></pre>
+<p>为了使lexer工作，你需要给定一个输入，并传递给input()方法。然后，重复调用token()方法来获取标记序列，下面的代码展示了这种用法：</p><pre><code>
+# Test it out
+data = '''
+3 + 4 * 10
+  + -20 *2
+'''
+
+# Give the lexer some input
+lexer.input(data)
+
+# Tokenize
+while True:
+    tok = lexer.token()
+    if not tok: break      # No more input
+    print tok
+</code></pre>
+<p>程序执行，将给出如下输出：</p><pre><code>$ python example.py
+LexToken(NUMBER,3,2,1)
+LexToken(PLUS,'+',2,3)
+LexToken(NUMBER,4,2,5)
+LexToken(TIMES,'*',2,7)
+LexToken(NUMBER,10,2,10)
+LexToken(PLUS,'+',3,14)
+LexToken(MINUS,'-',3,16)
+LexToken(NUMBER,20,3,18)
+LexToken(TIMES,'*',3,20)
+LexToken(NUMBER,2,3,21)
+</code></pre>
+<p>Lexers也同时支持迭代，你可以把上面的循环写成这样：</p><pre><code>
+for tok in lexer:
+    print tok
+</code></pre>
+<p>由<code>lexer.token()</code>方法返回的标记是<code>LexToken</code>类型的实例，拥有<code>tok.type</code>,<code>tok.value</code>,<code>tok.lineno</code>和<code>tok.lexpos</code>属性，下面的代码展示了如何访问这些属性： </p><pre><code># Tokenize
+while True:
+    tok = lexer.token()
+    if not tok: break      # No more input
+    print tok.type, tok.value, tok.line, tok.lexpos
+</code></pre>
+<p><code>tok.type</code>和<code>tok.value</code>属性表示标记本身的类型和值。<code>tok.line</code>和<code>tok.lexpos</code>属性包含了标记的位置信息，<code>tok.lexpos</code>表示标记相对于输入串起始位置的偏移。 </p>
+<p>&nbsp;</p><a name="4_2"></a>
+<h4><font style="font-weight: bold">4.2 标记列表</font></h4>
+<p>词法分析器必须提供一个标记的列表，这个列表将所有可能的标记告诉分析器，用来执行各种验证，同时也提供给yacc.py作为终结符。</p>
+<p>在上面的例子中，是这样给定标记列表的：</p><pre><code>tokens = (
+   'NUMBER',
+   'PLUS',
+   'MINUS',
+   'TIMES',
+   'DIVIDE',
+   'LPAREN',
+   'RPAREN',
+)</code></pre>
+<p>&nbsp;</p><a name="4_3"></a>
+<h4><font style="font-weight: bold">4.3 标记的规则</font></h4>
+<p>每种标记用一个正则表达式规则来表示，每个规则需要以"t_"开头声明，表示该声明是对标记的规则定义。对于简单的标记，可以定义成这样（在Python中使用raw string能比较方便的书写正则表达式）：</p><pre><code>t_PLUS = r'\+'</code></pre>
+<p>这里，紧跟在t_后面的单词，必须跟标记列表中的某个标记名称对应。如果需要执行动作的话，规则可以写成一个方法。例如，下面的规则匹配数字字串，并且将匹配的字符串转化成Python的整型：</p><pre><code>def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t</code></pre>
+<p>如果使用方法的话，正则表达式写成方法的文档字符串。方法总是需要接受一个<code>LexToken</code>实例的参数，该实例有一个<code>t.type</code>的属性（字符串表示）来表示标记的类型名称，<code>t.value</code>是标记值（匹配的实际的字符串），<code>t.lineno</code>表示当前在源输入串中的作业行，<code>t.lexpos</code>表示标记相对于输入串起始位置的偏移。默认情况下，<code>t.type</code>是以t_开头的变量或方法的后面部分。方法可以在方法体里面修改这些属性。但是，如果这样做，应该返回结果token，否则，标记将被丢弃。 <br>在lex内部，lex.py用<code>re</code>模块处理模式匹配，在构造最终的完整的正则式的时候，用户提供的规则按照下面的顺序加入：</p>
+<ol>
+<li>所有由方法定义的标记规则，按照他们的出现顺序依次加入 
+<li>由字符串变量定义的标记规则按照其正则式长度倒序后，依次加入（长的先入） </li></ol>
+<p>顺序的约定对于精确匹配是必要的。比如，如果你想区分‘=’和‘==’，你需要确保‘==’优先检查。如果用字符串来定义这样的表达式的话，通过将较长的正则式先加入，可以帮助解决这个问题。用方法定义标记，可以显示地控制哪个规则优先检查。 <br>为了处理保留字，你应该单独为其编写规则，然后像下面这样做特殊的查询：</p><pre><code>reserved = {
+   'if' : 'IF',
+   'then' : 'THEN',
+   'else' : 'ELSE',
+   'while' : 'WHILE',
+   ...
+}
+
+tokens = ['LPAREN','RPAREN',...,'ID'] + list(reserved.values())
+
+def t_ID(t):
+    r'[a-zA-Z_][a-zA-Z_0-9]*'
+    t.type = reserved.get(t.value,'ID')    # Check for reserved words
+    return t</code></pre>
+<p>这样做可以大大减少正则式的个数，并稍稍加快处理速度。注意：你应该避免为保留字编写单独的规则，例如，如果你像下面这样写：</p><pre><code>t_FOR   = r'for'
+t_PRINT = r'print'</code></pre>
+<p>但是，这些规则照样也能够匹配以这些字符开头的单词，比如'forget'或者'printed'，这通常不是你想要的。</p>
+<p>&nbsp;</p><a name="4_4"></a>
+<h4><font style="font-weight: bold">4.4 标记的值</font></h4>
+<p>标记被lex返回后，它们的值被保存在<code>value</code>属性中。正常情况下，<code>value</code>是匹配的实际文本。事实上，<code>value</code>可以被赋为任何Python支持的类型。例如，当扫描到标识符的时候，你可能不仅需要返回标识符的名字，还需要返回其在符号表中的位置，可以像下面这样写：</p><pre><code>def t_ID(t):
+    ...
+    # Look up symbol table information and return a tuple
+    t.value = (t.value, symbol_lookup(t.value))
+    ...
+    return t
+</code></pre>
+<p>需要注意的是，不推荐用其他属性来保存值，因为yacc.py模块只会暴露出标记的<code>value</code>属性，访问其他属性会变得不自然。如果想保存多种属性，可以将元组、字典、或者对象实例赋给value。</p>
+<p>&nbsp;</p><a name="4_5"></a>
+<h4><font style="font-weight: bold">4.5 丢弃标记</font></h4>
+<p>想丢弃像注释之类的标记，只要不返回value就行了，像这样：</p><pre><code>def t_COMMENT(t):
+    r'\#.*'
+    pass
+    # No return value. Token discarded</pre><p>为标记声明添加"ignore_"前缀同样可以达到目的：</p><pre>t_ignore_COMMENT = r'\#.*'</code></pre>
+<p>如果有多种文本需要丢弃，建议使用方法来定义规则，因为方法能够提供更精确的匹配优先级控制（方法根据出现的顺序，而字符串的正则表达式依据正则表达式的长度）</p>
+<p>&nbsp;</p><a name="4_6"></a>
+<h4><font style="font-weight: bold">4.6 行号和位置信息</font></h4>
+<p>默认情况下，lex.py对行号一无所知。因为lex.py根本不知道何为"行"的概念（换行符本身也作为文本的一部分）。不过，可以通过写一个特殊的规则来记录行号：</p><pre><code># Define a rule so we can track line numbers
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)</code></pre>
+<p>在这个规则中，当前lexer对象t.lexer的lineno属性被修改了，而且空行被简单的丢弃了，因为没有任何的返回。</p>
+<p>lex.py也不自动做列跟踪。但是，位置信息被记录在了每个标记对象的lexpos属性中，这样，就有可能来计算列信息了。例如：每当遇到新行的时候就重置列值：</p><pre><code># Compute column. 
+#     input is the input text string
+#     token is a token instance
+def find_column(input,token):
+    last_cr = input.rfind('\n',0,token.lexpos)
+    if last_cr &lt; 0:
+        last_cr = 0
+    column = (token.lexpos - last_cr) + 1
+    return column</code></pre>
+<p>通常，计算列的信息是为了指示上下文的错误位置，所以只在必要时有用。</p>
+<p>&nbsp;</p><a name="4_7"></a>
+<h4><font style="font-weight: bold">4.7 忽略字符</font></h4>
+<p><code>t_ignore</code>规则比较特殊，是lex.py所保留用来忽略字符的，通常用来跳过空白或者不需要的字符。虽然可以通过定义像<code>t_newline()</code>这样的规则来完成相同的事情，不过使用t_ignore能够提供较好的词法分析性能，因为相比普通的正则式，它被特殊化处理了。</p>
+<p>&nbsp;</p><a name="4_8"></a>
+<h4><font style="font-weight: bold">4.8 字面字符</font></h4>
+<p>字面字符可以通过在词法模块中定义一个<code>literals</code>变量做到，例如：</p><pre><code>literals = [ '+','-','*','/' ]</code></pre>
+<p>或者</p><pre><code>literals = "+-*/"</code></pre>
+<p>字面字符是指单个字符，表示把字符本身作为标记，标记的<code>type</code>和<code>value</code>都是字符本身。不过，字面字符是在其他正则式之后被检查的，因此如果有规则是以这些字符开头的，那么这些规则的优先级较高。</p>
+<p>&nbsp;</p><a name="4_9"></a>
+<h4><font style="font-weight: bold">4.9 错误处理</font></h4>
+<p>最后，在词法分析中遇到非法字符时，<code>t_error()</code>用来处理这类错误。这种情况下，<code>t.value</code>包含了余下还未被处理的输入字串，在之前的例子中，错误处理方法是这样的：</p><pre><code># Error handling rule
+def t_error(t):
+    print "Illegal character '%s'" % t.value[0]
+    t.lexer.skip(1)</code></pre>
+<p>这个例子中，我们只是简单的输出不合法的字符，并且通过调用<code>t.lexer.skip(1)</code>跳过一个字符。</p>
+<p>&nbsp;</p><a name="4_10"></a>
+<h4><font style="font-weight: bold">4.10 构建和使用lexer</font></h4>
+<p>函数<code>lex.lex()</code>使用Python的反射机制读取调用上下文中的正则表达式，来创建lexer。lexer一旦创建好，有两个方法可以用来控制lexer对象：</p>
+<ul>
+<li><code>lexer.input(data)</code> 重置lexer和输入字串 
+<li><code>lexer.token()</code> 返回下一个<code>LexToken</code>类型的标记实例，如果进行到输入字串的尾部时将返回<code>None</code> </li></ul>
+<p>推荐直接在<code>lex()</code>函数返回的lexer对象上调用上述接口，尽管也可以向下面这样用模块级别的<code>lex.input()</code>和<code>lex.token()</code>：</p><pre><code>lex.lex()
+lex.input(sometext)
+while 1:
+    tok = lex.token()
+    if not tok: break
+    print tok</code></pre>
+<p>在这个例子中，<code>lex.input()</code>和<code>lex.token()</code>是模块级别的方法，在lex模块中，<code>input()</code>和<code>token()</code>方法绑定到最新创建的lexer对象的对应方法上。最好不要这样用，因为这种接口可能不知道在什么时候就失效（译者注：垃圾回收？）</p>
+<p>&nbsp;</p><a name="4_11"></a>
+<h4><font style="font-weight: bold">4.11 @TOKEN装饰器</font></h4>
+<p>在一些应用中，你可能需要定义一系列辅助的记号来构建复杂的正则表达式，例如：</p><pre><code>digit            = r'([0-9])'
+nondigit         = r'([_A-Za-z])'
+identifier       = r'(' + nondigit + r'(' + digit + r'|' + nondigit + r')*)'        
+
+def t_ID(t):
+    # want docstring to be identifier above. ?????
+    ...</code></pre>
+<p>在这个例子中，我们希望ID的规则引用上面的已有的变量。然而，使用文档字符串无法做到，为了解决这个问题，你可以使用<strong>@TOKEN</strong>装饰器：</p><pre><code>from ply.lex import TOKEN
+
+@TOKEN(identifier)
+def t_ID(t):
+    ...</code></pre>
+<p>装饰器可以将identifier关联到t_ID()的文档字符串上以使lex.py正常工作，一种等价的做法是直接给文档字符串赋值：</p><pre><code>def t_ID(t):
+    ...
+
+t_ID.__doc__ = identifier</code></pre>
+<p>注意：@TOKEN装饰器需要Python-2.4以上的版本。如果你在意老版本Python的兼容性问题，使用上面的等价办法。</p>
+<p>&nbsp;</p><a name="4_12"></a>
+<h4><font style="font-weight: bold">4.12 优化模式</font></h4>
+<p>为了提高性能，你可能希望使用Python的优化模式（比如，使用-o选项执行Python）。然而，这样的话，Python会忽略文档字串，这是lex.py的特殊问题，可以通过在创建lexer的时候使用<code>optimize</code>选项：</p><pre><code>lexer = lex.lex(optimize=1)</code></pre>
+<p>接着，用Python常规的模式运行，这样，lex.py会在当前目录下创建一个lextab.py文件，这个文件会包含所有的正则表达式规则和词法分析阶段的分析表。然后，lextab.py可以被导入用来构建lexer。这种方法大大改善了词法分析程序的启动时间，而且可以在Python的优化模式下工作。</p>
+<p>想要更改生成的文件名，使用如下参数：</p><pre><code>lexer = lex.lex(optimize=1,lextab="footab")</code></pre>
+<p>在优化模式下执行，需要注意的是lex会被禁用大多数的错误检查。因此，建议只在确保万事俱备准备发布最终代码时使用。</p>
+<p>&nbsp;</p><a name="4_13"></a>
+<h4><font style="font-weight: bold">4.13 调试</font></h4>
+<p>如果想要调试，可以使lex()运行在调试模式：</p><pre><code>lexer = lex.lex(debug=1)</code></pre>
+<p>这将打出一些调试信息，包括添加的规则、最终的正则表达式和词法分析过程中得到的标记。</p>
+<p>除此之外，lex.py有一个简单的主函数，不但支持对命令行参数输入的字串进行扫描，还支持命令行参数指定的文件名：</p><pre><code>if __name__ == '__main__':
+     lex.runmain()</code></pre>
+<p>想要了解高级调试的详情，请移步至最后的“调试”部分。</p>
+<p>&nbsp;</p><a name="4_14"></a>
+<h4><font style="font-weight: bold">4.14 其他方式定义词法规则</font></h4>
+<p>上面的例子，词法分析器都是在单个的Python模块中指定的。如果你想将标记的规则放到不同的模块，使用<code>module</code>关键字参数。例如，你可能有一个专有的模块，包含了标记的规则：</p><pre><code># module: tokrules.py
+# This module just contains the lexing rules
+
+# List of token names.   This is always required
+tokens = (
+   'NUMBER',
+   'PLUS',
+   'MINUS',
+   'TIMES',
+   'DIVIDE',
+   'LPAREN',
+   'RPAREN',
+)
+
+# Regular expression rules for simple tokens
+t_PLUS    = r'\+'
+t_MINUS   = r'-'
+t_TIMES   = r'\*'
+t_DIVIDE  = r'/'
+t_LPAREN  = r'\('
+t_RPAREN  = r'\)'
+
+# A regular expression rule with some action code
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)    
+    return t
+
+# Define a rule so we can track line numbers
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+# A string containing ignored characters (spaces and tabs)
+t_ignore  = ' \t'
+
+# Error handling rule
+def t_error(t):
+    print "Illegal character '%s'" % t.value[0]
+    t.lexer.skip(1)</code></pre>
+<p>现在，如果你想要从不同的模块中构建分析器，应该这样（在交互模式下）：</p><pre><code>&gt;&gt;&gt; import tokrules
+&gt;&gt;&gt; <b>lexer = lex.lex(module=tokrules)</b>
+&gt;&gt;&gt; lexer.input("3 + 4")
+&gt;&gt;&gt; lexer.token()
+LexToken(NUMBER,3,1,1,0)
+&gt;&gt;&gt; lexer.token()
+LexToken(PLUS,'+',1,2)
+&gt;&gt;&gt; lexer.token()
+LexToken(NUMBER,4,1,4)
+&gt;&gt;&gt; lexer.token()
+None</code></pre>
+<p><code>module</code>选项也可以指定类型的实例，例如：</p><pre><code>import ply.lex as lex
+
+class MyLexer:
+    # List of token names.   This is always required
+    tokens = (
+       'NUMBER',
+       'PLUS',
+       'MINUS',
+       'TIMES',
+       'DIVIDE',
+       'LPAREN',
+       'RPAREN',
+    )
+
+    # Regular expression rules for simple tokens
+    t_PLUS    = r'\+'
+    t_MINUS   = r'-'
+    t_TIMES   = r'\*'
+    t_DIVIDE  = r'/'
+    t_LPAREN  = r'\('
+    t_RPAREN  = r'\)'
+
+    # A regular expression rule with some action code
+    # Note addition of self parameter since we're in a class
+    def t_NUMBER(self,t):
+        r'\d+'
+        t.value = int(t.value)    
+        return t
+
+    # Define a rule so we can track line numbers
+    def t_newline(self,t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
+
+    # A string containing ignored characters (spaces and tabs)
+    t_ignore  = ' \t'
+
+    # Error handling rule
+    def t_error(self,t):
+        print "Illegal character '%s'" % t.value[0]
+        t.lexer.skip(1)
+
+    <b># Build the lexer
+    def build(self,**kwargs):
+        self.lexer = lex.lex(module=self, **kwargs)</b>
+    
+    # Test it output
+    def test(self,data):
+        self.lexer.input(data)
+        while True:
+             tok = lexer.token()
+             if not tok: break
+             print tok
+
+# Build the lexer and try it out
+m = MyLexer()
+m.build()           # Build the lexer
+m.test("3 + 4")     # Test it</code></pre>
+<p>当从类中定义lexer，你需要创建类的实例，而不是类本身。这是因为，lexer的方法只有被绑定（bound-methods）对象后才能使PLY正常工作。 </p>
+<p>当给<code>lex()</code>方法使用<code>module</code>选项时，PLY使用<code>dir()</code>方法，从对象中获取符号信息，因为不能直接访问对象的<code>__dict__</code>属性。（译者注：可能是因为兼容性原因<code>，__dict__</code>这个方法可能不存在）</p>
+<p>最后，如果你希望保持较好的封装性，但不希望什么东西都写在类里面，lexers可以在闭包中定义，例如：</p><pre><code>import ply.lex as lex
+
+# List of token names.   This is always required
+tokens = (
+  'NUMBER',
+  'PLUS',
+  'MINUS',
+  'TIMES',
+  'DIVIDE',
+  'LPAREN',
+  'RPAREN',
+)
+
+def MyLexer():
+    # Regular expression rules for simple tokens
+    t_PLUS    = r'\+'
+    t_MINUS   = r'-'
+    t_TIMES   = r'\*'
+    t_DIVIDE  = r'/'
+    t_LPAREN  = r'\('
+    t_RPAREN  = r'\)'
+
+    # A regular expression rule with some action code
+    def t_NUMBER(t):
+        r'\d+'
+        t.value = int(t.value)    
+        return t
+
+    # Define a rule so we can track line numbers
+    def t_newline(t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
+
+    # A string containing ignored characters (spaces and tabs)
+    t_ignore  = ' \t'
+
+    # Error handling rule
+    def t_error(t):
+        print "Illegal character '%s'" % t.value[0]
+        t.lexer.skip(1)
+
+    # Build the lexer from my environment and return it    
+    return lex.lex()</code></pre>
+<p>&nbsp;</p><a name="4_15"></a>
+<h4><font style="font-weight: bold">4.15 额外状态维护</font></h4>
+<p>在你的词法分析器中，你可能想要维护一些状态。这可能包括模式设置，符号表和其他细节。例如，假设你想要跟踪<code>NUMBER</code>标记的出现个数。</p>
+<p>一种方法是维护一个全局变量：</p><pre><code>num_count = 0
+def t_NUMBER(t):
+    r'\d+'
+    global num_count
+    num_count += 1
+    t.value = int(t.value)    
+    return t</code></pre>
+<p>如果你不喜欢全局变量，另一个记录信息的地方是lexer对象内部。可以通过标记的lexer属性访问：</p><pre><code>def t_NUMBER(t):
+    r'\d+'
+    t.lexer.num_count += 1     # Note use of lexer attribute
+    t.value = int(t.value)    
+    return t
+
+lexer = lex.lex()
+lexer.num_count = 0            # Set the initial count</code></pre>
+<p>上面这样做的优点是当同时存在多个lexer实例的情况下，简单易行。不过这看上去似乎是严重违反了面向对象的封装原则。lexer的内部属性（除了<code>lineno</code>）都是以lex开头命名的（<code>lexdata</code>、<code>lexpos</code>）。因此，只要不以lex开头来命名属性就很安全的。</p>
+<p>如果你不喜欢给lexer对象赋值，你可以自定义你的lexer类型，就像前面看到的那样：</p><pre><code>class MyLexer:
+    ...
+    def t_NUMBER(self,t):
+        r'\d+'
+        self.num_count += 1
+        t.value = int(t.value)    
+        return t
+
+    def build(self, **kwargs):
+        self.lexer = lex.lex(object=self,**kwargs)
+
+    def __init__(self):
+        self.num_count = 0</code></pre>
+<p>如果你的应用会创建很多lexer的实例，并且需要维护很多状态，上面的类可能是最容易管理的。</p>
+<p>状态也可以用闭包来管理，比如，在Python3中：</p><pre><code>def MyLexer():
+    num_count = 0
+    ...
+    def t_NUMBER(t):
+        r'\d+'
+        nonlocal num_count
+        num_count += 1
+        t.value = int(t.value)    
+        return t
+    ...</code></pre>
+<p>&nbsp;</p><a name="4_16"></a>
+<h4><font style="font-weight: bold">4.16 Lexer克隆</font></h4>
+<p>如果有必要的话，lexer对象可以通过<code>clone()</code>方法来复制：</p><pre><code>lexer = lex.lex()
+...
+newlexer = lexer.clone()</code></pre>
+<p>当lexer被克隆后，复制品能够精确的保留输入串和内部状态，不过，新的lexer可以接受一个不同的输出字串，并独立运作起来。这在几种情况下也许有用：当你在编写的解析器或编译器涉及到递归或者回退处理时，你需要扫描先前的部分，你可以clone并使用复制品，或者你在实现某种预编译处理，可以clone一些lexer来处理不同的输入文件。</p>
+<p>创建克隆跟重新调用<code>lex.lex()</code>的不同点在于，PLY不会重新构建任何的内部分析表或者正则式。当lexer是用类或者闭包创建的，需要注意类或闭包本身的的状态。换句话说你要注意新创建的lexer会共享原始lexer的这些状态，比如：</p><pre><code>m = MyLexer()
+a = lex.lex(object=m)      # Create a lexer
+
+b = a.clone()              # Clone the lexer</code></pre>
+<p>&nbsp;</p><a name="4_17"></a>
+<h4><font style="font-weight: bold">4.17 Lexer的内部状态</font></h4>
+<p>lexer有一些内部属性在特定情况下有用：</p>
+<ul>
+<li><code>lexer.lexpos</code>。这是一个表示当前分析点的位置的整型值。如果你修改这个值的话，这会改变下一个<code>token()</code>的调用行为。在标记的规则方法里面，这个值表示紧跟匹配字串后面的第一个字符的位置，如果这个值在规则中修改，下一个返回的标记将从新的位置开始匹配 
+<li><code>lexer.lineno</code>。表示当前行号。PLY只是声明这个属性的存在，却永远不更新这个值。如果你想要跟踪行号的话，你需要自己添加代码（ <a href="#4_6">4.6 行号和位置信息</a>） </li></ul>
+<li><code>lexer.lexdata</code>。当前lexer的输入字串，这个字符串就是input()方法的输入字串，更改它可能是个糟糕的做法，除非你知道自己在干什么。 
+<li><code>lexer.lexmatch</code>。PLY内部调用Python的re.match()方法得到的当前标记的原始的Match对象，该对象被保存在这个属性中。如果你的正则式中包含分组的话，你可以通过这个对象获得这些分组的值。注意：这个属性只在有标记规则定义的方法中才有效。 </font>
+<p>&nbsp;</p><a name="4_18"></a>
+<h4><font style="font-weight: bold">4.18 基于条件的扫描和启动条件</font></h4>
+<p>在高级的分析器应用程序中，使用状态化的词法扫描是很有用的。比如，你想在出现特定标记或句子结构的时候触发开始一个不同的词法分析逻辑。PLY允许lexer在不同的状态之间转换。每个状态可以包含一些自己独特的标记和规则等。这是基于GNU flex的“启动条件”来实现的，关于flex详见<a href="http://flex.sourceforge.net/manual/Start-Conditions.html#Start-Conditions">http://flex.sourceforge.net/manual/Start-Conditions.html#Start-Conditions</a></p>
+<p>要使用lex的状态，你必须首先声明。通过在lex模块中声明"states"来做到：</p><pre><code>states = (
+   ('foo','exclusive'),
+   ('bar','inclusive'),
+)</code></pre>
+<p>这个声明中包含有两个状态：'foo'和'bar'。状态可以有两种类型：'排他型'和'包容型'。排他型的状态会使得lexer的行为发生完全的改变：只有能够匹配在这个状态下定义的规则的标记才会返回；包容型状态会将定义在这个状态下的规则添加到默认的规则集中，进而，能够匹配这个状态下的规则的标记，以及能够匹配默认规则的标记都会返回。</p>
+<p>一旦声明好之后，标记规则的命名需要包含状态名：</p><pre><code>t_foo_NUMBER = r'\d+'                      # Token 'NUMBER' in state 'foo'        
+t_bar_ID     = r'[a-zA-Z_][a-zA-Z0-9_]*'   # Token 'ID' in state 'bar'
+
+def t_foo_newline(t):
+    r'\n'
+    t.lexer.lineno += 1</code></pre>
+<p>一个标记可以用在多个状态中，只要将多个状态名包含在声明中：</p><pre><code>t_foo_bar_NUMBER = r'\d+'         # Defines token 'NUMBER' in both state 'foo' and 'bar'</code></pre>
+<p>同样的，在任何状态下都生效的声明可以在命名中使用<code>ANY</code>：</p><pre><code>t_ANY_NUMBER = r'\d+'         # Defines a token 'NUMBER' in all states</code></pre>
+<p>不包含状态名的情况下，标记被关联到一个特殊的状态<code>INITIAL</code>，比如，下面两个声明是等价的：</p><pre><code>t_NUMBER = r'\d+'
+t_INITIAL_NUMBER = r'\d+'</code></pre>
+<p>特殊的<code>t_ignore()</code>和<code>t_error()</code>也可以用状态关联：</p><pre><code>t_foo_ignore = " \t\n"       # Ignored characters for state 'foo'
+
+def t_bar_error(t):          # Special error handler for state 'bar'
+    pass </code></pre>
+<p>词法分析默认在<code>INITIAL</code>状态下工作，这个状态下包含了所有默认的标记规则定义。对于不希望使用“状态”的用户来说，这是完全透明的。在分析过程中，如果你想要改变词法分析器的这种的状态，使用<code>begin()</code>方法： </p><pre><code>def t_begin_foo(t):
+    r'start_foo'
+    t.lexer.begin('foo')             # Starts 'foo' state</code></pre>
+<p>使用<code>begin()</code>切换回初始状态：</p><pre><code>def t_foo_end(t):
+    r'end_foo'
+    t.lexer.begin('INITIAL')        # Back to the initial state</code></pre>
+<p>状态的切换可以使用栈：</p><pre><code>def t_begin_foo(t):
+    r'start_foo'
+    t.lexer.push_state('foo')             # Starts 'foo' state
+
+def t_foo_end(t):
+    r'end_foo'
+    t.lexer.pop_state()                   # Back to the previous state</code></pre>
+<p>当你在面临很多状态可以选择进入，而又仅仅想要回到之前的状态时，状态栈比较有用。</p>
+<p>举个例子会更清晰。假设你在写一个分析器想要从一堆C代码中获取任意匹配的闭合的大括号里面的部分：这意味着，当遇到起始括号'{'，你需要读取与之匹配的'}'以上的所有部分。并返回字符串。使用通常的正则表达式几乎不可能，这是因为大括号可以嵌套，而且可以有注释，字符串等干扰。因此，试图简单的匹配第一个出现的'}'是不行的。这里你可以用lex的状态来做到：</p><pre><code># Declare the state
+states = (
+  ('ccode','exclusive'),
+)
+
+# Match the first {. Enter ccode state.
+def t_ccode(t):
+    r'\{'
+    t.lexer.code_start = t.lexer.lexpos        # Record the starting position
+    t.lexer.level = 1                          # Initial brace level
+    t.lexer.begin('ccode')                     # Enter 'ccode' state
+
+# Rules for the ccode state
+def t_ccode_lbrace(t):     
+    r'\{'
+    t.lexer.level +=1                
+
+def t_ccode_rbrace(t):
+    r'\}'
+    t.lexer.level -=1
+
+    # If closing brace, return the code fragment
+    if t.lexer.level == 0:
+         t.value = t.lexer.lexdata[t.lexer.code_start:t.lexer.lexpos+1]
+         t.type = "CCODE"
+         t.lexer.lineno += t.value.count('\n')
+         t.lexer.begin('INITIAL')           
+         return t
+
+# C or C++ comment (ignore)    
+def t_ccode_comment(t):
+    r'(/\*(.|\n)*?*/)|(//.*)'
+    pass
+
+# C string
+def t_ccode_string(t):
+   r'\"([^\\\n]|(\\.))*?\"'
+
+# C character literal
+def t_ccode_char(t):
+   r'\'([^\\\n]|(\\.))*?\''
+
+# Any sequence of non-whitespace characters (not braces, strings)
+def t_ccode_nonspace(t):
+   r'[^\s\{\}\'\"]+'
+
+# Ignored characters (whitespace)
+t_ccode_ignore = " \t\n"
+
+# For bad characters, we just skip over it
+def t_ccode_error(t):
+    t.lexer.skip(1)</code></pre>
+<p>这个例子中，第一个'{'使得lexer记录了起始位置，并且进入新的状态'ccode'。一系列规则用来匹配接下来的输入，这些规则只是丢弃掉标记（不返回值），如果遇到闭合右括号，t_ccode_rbrace规则收集其中所有的代码（利用先前记录的开始位置），并保存，返回的标记类型为'CCODE'，与此同时，词法分析的状态退回到初始状态。</p>
+<p>&nbsp;</p><a name="4_19"></a>
+<h4><font style="font-weight: bold">4.19 其他问题</font></h4>
+<ul>
+<li>lexer需要输入的是一个字符串。好在大多数机器都有足够的内存，这很少导致性能的问题。这意味着，lexer现在还不能用来处理文件流或者socket流。这主要是受到re模块的限制。 
+<li>lexer支持用Unicode字符描述标记的匹配规则，也支持输入字串包含Unicode 
+<li>如果你想要向re.compile()方法提供flag，使用reflags选项：<code>lex.lex(reflags=re.UNICODE)</code> 
+<li>由于lexer是全部用Python写的，性能很大程度上取决于Python的re模块，即使已经尽可能的高效了。当接收极其大量的输入文件时表现并不尽人意。如果担忧性能，你可以升级到最新的Python，或者手工创建分析器，或者用C语言写lexer并做成扩展模块。</ul>
+<p>如果你要创建一个手写的词法分析器并计划用在yacc.py中，只需要满足下面的要求：</p>
+<ul>
+<li>需要提供一个<code>token()</code>方法来返回下一个标记，如果没有可用的标记了，则返回None。 
+<li><code>token()</code>方法必须返回一个tok对象，具有<code>type</code>和<code>value</code>属性。如果行号需要跟踪的话，标记还需要定义<code>lineno</code>属性。</ul>
