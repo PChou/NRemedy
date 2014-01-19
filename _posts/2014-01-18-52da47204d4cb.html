@@ -6,7 +6,7 @@ thumbimg: Open-Source-Software-.jpg
 categories: [open-source]
 tags: [PLY,Python,Lex,Yacc]
 ---
-<p>本文是<a href="http://www.dabeaz.com/ply/ply.html" target="_blank">PLY (Python Lex-Yacc)</a>的中文翻译版。转载请注明出处。</p> <p>如果你从事编译器或解析器的开发工作，你可能对lex和yacc不会陌生，PLY是<a href="http://www.dabeaz.com/" target="_blank">David Beazley</a>实现的基于Python的lex和yacc。作者最著名的成就可能是其撰写的<a href="http://www.dabeaz.com/cookbook.html" target="_blank">Python Cookbook, 3rd Edition</a>。我因为偶然的原因接触了PLY，觉得是个好东西，但是似乎国内没有相关的资料。于是萌生了翻译的想法，虽然内容不算多，但是由于能力有限，很多概念不了解，还专门补习了编译原理，这对我有很大帮助。为了完成翻译，经过初译，复审，排版等，花费我很多时间，最终还是坚持下来了，希望对需要的人有所帮助。另外，第一次大规模翻译英文，由于水平有限，如果错误或者不妥的地方还请指正，非常感谢。</p> <div class="table-responsive"> <table class="table"> <caption>一些翻译约定</caption> <tbody> <tr> <td>token</td> <td>标记</td></tr> <tr> <td>context free grammar</td> <td>上下文无关文法</td></tr> <tr> <td>syntax directed translation</td> <td>语法制导的翻译</td></tr> <tr> <td>ambiguity</td> <td>二义</td></tr> <tr> <td>terminals</td> <td>终结符</td></tr> <tr> <td>non-terminals</td> <td>非终结符</td></tr> <tr> <td>documentation string</td> <td>文档字符串（python中的_docstring_）</td></tr></tbody></table></div> <h3><font style="font-weight: bold">目录</font></h3> <ul> <li><a href="#1">1 前言和预备</a>  <li><a href="#2">2 介绍</a>  <li><a href="#3">3 PLY概要</a>  <li><a href="#4">4 Lex</a>  <ul> <li><a href="#4_1">4.1 Lex的例子</a>  <li><a href="#4_2">4.2 标记列表</a>  <li><a href="#4_3">4.3 标记的规则</a>  <li><a href="#4_4">4.4 标记的值</a>  <li><a href="#4_5">4.5 丢弃标记</a>  <li><a href="#4_6">4.6 行号和位置信息</a>  <li><a href="#4_7">4.7 忽略字符</a>  <li><a href="#4_8">4.8 字面字符</a>  <li><a href="#4_9">4.9 错误处理</a>  <li><a href="#4_10">4.10 构建和使用lexer</a>  <li><a href="#4_11">4.11 @TOKEN装饰器</a>  <li><a href="#4_12">4.12 优化模式</a>  <li><a href="#4_13">4.13 调试</a>  <li><a href="#4_14">4.14 其他方式定义词法规则</a>  <li><a href="#4_15">4.15 额外状态维护</a>  <li><a href="#4_16">4.16 Lexer克隆</a>  <li><a href="#4_17">4.17 Lexer的内部状态</a>  <li><a href="#4_18">4.18 基于条件的扫描和启动条件</a>  <li><a href="#4_19">4.19 其他问题</a></li></ul></li></ul> <p>&nbsp;</p> <p>&nbsp;</p><a name="1"></a> <h3><font style="font-weight: bold">1 前言和预备</font></h3> <p>本文指导你使用PLY进行词法分析和语法解析的，鉴于解析本身是个复杂性的事情，在你使用PLY投入大规模的开发前，我强烈建议你完整地阅读或者浏览本文档。</p> <p>PLY-3.0能同时兼容Python2和Python3。需要注意的是，对于Python3的支持是新加入的，还没有广泛的测试（尽管所有的例子和单元测试都能够在Pythone3下通过）。如果你使用的是Python2，应该使用Python2.4以上版本，虽然，PLY最低能够支持到Python2.2，不过一些可选的功能需要新版本模块的支持。</p> <p>&nbsp;</p><a name="2"></a> <h3><font style="font-weight: bold">2 介绍</font></h3> <p>PLY是纯粹由Python实现的Lex和yacc（流行的编译器构建工具）。PLY的设计目标是尽可能的沿袭传统lex和yacc工具的工作方式，包括支持LALR(1)分析法、提供丰富的输入验证、错误报告和诊断。因此，如果你曾经在其他编程语言下使用过yacc，你应该能够很容易的迁移到PLY上。</p> <p>2001年，我在芝加哥大学教授“编译器简介”课程时开发了的早期的PLY。学生们使用Python和PLY构建了一个类似Pascal的语言的完整编译器，其中的语言特性包括：词法分析、语法分析、类型检查、类型推断、嵌套作用域，并针对SPARC处理器生成目标代码等。学生们最终大约实现了30种不同的编译器！PLY的大多数影响使用的接口设计问题都是学号生们提出的。从2001年以来，PLY继续从用户的反馈中不断改进。为了适应对未来的改进需求，PLY3.0在原来基础上进行了重大的重构。</p> <p>由于PLY是作为教学工具来开发的，你会发现它对于标记和语法规则是相当严谨的，这一定程度上是为了帮助新手用户找出常见的编程错误。不过，高级用户也会反现这也有助于处理真实编程语言的复杂语法。还需要注意的是，PLY没有提供太多花哨的东西（例如，自动构建抽象语法树和遍历树），我也不认为它是个分析框架。相反，你会发现它是一个用Python实现的，基本的，但能够完全胜任的lex/yacc。</p> <p>本文的假设你多少熟悉分析理论、语法制导的翻译、基于其他编程语言使用过类似lex和yacc的编译构建工具。如果你对这些东西不熟悉，你可能需要去学习一些文章的介绍，比如：Aho, Sethi和Ullman的《Compilers: Principles, Techniques, and Tools》（《编译原理》），和O'Reilly'出版的John Levine的《lex and yacc》。事实上，《lex and yacc》和PLY使用的概念几乎相同。</p> <p>&nbsp;</p><a name="3"></a> <h3><font style="font-weight: bold">3 PLY概要</font></h3> <p>PLY包含两个独立的模块：lex.py和yacc.py，都定义在ply包下。lex.py模块用来将输入字符通过一系列的正则表达式分解成标记序列，yacc.py通过一些上下文无关的文法来识别编程语言语法。yacc.py使用LR解析法，并使用LALR(1)算法（默认）或者SLR算法生成分析表。</p> <p>这两个工具是为了一起工作的。lex.py通过向外部提供<code>token()</code>方法作为接口，方法每次会从输入中返回下一个有效的标记。yacc.py将会不断的调用这个方法来获取标记并匹配语法规则。yacc.py的的功能通常是生成抽象语法树(AST)，不过，这完全取决于用户，如果需要，yacc.py可以直接用来完成简单的翻译。</p> <p>就像相应的unix工具，yacc.py提供了大多数你期望的特性，其中包括：丰富的错误检查、语法验证、支持空产生式、错误的标记、通过优先级规则解决二义性。事实上，传统yacc能够做到的PLY都应该支持。</p> <p>yacc.py与Unix下的yacc的主要不同之处在于，yacc.py没有包含一个独立的代码生成器，而是在PLY中依赖反射来构建词法分析器和语法解析器。不像传统的lex/yacc工具需要一个独立的输入文件，并将之转化成一个源文件，Python程序必须是一个可直接可用的程序，这意味着不能有额外的源文件和特殊的创建步骤（像是那种执行yacc命令来生成Python代码）。又由于生成分析表开销较大，PLY会缓存生成的分析表，并将它们保存在独立的文件中，除非源文件有变化，会重新生成分析表，否则将从缓存中直接读取。</p> <p>&nbsp;</p><a name="4"></a> <h3><font style="font-weight: bold">4 Lex</font></h3> <p>lex.py是用来将输入字符串标记化。例如，假设你正在设计一个编程语言，用户的输入字符串如下：</p><pre><code>x = 3 + 42 * (s - t)</code></pre>
+<p>本文是<a href="http://www.dabeaz.com/ply/ply.html" target="_blank">PLY (Python Lex-Yacc)</a>的中文翻译版。转载请注明<a href="http://pchou.info/open-source/2014/01/18/52da47204d4cb.html">出处</a>。</p> <p>如果你从事编译器或解析器的开发工作，你可能对lex和yacc不会陌生，PLY是<a href="http://www.dabeaz.com/" target="_blank">David Beazley</a>实现的基于Python的lex和yacc。作者最著名的成就可能是其撰写的<a href="http://www.dabeaz.com/cookbook.html" target="_blank">Python Cookbook, 3rd Edition</a>。我因为偶然的原因接触了PLY，觉得是个好东西，但是似乎国内没有相关的资料。于是萌生了翻译的想法，虽然内容不算多，但是由于能力有限，很多概念不了解，还专门补习了编译原理，这对我有很大帮助。为了完成翻译，经过初译，复审，排版等，花费我很多时间，最终还是坚持下来了，希望对需要的人有所帮助。另外，第一次大规模翻译英文，由于水平有限，如果错误或者不妥的地方还请指正，非常感谢。</p> <h3><font style="font-weight: bold">目录</font></h3> <ul> <li><a href="#1">1 前言和预备</a>  <li><a href="#2">2 介绍</a>  <li><a href="#3">3 PLY概要</a>  <li><a href="#4">4 Lex</a>  <ul> <li><a href="#4_1">4.1 Lex的例子</a>  <li><a href="#4_2">4.2 标记列表</a>  <li><a href="#4_3">4.3 标记的规则</a>  <li><a href="#4_4">4.4 标记的值</a>  <li><a href="#4_5">4.5 丢弃标记</a>  <li><a href="#4_6">4.6 行号和位置信息</a>  <li><a href="#4_7">4.7 忽略字符</a>  <li><a href="#4_8">4.8 字面字符</a>  <li><a href="#4_9">4.9 错误处理</a>  <li><a href="#4_10">4.10 构建和使用lexer</a>  <li><a href="#4_11">4.11 @TOKEN装饰器</a>  <li><a href="#4_12">4.12 优化模式</a>  <li><a href="#4_13">4.13 调试</a>  <li><a href="#4_14">4.14 其他方式定义词法规则</a>  <li><a href="#4_15">4.15 额外状态维护</a>  <li><a href="#4_16">4.16 Lexer克隆</a>  <li><a href="#4_17">4.17 Lexer的内部状态</a>  <li><a href="#4_18">4.18 基于条件的扫描和启动条件</a>  <li><a href="#4_19">4.19 其他问题</a></li></ul> <li><a href="#5">5 语法分析基础</a>  <li><a href="#6">6 Yacc</a>  <ul> <li><a href="#6_1">6.1 一个例子</a>  <li><a href="#6_2">6.2 将语法规则合并</a>  <li><a href="#6_3">6.3 字面字符</a>  <li><a href="#6_4">6.4 空产生式</a>  <li><a href="#6_5">6.5 改变起始符号</a>  <li><a href="#6_6">6.6 处理二义文法</a>  <li><a href="#6_7">6.7 parser.out调试文件</a>  <li><a href="#6_8">6.8 处理语法错误</a>  <ul> <li><a href="#6_8_1">6.8.1 根据error规则恢复和再同步</a>  <li><a href="#6_8_2">6.8.2 悲观恢复模式</a>  <li><a href="#6_8_3">6.8.3 从产生式中抛出错误</a>  <li><a href="#6_8_4">6.8.4 错误恢复总结</a> </li></ul> <li><a href="#6_9">6.9 行号和位置的跟踪</a>  <li><a href="#6_10">6.10 构造抽象语法树</a>  <li><a href="#6_11">6.11 嵌入式动作</a>  <li><a href="#6_12">6.12 Yacc的其他</a> </li></ul> <li><a href="#7">7 多个语法和词法分析器</a>  <li><a href="#8">8 使用Python的优化模式</a>  <li><a href="#9">9 高级调试</a>  <ul> <li><a href="#9_1">9.1 调试lex()和yacc()命令</a>  <li><a href="#9_2">9.2 运行时调试</a> </li></ul> <li><a href="#10">10 如何继续</a> </li></ul> <p>&nbsp;</p> <p>&nbsp;</p><a name="1"></a> <h3><font style="font-weight: bold">1 前言和预备</font></h3> <p>本文指导你使用PLY进行词法分析和语法解析的，鉴于解析本身是个复杂性的事情，在你使用PLY投入大规模的开发前，我强烈建议你完整地阅读或者浏览本文档。</p> <p>PLY-3.0能同时兼容Python2和Python3。需要注意的是，对于Python3的支持是新加入的，还没有广泛的测试（尽管所有的例子和单元测试都能够在Pythone3下通过）。如果你使用的是Python2，应该使用Python2.4以上版本，虽然，PLY最低能够支持到Python2.2，不过一些可选的功能需要新版本模块的支持。</p> <p>&nbsp;</p><a name="2"></a> <h3><font style="font-weight: bold">2 介绍</font></h3> <p>PLY是纯粹由Python实现的Lex和yacc（流行的编译器构建工具）。PLY的设计目标是尽可能的沿袭传统lex和yacc工具的工作方式，包括支持LALR(1)分析法、提供丰富的输入验证、错误报告和诊断。因此，如果你曾经在其他编程语言下使用过yacc，你应该能够很容易的迁移到PLY上。</p> <p>2001年，我在芝加哥大学教授“编译器简介”课程时开发了的早期的PLY。学生们使用Python和PLY构建了一个类似Pascal的语言的完整编译器，其中的语言特性包括：词法分析、语法分析、类型检查、类型推断、嵌套作用域，并针对SPARC处理器生成目标代码等。学生们最终大约实现了30种不同的编译器！PLY的大多数影响使用的接口设计问题都是学号生们提出的。从2001年以来，PLY继续从用户的反馈中不断改进。为了适应对未来的改进需求，PLY3.0在原来基础上进行了重大的重构。</p> <p>由于PLY是作为教学工具来开发的，你会发现它对于标记和语法规则是相当严谨的，这一定程度上是为了帮助新手用户找出常见的编程错误。不过，高级用户也会反现这也有助于处理真实编程语言的复杂语法。还需要注意的是，PLY没有提供太多花哨的东西（例如，自动构建抽象语法树和遍历树），我也不认为它是个分析框架。相反，你会发现它是一个用Python实现的，基本的，但能够完全胜任的lex/yacc。</p> <p>本文的假设你多少熟悉分析理论、语法制导的翻译、基于其他编程语言使用过类似lex和yacc的编译构建工具。如果你对这些东西不熟悉，你可能需要去学习一些文章的介绍，比如：Aho, Sethi和Ullman的《Compilers: Principles, Techniques, and Tools》（《编译原理》），和O'Reilly'出版的John Levine的《lex and yacc》。事实上，《lex and yacc》和PLY使用的概念几乎相同。</p> <p>&nbsp;</p><a name="3"></a> <h3><font style="font-weight: bold">3 PLY概要</font></h3> <p>PLY包含两个独立的模块：lex.py和yacc.py，都定义在ply包下。lex.py模块用来将输入字符通过一系列的正则表达式分解成标记序列，yacc.py通过一些上下文无关的文法来识别编程语言语法。yacc.py使用LR解析法，并使用LALR(1)算法（默认）或者SLR算法生成分析表。</p> <p>这两个工具是为了一起工作的。lex.py通过向外部提供<code>token()</code>方法作为接口，方法每次会从输入中返回下一个有效的标记。yacc.py将会不断的调用这个方法来获取标记并匹配语法规则。yacc.py的的功能通常是生成抽象语法树(AST)，不过，这完全取决于用户，如果需要，yacc.py可以直接用来完成简单的翻译。</p> <p>就像相应的unix工具，yacc.py提供了大多数你期望的特性，其中包括：丰富的错误检查、语法验证、支持空产生式、错误的标记、通过优先级规则解决二义性。事实上，传统yacc能够做到的PLY都应该支持。</p> <p>yacc.py与Unix下的yacc的主要不同之处在于，yacc.py没有包含一个独立的代码生成器，而是在PLY中依赖反射来构建词法分析器和语法解析器。不像传统的lex/yacc工具需要一个独立的输入文件，并将之转化成一个源文件，Python程序必须是一个可直接可用的程序，这意味着不能有额外的源文件和特殊的创建步骤（像是那种执行yacc命令来生成Python代码）。又由于生成分析表开销较大，PLY会缓存生成的分析表，并将它们保存在独立的文件中，除非源文件有变化，会重新生成分析表，否则将从缓存中直接读取。</p> <p>&nbsp;</p><a name="4"></a> <h3><font style="font-weight: bold">4 Lex</font></h3> <p>lex.py是用来将输入字符串标记化。例如，假设你正在设计一个编程语言，用户的输入字符串如下：</p><pre><code>x = 3 + 42 * (s - t)</code></pre>
 <p>标记器将字符串分割成独立的标记：</p><pre><code>'x','=', '3', '+', '42', '*', '(', 's', '-', 't', ')'</code></pre>
 <p>标记通常用一组名字来命名和表示：</p><pre><code>'ID','EQUALS','NUMBER','PLUS','NUMBER','TIMES','LPAREN','ID','MINUS','ID','RPAREN'</code></pre>
 <p>将标记名和标记值本身组合起来：</p><pre><code>('ID','x'), ('EQUALS','='), ('NUMBER','3'),('PLUS','+'), ('NUMBER','42), ('TIMES','*'),('LPAREN','('), ('ID','s'),('MINUS','-'),('ID','t'), ('RPAREN',')</code></pre>
@@ -450,9 +450,9 @@ b = a.clone()              # Clone the lexer</code></pre>
 <p>lexer有一些内部属性在特定情况下有用：</p>
 <ul>
 <li><code>lexer.lexpos</code>。这是一个表示当前分析点的位置的整型值。如果你修改这个值的话，这会改变下一个<code>token()</code>的调用行为。在标记的规则方法里面，这个值表示紧跟匹配字串后面的第一个字符的位置，如果这个值在规则中修改，下一个返回的标记将从新的位置开始匹配 
-<li><code>lexer.lineno</code>。表示当前行号。PLY只是声明这个属性的存在，却永远不更新这个值。如果你想要跟踪行号的话，你需要自己添加代码（ <a href="#4_6">4.6 行号和位置信息</a>） </li></ul>
+<li><code>lexer.lineno</code>。表示当前行号。PLY只是声明这个属性的存在，却永远不更新这个值。如果你想要跟踪行号的话，你需要自己添加代码（ <a href="#4_6">4.6 行号和位置信息</a>） 
 <li><code>lexer.lexdata</code>。当前lexer的输入字串，这个字符串就是input()方法的输入字串，更改它可能是个糟糕的做法，除非你知道自己在干什么。 
-<li><code>lexer.lexmatch</code>。PLY内部调用Python的re.match()方法得到的当前标记的原始的Match对象，该对象被保存在这个属性中。如果你的正则式中包含分组的话，你可以通过这个对象获得这些分组的值。注意：这个属性只在有标记规则定义的方法中才有效。 </font>
+<li><code>lexer.lexmatch</code>。PLY内部调用Python的re.match()方法得到的当前标记的原始的Match对象，该对象被保存在这个属性中。如果你的正则式中包含分组的话，你可以通过这个对象获得这些分组的值。注意：这个属性只在有标记规则定义的方法中才有效。</li></ul>
 <p>&nbsp;</p><a name="4_18"></a>
 <h4><font style="font-weight: bold">4.18 基于条件的扫描和启动条件</font></h4>
 <p>在高级的分析器应用程序中，使用状态化的词法扫描是很有用的。比如，你想在出现特定标记或句子结构的时候触发开始一个不同的词法分析逻辑。PLY允许lexer在不同的状态之间转换。每个状态可以包含一些自己独特的标记和规则等。这是基于GNU flex的“启动条件”来实现的，关于flex详见<a href="http://flex.sourceforge.net/manual/Start-Conditions.html#Start-Conditions">http://flex.sourceforge.net/manual/Start-Conditions.html#Start-Conditions</a></p>
@@ -548,8 +548,908 @@ def t_ccode_error(t):
 <li>lexer需要输入的是一个字符串。好在大多数机器都有足够的内存，这很少导致性能的问题。这意味着，lexer现在还不能用来处理文件流或者socket流。这主要是受到re模块的限制。 
 <li>lexer支持用Unicode字符描述标记的匹配规则，也支持输入字串包含Unicode 
 <li>如果你想要向re.compile()方法提供flag，使用reflags选项：<code>lex.lex(reflags=re.UNICODE)</code> 
-<li>由于lexer是全部用Python写的，性能很大程度上取决于Python的re模块，即使已经尽可能的高效了。当接收极其大量的输入文件时表现并不尽人意。如果担忧性能，你可以升级到最新的Python，或者手工创建分析器，或者用C语言写lexer并做成扩展模块。</ul>
+<li>由于lexer是全部用Python写的，性能很大程度上取决于Python的re模块，即使已经尽可能的高效了。当接收极其大量的输入文件时表现并不尽人意。如果担忧性能，你可以升级到最新的Python，或者手工创建分析器，或者用C语言写lexer并做成扩展模块。</li></ul>
 <p>如果你要创建一个手写的词法分析器并计划用在yacc.py中，只需要满足下面的要求：</p>
 <ul>
 <li>需要提供一个<code>token()</code>方法来返回下一个标记，如果没有可用的标记了，则返回None。 
-<li><code>token()</code>方法必须返回一个tok对象，具有<code>type</code>和<code>value</code>属性。如果行号需要跟踪的话，标记还需要定义<code>lineno</code>属性。</ul>
+<li><code>token()</code>方法必须返回一个tok对象，具有<code>type</code>和<code>value</code>属性。如果行号需要跟踪的话，标记还需要定义<code>lineno</code>属性。</li></ul>
+<p>&nbsp;</p><a name="5"></a>
+<h3><font style="font-weight: bold">5 语法分析基础</font></h3>
+<p>yacc.py用来对语言进行语法分析。在给出例子之前，必须提一些重要的背景知识。首先，‘语法’通常用BNF范式来表达。例如，如果想要分析简单的算术表达式，你应该首先写下无二义的文法：</p><pre><code>expression : expression + term
+           | expression - term
+           | term
+
+term       : term * factor
+           | term / factor
+           | factor
+
+factor     : NUMBER
+           | ( expression )
+</code></pre>
+<p>在这个文法中，像<code>NUMBER</code>,<code>+</code>,<code>-</code>,<code>*</code>,<code>/</code>的符号被称为终结符，对应原始的输入。类似<code>term</code>，<code>factor</code>等称为非终结符，它们由一系列终结符或其他规则的符号组成，用来指代语法规则。</p>
+<p>通常使用一种叫语法制导翻译的技术来指定某种语言的语义。在语法制导翻译中，符号及其属性出现在每个语法规则后面的动作中。每当一个语法被识别，动作就能够描述需要做什么。比如，对于上面给定的文法，想要实现一个简单的计算器，应该写成下面这样：</p><pre><code>Grammar                             Action
+--------------------------------    -------------------------------------------- 
+expression0 : expression1 + term    expression0.val = expression1.val + term.val
+            | expression1 - term    expression0.val = expression1.val - term.val
+            | term                  expression0.val = term.val
+
+term0       : term1 * factor        term0.val = term1.val * factor.val
+            | term1 / factor        term0.val = term1.val / factor.val
+            | factor                term0.val = factor.val
+
+factor      : NUMBER                factor.val = int(NUMBER.lexval)
+            | ( expression )        factor.val = expression.val
+</code></pre>
+<p>一种理解语法指导翻译的好方法是将符号看成对象。与符号相关的值代表了符号的“状态”（比如上面的val属性），语义行为用一组操作符号及符号值的函数或者方法来表达。</p>
+<p>Yacc用的分析技术是著名的LR分析法或者叫移进-归约分析法。LR分析法是一种自下而上的技术：首先尝试识别右部的语法规则，每当右部得到满足，相应的行为代码将被触发执行，当前右边的语法符号将被替换为左边的语法符号。（归约）</p>
+<p>LR分析法一般这样实现：将下一个符号进栈，然后结合栈顶的符号和后继符号（译者注：下一个将要输入符号），与文法中的某种规则相比较。具体的算法可以在编译器的手册中查到，下面的例子展现了如果通过上面定义的文法，来分析3 + 5 * ( 10 - 20 )这个表达式，$用来表示输入结束</p><pre><code>Step Symbol Stack           Input Tokens            Action
+---- ---------------------  ---------------------   -------------------------------
+1                           3 + 5 * ( 10 - 20 )$    Shift 3
+2    3                        + 5 * ( 10 - 20 )$    Reduce factor : NUMBER
+3    factor                   + 5 * ( 10 - 20 )$    Reduce term   : factor
+4    term                     + 5 * ( 10 - 20 )$    Reduce expr : term
+5    expr                     + 5 * ( 10 - 20 )$    Shift +
+6    expr +                     5 * ( 10 - 20 )$    Shift 5
+7    expr + 5                     * ( 10 - 20 )$    Reduce factor : NUMBER
+8    expr + factor                * ( 10 - 20 )$    Reduce term   : factor
+9    expr + term                  * ( 10 - 20 )$    Shift *
+10   expr + term *                  ( 10 - 20 )$    Shift (
+11   expr + term * (                  10 - 20 )$    Shift 10
+12   expr + term * ( 10                  - 20 )$    Reduce factor : NUMBER
+13   expr + term * ( factor              - 20 )$    Reduce term : factor
+14   expr + term * ( term                - 20 )$    Reduce expr : term
+15   expr + term * ( expr                - 20 )$    Shift -
+16   expr + term * ( expr -                20 )$    Shift 20
+17   expr + term * ( expr - 20                )$    Reduce factor : NUMBER
+18   expr + term * ( expr - factor            )$    Reduce term : factor
+19   expr + term * ( expr - term              )$    Reduce expr : expr - term
+20   expr + term * ( expr                     )$    Shift )
+21   expr + term * ( expr )                    $    Reduce factor : (expr)
+22   expr + term * factor                      $    Reduce term : term * factor
+23   expr + term                               $    Reduce expr : expr + term
+24   expr                                      $    Reduce expr
+25                                             $    Success!
+</code></pre>
+<p>（译者注：action里面的Shift就是进栈动作，简称移进；Reduce是归约）</p>
+<p>在分析表达式的过程中，一个相关的自动状态机和后继符号决定了下一步应该做什么。如果下一个标记看起来是一个有效语法（产生式）的一部分（通过栈上的其他项判断这一点），那么这个标记应该进栈。如果栈顶的项可以组成一个完整的右部语法规则，一般就可以进行“归约”，用产生式左边的符号代替这一组符号。当归约发生时，相应的行为动作就会执行。如果输入标记既不能移进也不能归约的话，就会发生语法错误，分析器必须进行相应的错误恢复。分析器直到栈空并且没有另外的输入标记时，才算成功。<br>需要注意的是，这是基于一个有限自动机实现的，有限自动器被转化成分析表。分析表的构建比较复杂，超出了本文的讨论范围。不过，这构建过程的微妙细节能够解释为什么在上面的例子中，解析器选择在步骤<code>9</code>将标记转移到堆栈中，而不是按照规则expr : expr + term做归约。</p>
+<p><br>&nbsp;</p><a name="6"></a>
+<h3><font style="font-weight: bold">6 Yacc</font></h3>
+<p>ply.yacc模块实现了PLY的分析功能，‘yacc’是‘Yet Another Compiler Compiler’的缩写并保留了其作为Unix工具的名字。<br></p>
+<h4><font style="font-weight: bold">6.1 一个例子</font></h4>
+<p>假设你希望实现上面的简单算术表达式的语法分析，代码如下：</p><pre><code># Yacc example
+
+import ply.yacc as yacc
+
+# Get the token map from the lexer.  This is required.
+from calclex import tokens
+
+def p_expression_plus(p):
+    'expression : expression PLUS term'
+    p[0] = p[1] + p[3]
+
+def p_expression_minus(p):
+    'expression : expression MINUS term'
+    p[0] = p[1] - p[3]
+
+def p_expression_term(p):
+    'expression : term'
+    p[0] = p[1]
+
+def p_term_times(p):
+    'term : term TIMES factor'
+    p[0] = p[1] * p[3]
+
+def p_term_div(p):
+    'term : term DIVIDE factor'
+    p[0] = p[1] / p[3]
+
+def p_term_factor(p):
+    'term : factor'
+    p[0] = p[1]
+
+def p_factor_num(p):
+    'factor : NUMBER'
+    p[0] = p[1]
+
+def p_factor_expr(p):
+    'factor : LPAREN expression RPAREN'
+    p[0] = p[2]
+
+# Error rule for syntax errors
+def p_error(p):
+    print "Syntax error in input!"
+
+# Build the parser
+parser = yacc.yacc()
+
+while True:
+   try:
+       s = raw_input('calc &gt; ')
+   except EOFError:
+       break
+   if not s: continue
+   result = parser.parse(s)
+   print result
+</code></pre>
+<p>在这个例子中，每个语法规则被定义成一个Python的方法，方法的文档字符串描述了相应的上下文无关文法，方法的语句实现了对应规则的语义行为。每个方法接受一个单独的<code>p</code>参数，<code>p</code>是一个包含有当前匹配语法的符号的序列，<code>p[i]</code>与语法符号的对应关系如下：</p><pre><code>def p_expression_plus(p):
+    'expression : expression PLUS term'
+    #   ^            ^        ^    ^
+    #  p[0]         p[1]     p[2] p[3]
+
+    p[0] = p[1] + p[3]
+</code></pre>
+<p>其中，<code>p[i]</code>的值相当于词法分析模块中对<code>p.value</code>属性赋的值，对于非终结符的值，将在归约时由<code>p[0]</code>的赋值决定，这里的值可以是任何类型，当然，大多数情况下只是Python的简单类型、元组或者类的实例。在这个例子中，我们依赖这样一个事实：<code>NUMBER</code>标记的值保存的是整型值，所有规则的行为都是得到这些整型值的算术运算结果，并传递结果。</p>
+<p>注意：在这里负数的下标有特殊意义--这里的p[-1]不等同于p[3]。详见下面的【嵌入式行为部分】</p>
+<p>在yacc中定义的第一个语法规则被默认为起始规则（这个例子中的第一个出现的expression规则）。一旦起始规则被分析器归约，而且再无其他输入，分析器终止，最后的值将返回（这个值将是起始规则的p[0]）。注意：也可以通过在<code>yacc()</code>中使用start关键字参数来指定起始规则</p>
+<p><code>p_error</code>(p)规则用于捕获语法错误。详见【错误处理部分】</p>
+<p>为了构建分析器，需要调用<code>yacc.yacc()</code>方法。这个方法查看整个当前模块，然后试图根据你提供的文法构建LR分析表。第一次执行<code>yacc.yacc()</code>，你会得到如下输出：</p><pre><code>$ python calcparse.py
+Generating LALR tables
+calc &gt;
+</code></pre>
+<p>由于分析表的得出相对开销较大（尤其包含大量的语法的情况下），分析表被写入当前目录的一个叫<code>parsetab.py</code>的文件中。除此之外，会生成一个调试文件<code>parser.out</code>。在接下来的执行中，yacc直到发现文法发生变化，才会重新生成分析表和parsetab.py文件，否则yacc会从parsetab.py中加载分析表。注：如果有必要的话这里输出的文件名是可以改的。</p>
+<p>如果在你的文法中有任何错误的话，yacc.py会产生调试信息，而且可能抛出异常。一些可以被检测到的错误如下：</p>
+<ul>
+<li>方法重复定义（在语法文件中具有相同名字的方法） 
+<li>二义文法产生的移进-归约和归约-归约冲突 
+<li>指定了错误的文法 
+<li>不可终止的递归（规则永远无法终结） 
+<li>未使用的规则或标记 
+<li>未定义的规则或标记</li></ul>
+<p>下面几个部分将更详细的讨论语法规则</p>
+<p>这个例子的最后部分展示了如何执行由<code>yacc()</code>方法创建的分析器。你只需要简单的调用<code>parse()</code>，并将输入字符串作为参数就能运行分析器。它将运行所有的语法规则，并返回整个分析的结果，这个结果就是在起始规则中赋给<code>p[0]</code>的值。</p>
+<p>&nbsp;</p><a name="6_2"></a>
+<h4><font style="font-weight: bold">6.2 将语法规则合并</font></h4>
+<p>如果语法规则类似的话，可以合并到一个方法中。例如，考虑前面例子中的两个规则：</p><pre><code>def p_expression_plus(p):
+    'expression : expression PLUS term'
+    p[0] = p[1] + p[3]
+
+def p_expression_minus(t):
+    'expression : expression MINUS term'
+    p[0] = p[1] - p[3]
+</code></pre>
+<p>比起写两个方法，你可以像下面这样写在一个方法里面：</p><pre><code>def p_expression(p):
+    '''expression : expression PLUS term
+                  | expression MINUS term'''
+    if p[2] == '+':
+        p[0] = p[1] + p[3]
+    elif p[2] == '-':
+        p[0] = p[1] - p[3]
+</code></pre>
+<p>总之，方法的文档字符串可以包含多个语法规则。所以，像这样写也是合法的（尽管可能会引起困惑）：</p><pre><code>def p_binary_operators(p):
+    '''expression : expression PLUS term
+                  | expression MINUS term
+       term       : term TIMES factor
+                  | term DIVIDE factor'''
+    if p[2] == '+':
+        p[0] = p[1] + p[3]
+    elif p[2] == '-':
+        p[0] = p[1] - p[3]
+    elif p[2] == '*':
+        p[0] = p[1] * p[3]
+    elif p[2] == '/':
+        p[0] = p[1] / p[3]
+</code></pre>
+<p>如果所有的规则都有相似的结构，那么将语法规则合并才是个不错的注意（比如，产生式的项数相同）。不然，语义动作可能会变得复杂。不过，简单情况下，可以使用len()方法区分，比如：<br></p><pre><code>def p_expressions(p):
+    '''expression : expression MINUS expression
+                  | MINUS expression'''
+    if (len(p) == 4):
+        p[0] = p[1] - p[3]
+    elif (len(p) == 3):
+        p[0] = -p[2]
+</code></pre>
+<p>如果考虑解析的性能，你应该避免像这些例子一样在一个语法规则里面用很多条件来处理。因为，每次检查当前究竟匹配的是哪个语法规则的时候，实际上重复做了分析器已经做过的事（分析器已经准确的知道哪个规则被匹配了）。为每个规则定义单独的方法，可以消除这点开销。</p>
+<p>&nbsp;</p><a name="6_3"></a>
+<h4><font style="font-weight: bold">6.3 字面字符</font></h4>
+<p>如果愿意，可以在语法规则里面使用单个的字面字符，例如：</p><pre><code>def p_binary_operators(p):
+    '''expression : expression '+' term
+                  | expression '-' term
+       term       : term '*' factor
+                  | term '/' factor'''
+    if p[2] == '+':
+        p[0] = p[1] + p[3]
+    elif p[2] == '-':
+        p[0] = p[1] - p[3]
+    elif p[2] == '*':
+        p[0] = p[1] * p[3]
+    elif p[2] == '/':
+        p[0] = p[1] / p[3]
+</code></pre>
+<p>字符必须像'+'那样使用单引号。除此之外，需要将用到的字符定义单独定义在lex文件的<code>literals</code>列表里：<br></p><pre><code># Literals.  Should be placed in module given to lex()
+literals = ['+','-','*','/' ]
+</code></pre>
+<p><strong>字面的字符只能是单个字符</strong>。因此，像'&lt;='或者'=='都是不合法的，只能使用一般的词法规则（例如t_EQ = r'==')。</p>
+<p>&nbsp;</p><a name="6_4"></a>
+<h4><font style="font-weight: bold">6.4 空产生式</font></h4>
+<p>yacc.py可以处理空产生式，像下面这样做：</p><pre><code>def p_empty(p):
+    'empty :'
+    pass
+</code></pre>
+<p>现在可以使用空匹配，只要将'<code>empty</code>'当成一个符号使用：<br></p><pre><code>def p_optitem(p):
+    'optitem : item'
+    '        | empty'
+    ...
+</code></pre>
+<p>注意：你可以将产生式保持'空'，来表示空匹配。然而，我发现用一个'<code>empty</code>'规则并用其来替代'空'，更容易表达意图，并有较好的可读性。</p>
+<p>&nbsp;</p><a name="6_5"></a>
+<h4><font style="font-weight: bold">6.5 改变起始符号</font></h4>
+<p>默认情况下，在yacc中的第一条规则是起始语法规则（顶层规则）。可以用<code>start</code>标识来改变这种行为：</p><pre><code>start = 'foo'
+
+def p_bar(p):
+    'bar : A B'
+
+# This is the starting rule due to the start specifier above
+def p_foo(p):
+    'foo : bar X'
+...
+</code></pre>
+<p>用<code>start</code>标识有助于在调试的时候将大型的语法规则分成小部分来分析。也可把start符号作为yacc的参数：</p><pre><code>yacc.yacc(start='foo')
+</code></pre>
+<p>&nbsp;</p><a name="6_6"></a>
+<h4><font style="font-weight: bold">6.6 处理二义文法</font></h4>
+<p>上面例子中，对表达式的文法描述用一种特别的形式规避了二义文法。然而，在很多情况下，这样的特殊文法很难写，或者很别扭。一个更为自然和舒服的语法表达应该是这样的：</p><pre><code>expression : expression PLUS expression
+           | expression MINUS expression
+           | expression TIMES expression
+           | expression DIVIDE expression
+           | LPAREN expression RPAREN
+           | NUMBER
+</code></pre>
+<p>不幸的是，这样的文法是存在二义性的。举个例子，如果你要解析字符串"3 * 4 + 5"，操作符如何分组并没有指明，究竟是表示"(3 * 4) + 5"还是"3 * (4 + 5)"呢？</p>
+<p>如果在yacc.py中存在二义文法，会输出"移进归约冲突"或者"归约归约冲突"。在分析器无法确定是将下一个符号移进栈还是将当前栈中的符号归约时会产生移进归约冲突。例如，对于"3 * 4 + 5"，分析器内部栈是这样工作的：</p><pre><code>Step Symbol Stack           Input Tokens            Action
+---- ---------------------  ---------------------   -------------------------------
+1    $                                3 * 4 + 5$    Shift 3
+2    $ 3                                * 4 + 5$    Reduce : expression : NUMBER
+3    $ expr                             * 4 + 5$    Shift *
+4    $ expr *                             4 + 5$    Shift 4
+5    $ expr * 4                             + 5$    Reduce: expression : NUMBER
+6    $ expr * expr                          + 5$    SHIFT/REDUCE CONFLICT ????
+</code></pre>
+<p>在这个例子中，当分析器来到第6步的时候，有两种选择：一是按照expr : expr * expr归约，一是将标记'+'继续移进栈。两种选择对于上面的上下文无关文法而言都是合法的。</p>
+<p>默认情况下，所有的移进归约冲突会倾向于使用移进来处理。因此，对于上面的例子，分析器总是会将'+'进栈，而不是做归约。虽然在很多情况下，这个策略是合适的（像"if-then"和"if-then-else"），但这对于算术表达式是不够的。事实上，对于上面的例子，将'+'进栈是完全错误的，应当先将expr * expr归约，因为乘法的优先级要高于加法。</p>
+<p>为了解决二义文法，尤其是对表达式文法，yacc.py允许为标记单独指定优先级和结合性。需要像下面这样增加一个precedence变量：</p><pre><code>precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+)
+</code></pre>
+<p>这样的定义说明<code>PLUS/MINUS</code>标记具有相同的优先级和左结合性，<code>TIMES/DIVIDE</code>具有相同的优先级和左结合性。在precedence声明中，标记的优先级从低到高。因此，这个声明表明<code>TIMES/DIVIDE</code>（他们较晚加入<code>precedence</code>）的优先级高于<code>PLUS/MINUS</code>。</p>
+<p>由于为标记添加了数字表示的优先级和结合性的属性，所以，对于上面的例子，将会得到：</p><pre><code>PLUS      : level = 1,  assoc = 'left'
+MINUS     : level = 1,  assoc = 'left'
+TIMES     : level = 2,  assoc = 'left'
+DIVIDE    : level = 2,  assoc = 'left'
+</code></pre>
+<p>随后这些值被附加到语法规则的优先级和结合性属性上，<strong>这些值由最右边的终结符的优先级和结合性决定</strong>：</p><pre><code>expression : expression PLUS expression                 # level = 1, left
+           | expression MINUS expression                # level = 1, left
+           | expression TIMES expression                # level = 2, left
+           | expression DIVIDE expression               # level = 2, left
+           | LPAREN expression RPAREN                   # level = None (not specified)
+           | NUMBER                                     # level = None (not specified)
+</code></pre>
+<p>当出现移进归约冲突时，分析器生成器根据下面的规则解决二义文法：</p>
+<ol>
+<li>如果当前的标记的优先级高于栈顶规则的优先级，移进当前标记 
+<li>如果栈顶规则的优先级更高，进行归约 
+<li>如果当前的标记与栈顶规则的优先级相同，如果标记是左结合的，则归约，否则，如果是右结合的则移进 
+<li>如果没有优先级可以参考，默认对于移进归约冲突执行移进</li></ol>
+<p>比如，当解析到"expression PLUS expression"这个语法时，下一个标记是<code>TIMES</code>，此时将执行移进，因为<code>TIMES</code>具有比<code>PLUS</code>更高的优先级；当解析到"expression TIMES expression"，下一个标记是<code>PLUS</code>，此时将执行归约，因为<code>PLUS</code>的优先级低于<code>TIMES</code>。</p>
+<p>如果在使用前三种技术解决已经归约冲突后，yacc.py将不会报告语法中的冲突或者错误（不过，会在parser.out这个调试文件中输出一些信息）</p>
+<p>使用<code>precedence</code>指定优先级的技术会带来一个问题，有时运算符的优先级需要基于上下文。例如，考虑"3 + 4 * -5"中的一元的'-'。数学上讲，一元运算符应当拥有较高的优先级。然而，在我们的<code>precedence</code>定义中，<code>MINUS</code>的优先级却低于<code>TIMES</code>。为了解决这个问题，<code>precedene</code>规则中可以包含"虚拟标记"：</p><pre><code>precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+    ('right', 'UMINUS'),            # Unary minus operator
+)
+</code></pre>
+<p>在语法文件中，我们可以这么表示一元算符：</p><pre><code>def p_expr_uminus(p):
+    'expression : MINUS expression %prec UMINUS'
+    p[0] = -p[2]
+</code></pre>
+<p>在这个例子中，<code>%prec UMINUS</code>覆盖了默认的优先级（<code>MINUS</code>的优先级），将<code>UMINUS</code>指代的优先级应用在该语法规则上。</p>
+<p>起初，<code>UMINUS</code>标记的例子会让人感到困惑。<code>UMINUS</code>既不是输入的标记也不是语法规则，你应当将其看成<code>precedence</code>表中的特殊的占位符。当你使用<code>%prec</code>宏时，你是在告诉yacc，你希望表达式使用这个占位符所表示的优先级，而不是正常的优先级。</p>
+<p>还可以在<code>precedence</code>表中指定"非关联"。这表明你不希望链式运算符。比如，假如你希望支持比较运算符'&lt;'和'&gt;'，但是你不希望支持 a &lt; b &lt; c，只要简单指定规则如下：<br></p><pre><code>precedence = (
+    ('nonassoc', 'LESSTHAN', 'GREATERTHAN'),  # Nonassociative operators
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
+    ('right', 'UMINUS'),            # Unary minus operator
+)
+</code></pre>
+<p><br>此时，当输入形如 a &lt; b &lt; c时，将产生语法错误，却不影响形如 a &lt; b 的表达式。</p>
+<p>&nbsp;</p>
+<p>对于给定的符号集，存在多种语法规则可以匹配时会产生归约/归约冲突。这样的冲突往往很严重，而且总是通过匹配最早出现的语法规则来解决。归约/归约冲突几乎总是相同的符号集合具有不同的规则可以匹配，而在这一点上无法抉择，比如：</p><pre><code>assignment :  ID EQUALS NUMBER
+           |  ID EQUALS expression
+           
+expression : expression PLUS expression
+           | expression MINUS expression
+           | expression TIMES expression
+           | expression DIVIDE expression
+           | LPAREN expression RPAREN
+           | NUMBER
+</code></pre>
+<p>这个例子中，对于下面这两条规则将产生归约/归约冲突：</p><pre><code>assignment  : ID EQUALS NUMBER
+expression  : NUMBER
+</code></pre>
+<p>比如，对于"a = 5"，分析器不知道应当按照assignment&nbsp; : ID EQUALS NUMBER归约，还是先将5归约成expression，再归约成assignment : ID EQUALS expression。</p>
+<p>应当指出的是，只是简单的查看语法规则是很难减少归约/归约冲突。如果出现归约/归约冲突，yacc()会帮助打印出警告信息：</p><pre><code>WARNING: 1 reduce/reduce conflict
+WARNING: reduce/reduce conflict in state 15 resolved using rule (assignment -&gt; ID EQUALS NUMBER)
+WARNING: rejected rule (expression -&gt; NUMBER)
+</code></pre>
+<p>上面的信息标识出了冲突的两条规则，但是，并无法指出究竟在什么情况下会出现这样的状态。想要发现问题，你可能需要结合语法规则和parser.out调试文件的内容。</p>
+<p>&nbsp;</p><a name="6_7"></a>
+<h4><font style="font-weight: bold">6.7 parser.out调试文件</font></h4>
+<p>使用LR分析算法跟踪移进/归约冲突和归约/归约冲突是件乐在其中的事。为了辅助调试，yacc.py在生成分析表时会创建出一个调试文件叫<code>parser.out</code>：</p><pre><code>Unused terminals:
+
+
+Grammar
+
+Rule 1     expression -&gt; expression PLUS expression
+Rule 2     expression -&gt; expression MINUS expression
+Rule 3     expression -&gt; expression TIMES expression
+Rule 4     expression -&gt; expression DIVIDE expression
+Rule 5     expression -&gt; NUMBER
+Rule 6     expression -&gt; LPAREN expression RPAREN
+
+Terminals, with rules where they appear
+
+TIMES                : 3
+error                : 
+MINUS                : 2
+RPAREN               : 6
+LPAREN               : 6
+DIVIDE               : 4
+PLUS                 : 1
+NUMBER               : 5
+
+Nonterminals, with rules where they appear
+
+expression           : 1 1 2 2 3 3 4 4 6 0
+
+
+Parsing method: LALR
+
+
+state 0
+
+    S' -&gt; . expression
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 1
+
+    S' -&gt; expression .
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    PLUS            shift and go to state 6
+    MINUS           shift and go to state 5
+    TIMES           shift and go to state 4
+    DIVIDE          shift and go to state 7
+
+
+state 2
+
+    expression -&gt; LPAREN . expression RPAREN
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 3
+
+    expression -&gt; NUMBER .
+
+    $               reduce using rule 5
+    PLUS            reduce using rule 5
+    MINUS           reduce using rule 5
+    TIMES           reduce using rule 5
+    DIVIDE          reduce using rule 5
+    RPAREN          reduce using rule 5
+
+
+state 4
+
+    expression -&gt; expression TIMES . expression
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 5
+
+    expression -&gt; expression MINUS . expression
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 6
+
+    expression -&gt; expression PLUS . expression
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 7
+
+    expression -&gt; expression DIVIDE . expression
+    expression -&gt; . expression PLUS expression
+    expression -&gt; . expression MINUS expression
+    expression -&gt; . expression TIMES expression
+    expression -&gt; . expression DIVIDE expression
+    expression -&gt; . NUMBER
+    expression -&gt; . LPAREN expression RPAREN
+
+    NUMBER          shift and go to state 3
+    LPAREN          shift and go to state 2
+
+
+state 8
+
+    expression -&gt; LPAREN expression . RPAREN
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    RPAREN          shift and go to state 13
+    PLUS            shift and go to state 6
+    MINUS           shift and go to state 5
+    TIMES           shift and go to state 4
+    DIVIDE          shift and go to state 7
+
+
+state 9
+
+    expression -&gt; expression TIMES expression .
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    $               reduce using rule 3
+    PLUS            reduce using rule 3
+    MINUS           reduce using rule 3
+    TIMES           reduce using rule 3
+    DIVIDE          reduce using rule 3
+    RPAREN          reduce using rule 3
+
+  ! PLUS            [ shift and go to state 6 ]
+  ! MINUS           [ shift and go to state 5 ]
+  ! TIMES           [ shift and go to state 4 ]
+  ! DIVIDE          [ shift and go to state 7 ]
+
+state 10
+
+    expression -&gt; expression MINUS expression .
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    $               reduce using rule 2
+    PLUS            reduce using rule 2
+    MINUS           reduce using rule 2
+    RPAREN          reduce using rule 2
+    TIMES           shift and go to state 4
+    DIVIDE          shift and go to state 7
+
+  ! TIMES           [ reduce using rule 2 ]
+  ! DIVIDE          [ reduce using rule 2 ]
+  ! PLUS            [ shift and go to state 6 ]
+  ! MINUS           [ shift and go to state 5 ]
+
+state 11
+
+    expression -&gt; expression PLUS expression .
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    $               reduce using rule 1
+    PLUS            reduce using rule 1
+    MINUS           reduce using rule 1
+    RPAREN          reduce using rule 1
+    TIMES           shift and go to state 4
+    DIVIDE          shift and go to state 7
+
+  ! TIMES           [ reduce using rule 1 ]
+  ! DIVIDE          [ reduce using rule 1 ]
+  ! PLUS            [ shift and go to state 6 ]
+  ! MINUS           [ shift and go to state 5 ]
+
+state 12
+
+    expression -&gt; expression DIVIDE expression .
+    expression -&gt; expression . PLUS expression
+    expression -&gt; expression . MINUS expression
+    expression -&gt; expression . TIMES expression
+    expression -&gt; expression . DIVIDE expression
+
+    $               reduce using rule 4
+    PLUS            reduce using rule 4
+    MINUS           reduce using rule 4
+    TIMES           reduce using rule 4
+    DIVIDE          reduce using rule 4
+    RPAREN          reduce using rule 4
+
+  ! PLUS            [ shift and go to state 6 ]
+  ! MINUS           [ shift and go to state 5 ]
+  ! TIMES           [ shift and go to state 4 ]
+  ! DIVIDE          [ shift and go to state 7 ]
+
+state 13
+
+    expression -&gt; LPAREN expression RPAREN .
+
+    $               reduce using rule 6
+    PLUS            reduce using rule 6
+    MINUS           reduce using rule 6
+    TIMES           reduce using rule 6
+    DIVIDE          reduce using rule 6
+    RPAREN          reduce using rule 6
+</code></pre>
+<p>文件中出现的不同状态，代表了有效输入标记的所有可能的组合，这是依据文法规则得到的。当得到输入标记时，分析器将构造一个栈，并找到匹配的规则。每个状态跟踪了当前输入进行到语法规则中的哪个位置，在每个规则中，'.'表示当前分析到规则的哪个位置，而且，对于在当前状态下，输入的每个有效标记导致的动作也被罗列出来。当出现移进/归约或归约/归约冲突时，被忽略的规则前面会添加!，就像这样：<br></p><pre><code>! TIMES           [ reduce using rule 2 ]
+  ! DIVIDE          [ reduce using rule 2 ]
+  ! PLUS            [ shift and go to state 6 ]
+  ! MINUS           [ shift and go to state 5 ]
+</code></pre>
+<p>通过查看这些规则并结合一些实例，通常能够找到大部分冲突的根源。应该强调的是，不是所有的移进归约冲突都是不好的，想要确定解决方法是否正确，唯一的办法就是查看parser.out。<br></p>
+<p>&nbsp;</p><a name="6_8"></a>
+<h4><font style="font-weight: bold">6.8 处理语法错误</font><br></h4>
+<p>如果你创建的分析器用于产品，处理语法错误是很重要的。一般而言，你不希望分析器在遇到错误的时候就抛出异常并终止，相反，你需要它报告错误，尽可能的恢复并继续分析，一次性的将输入中所有的错误报告给用户。这是一些已知语言编译器的标准行为，例如C,C++,Java。在PLY中，在语法分析过程中出现错误，错误会被立即检测到（分析器不会继续读取源文件中错误点后面的标记）。然而，这时，分析器会进入恢复模式，这个模式能够用来尝试继续向下分析。LR分析器的错误恢复是个理论与技巧兼备的问题，yacc.py提供的错误机制与Unix下的yacc类似，所以你可以从诸如O'Reilly出版的《Lex and yacc》的书中找到更多的细节。</p>
+<p>当错误发生时，yacc.py按照如下步骤进行：</p>
+<ol>
+<li>第一次错误产生时，用户定义的<code>p_error()</code>方法会被调用，出错的标记会作为参数传入；如果错误是因为到达文件结尾造成的，传入的参数将为<code>None</code>。随后，分析器进入到“错误恢复”模式，该模式下不会在产生<code>p_error()</code>调用，直到它成功的移进3个标记，然后回归到正常模式。 
+<li>如果在<code>p_error()</code>中没有指定恢复动作的话，这个导致错误的标记会被替换成一个特殊的<code>error</code>标记。 
+<li>如果导致错误的标记已经是<code>error</code>的话，原先的栈顶的标记将被移除。 
+<li>如果整个分析栈被放弃，分析器会进入重置状态，并从他的初始状态开始分析。 
+<li>如果此时的语法规则接受<code>error</code>标记，<code>error</code>标记会移进栈。 
+<li>如果当前栈顶是<code>error</code>标记，之后的标记将被忽略，直到有标记能够导致<code>error</code>的归约。</li></ol>
+<p>&nbsp;</p><a name="6_8_1"></a>
+<h5><font style="font-weight: bold">6.8.1 根据error规则恢复和再同步</font><br></h5>
+<p>最佳的处理语法错误的做法是在语法规则中包含<code>error</code>标记。例如，假设你的语言有一个关于print的语句的语法规则：</p><pre><code>def p_statement_print(p):
+     'statement : PRINT expr SEMI'
+     ...
+</code></pre>
+<p>为了处理可能的错误表达式，你可以添加一条额外的语法规则：</p><pre><code>def p_statement_print_error(p):
+     'statement : PRINT error SEMI'
+     print "Syntax error in print statement. Bad expression"
+</code></pre>
+<p>这样（expr错误时），<code>error</code>标记会匹配任意多个分号之前的标记（分号是<code>SEMI</code>指代的字符）。一旦找到分号，规则将被匹配，这样<code>error</code>标记就被归约了。</p>
+<p>这种类型的恢复有时称为"分析器再同步"。<code>error</code>标记扮演了表示所有错误标记的通配符的角色，而紧随其后的标记扮演了同步标记的角色。</p>
+<p>重要的一个说明是，通常<code>error</code>不会作为语法规则的最后一个标记，像这样：</p><pre><code>def p_statement_print_error(p):
+    'statement : PRINT error'
+    print "Syntax error in print statement. Bad expression"
+</code></pre>
+<p>这是因为，第一个导致错误的标记会使得该规则立刻归约，进而使得在后面还有错误标记的情况下，恢复变得困难。</p>
+<p><br>&nbsp;</p><a name="6_8_2"></a>
+<h5><font style="font-weight: bold">6.8.2 悲观恢复模式</font></h5>
+<p>另一个错误恢复方法是采用“悲观模式”：该模式下，开始放弃剩余的标记，直到能够达到一个合适的恢复机会。</p>
+<p>悲观恢复模式都是在<code>p_error()</code>方法中做到的。例如，这个方法在开始丢弃标记后，直到找到闭合的'}'，才重置分析器到初始化状态：</p><pre><code>def p_error(p):
+    print "Whoa. You are seriously hosed."
+    # Read ahead looking for a closing '}'
+    while 1:
+        tok = yacc.token()             # Get the next token
+        if not tok or tok.type == 'RBRACE': break
+    yacc.restart()
+</code></pre>
+<p><br>下面这个方法简单的抛弃错误的标记，并告知分析器错误被接受了：<br></p><pre><code>def p_error(p):
+    print "Syntax error at token", p.type
+    # Just discard the token and tell the parser it's okay.
+    yacc.errok()
+</code></pre>
+<p>在p_error()方法中，有三个可用的方法来控制分析器的行为：</p>
+<ul>
+<li><code>yacc.errok()</code> 这个方法将分析器从恢复模式切换回正常模式。这会使得不会产生<code>error</code>标记，并重置内部的<code>error</code>计数器，而且下一个语法错误会再次产生<code>p_error()</code>调用 
+<li><code>yacc.token()</code> 这个方法用于得到下一个标记 
+<li><code>yacc.restart()</code> 这个方法抛弃当前整个分析栈，并重置分析器为起始状态</li></ul>
+<p>注意：这三个方法只能在<code>p_error()</code>中使用，不能用在其他任何地方。</p>
+<p><code>p_error()</code>方法也可以返回标记，这样能够控制将哪个标记作为下一个标记返回给分析器。这对于需要同步一些特殊标记的时候有用，比如：</p><pre><code>def p_error(p):
+    # Read ahead looking for a terminating ";"
+    while 1:
+        tok = yacc.token()             # Get the next token
+        if not tok or tok.type == 'SEMI': break
+    yacc.errok()
+
+    # Return SEMI to the parser as the next lookahead token
+    return tok
+</code></pre>
+<p>&nbsp;</p><a name="6_8_3"></a>
+<h5><font style="font-weight: bold">6.8.3 从产生式中抛出错误</font></h5>
+<p>如果有需要的话，产生式规则可以主动的使分析器进入恢复模式。这是通过抛出<code>SyntacError</code>异常做到的：</p><pre><code>def p_production(p):
+    'production : some production ...'
+    raise SyntaxError
+</code></pre>
+<p><code>raise SyntaxError</code>错误的效果就如同当前的标记是错误标记一样。因此，当你这么做的话，最后一个标记将被弹出栈，当前的下一个标记将是<code>error</code>标记，分析器进入恢复模式，试图归约满足<code>error</code>标记的规则。此后的步骤与检测到语法错误的情况是完全一样的，<code>p_error()</code>也会被调用。</p>
+<p>手动设置错误有个重要的方面，就是<code>p_error()</code>方法在这种情况下不会调用。如果你希望记录错误，确保在抛出<code>SyntaxError</code>错误的产生式中实现。</p>
+<p>注：这个功能是为了模仿yacc中的<code>YYERROR</code>宏的行为</p>
+<p>&nbsp;</p><a name="6_8_4"></a>
+<h5><font style="font-weight: bold">6.8.4 错误恢复总结</font><br></h5>
+<p>对于通常的语言，使用<code>error</code>规则和再同步标记可能是最合理的手段。这是因为你可以将语法设计成在一个相对容易恢复和继续分析的点捕获错误。悲观恢复模式只在一些十分特殊的应用中有用，这些应用往往需要丢弃掉大量输入，再寻找合理的同步点。</p>
+<p>&nbsp;</p><a name="6_9"></a>
+<h4><font style="font-weight: bold">6.9 行号和位置的跟踪</font></h4>
+<p>位置跟踪通常是个设计编译器时的技巧性玩意儿。默认情况下，PLY跟踪所有标记的行号和位置，这些信息可以这样得到：</p>
+<ul>
+<li>
+<p><code>p.lineno(num)</code>返回第num个符号的行号</p>
+<li>
+<p><code>p.lexpos(num)</code>返回第num个符号的词法位置偏移</p></li></ul>
+<p>例如：</p><pre><code>def p_expression(p):
+    'expression : expression PLUS expression'
+    p.lineno(1)        # Line number of the left expression
+    p.lineno(2)        # line number of the PLUS operator
+    p.lineno(3)        # line number of the right expression
+    ...
+    start,end = p.linespan(3)    # Start,end lines of the right expression
+    starti,endi = p.lexspan(3)   # Start,end positions of right expression
+</code></pre>
+<p>注意：<code>lexspan()</code>方法只会返回的结束位置是最后一个符号的起始位置。</p>
+<p>虽然，PLY对所有符号的行号和位置的跟踪很管用，但经常是不必要的。例如，你仅仅是在错误信息中使用行号，你通常可以仅仅使用关键标记的信息，比如：</p><pre><code>def p_bad_func(p):
+    'funccall : fname LPAREN error RPAREN'
+    # Line number reported from LPAREN token
+    print "Bad function call at line", p.lineno(2)
+</code></pre>
+<p>类似的，为了改善性能，你可以有选择性的将行号信息在必要的时候进行传递，这是通过<code>p.set_lineno()</code>实现的，例如：</p><pre><code>def p_fname(p):
+    'fname : ID'
+    p[0] = p[1]
+    p.set_lineno(0,p.lineno(1))
+</code></pre>
+<p>对于已经完成分析的规则，PLY不会保留行号信息，如果你是在构建抽象语法树而且需要行号，你应该确保行号保留在树上。</p>
+<p>&nbsp;</p><a name="6_10"></a>
+<h4><font style="font-weight: bold">6.10 构造抽象语法树</font></h4>
+<p>yacc.py没有构造抽像语法树的特殊方法。不过，你可以自己很简单的构造出来。</p>
+<p>一个最为简单的构造方法是为每个语法规则创建元组或者字典，并传递它们。有很多中可行的方案，下面是一个例子：</p><pre><code>def p_expression_binop(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression'''
+
+    p[0] = ('binary-expression',p[2],p[1],p[3])
+
+def p_expression_group(p):
+    'expression : LPAREN expression RPAREN'
+    p[0] = ('group-expression',p[2])
+
+def p_expression_number(p):
+    'expression : NUMBER'
+    p[0] = ('number-expression',p[1])
+</code></pre>
+<p>另一种方法可以是为不同的抽象树节点创建一系列的数据结构，并赋值给<code>p[0]</code>：</p><pre><code>class Expr: pass
+
+class BinOp(Expr):
+    def __init__(self,left,op,right):
+        self.type = "binop"
+        self.left = left
+        self.right = right
+        self.op = op
+
+class Number(Expr):
+    def __init__(self,value):
+        self.type = "number"
+        self.value = value
+
+def p_expression_binop(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression'''
+
+    p[0] = BinOp(p[1],p[2],p[3])
+
+def p_expression_group(p):
+    'expression : LPAREN expression RPAREN'
+    p[0] = p[2]
+
+def p_expression_number(p):
+    'expression : NUMBER'
+    p[0] = Number(p[1])
+</code></pre>
+<p>这种方式的好处是在处理复杂语义时比较简单：类型检查、代码生成、以及其他针对树节点的功能。</p>
+<p>为了简化树的遍历，可以创建一个通用的树节点结构，例如：</p><pre><code>class Node:
+    def __init__(self,type,children=None,leaf=None):
+         self.type = type
+         if children:
+              self.children = children
+         else:
+              self.children = [ ]
+         self.leaf = leaf
+         
+def p_expression_binop(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression'''
+
+    p[0] = Node("binop", [p[1],p[3]], p[2])
+</code></pre>
+<p>&nbsp;</p><a name="6_11"></a>
+<h4><font style="font-weight: bold">6.11 嵌入式动作</font></h4>
+<p>yacc使用的分析技术只允许在规则规约后执行动作。假设有如下规则：<br></p><pre><code>def p_foo(p):
+    "foo : A B C D"
+    print "Parsed a foo", p[1],p[2],p[3],p[4]
+</code></pre>
+<p>方法只会在符号A,B,C和D都完成后才能执行。可是有的时候，在中间阶段执行一小段代码是有用的。假如，你想在A完成后立即执行一些动作，像下面这样用空规则：</p><pre><code>def p_foo(p):
+    "foo : A seen_A B C D"
+    print "Parsed a foo", p[1],p[3],p[4],p[5]
+    print "seen_A returned", p[2]
+
+def p_seen_A(p):
+    "seen_A :"
+    print "Saw an A = ", p[-1]   # Access grammar symbol to left
+    p[0] = some_value            # Assign value to seen_A
+</code></pre>
+<p>在这个例子中，空规则<code>seen_A</code>将在A移进分析栈后立即执行。<code>p[-1]</code>指代的是在分析栈上紧跟在seen_A左侧的符号。在这个例子中，是A符号。像其他普通的规则一样，在嵌入式行为中也可以通过为<code>p[0]</code>赋值来返回某些值。</p>
+<p>使用嵌入式动作可能会导致移进归约冲突，比如，下面的语法是没有冲突的：</p><pre><code>def p_foo(p):
+    """foo : abcd
+           | abcx"""
+
+def p_abcd(p):
+    "abcd : A B C D"
+
+def p_abcx(p):
+    "abcx : A B C X"
+</code></pre>
+<p>可是，如果像这样插入一个嵌入式动作：</p><pre><code>def p_foo(p):
+    """foo : abcd
+           | abcx"""
+
+def p_abcd(p):
+    "abcd : A B C D"
+
+def p_abcx(p):
+    "abcx : A B seen_AB C X"
+
+def p_seen_AB(p):
+    "seen_AB :"
+</code></pre>
+<p>会产生移进归约冲，只是由于对于两个规则abcd和abcx中的C，分析器既可以根据abcd规则移进，也可以根据abcx规则先将空的<code>seen_AB</code>归约。</p>
+<p>嵌入动作的一般用于分析以外的控制，比如为本地变量定义作用于。对于C语言：</p><pre><code>def p_statements_block(p):
+    "statements: LBRACE new_scope statements RBRACE"""
+    # Action code
+    ...
+    pop_scope()        # Return to previous scope
+
+def p_new_scope(p):
+    "new_scope :"
+    # Create a new scope for local variables
+    s = new_scope()
+    push_scope(s)
+    ...
+</code></pre>
+<p>在这个例子中，new_scope作为嵌入式行为，在左大括号<code>{</code>之后立即执行。可以是调正内部符号表或者其他方面。<code>statements_block</code>一完成，代码可能会撤销在嵌入动作时的操作（比如，pop_scope())<br>&nbsp;</p><a name="6_12"></a>
+<h4><font style="font-weight: bold">6.12 Yacc的其他</font></h4>
+<ul>
+<li>默认的分析方法是LALR，使用SLR请像这样运行 <code>yacc()：yacc.yacc(method="SLR")</code> 注意：LRLR生成的分析表大约要比SLR的大两倍。解析的性能没有本质的区别，因为代码是一样的。由于LALR能力稍强，所以更多的用于复杂的语法。 
+<li>默认情况下，yacc.py依赖lex.py产生的标记。不过，可以用一个等价的词法标记生成器代替： <code>yacc.parse(lexer=x)</code> 这个例子中，x必须是一个<code>Lexer</code>对象，至少拥有<code>x.token()</code>方法用来获取标记。如果将输入字串提供给<code>yacc.parse()</code>，lexer还必须具有<code>x.input()</code>方法。 
+<li>默认情况下，yacc在调试模式下生成分析表（会生成parser.out文件和其他东西），使用<code>yacc.yacc(debug=0)</code>禁用调试模式。 
+<li>改变parsetab.py的文件名：<code>yacc.yacc(tabmodule="foo") </code>
+<li>改变parsetab.py的生成目录：<code>yacc.yacc(tabmodule="foo",outputdir="somedirectory") </code>
+<li>不生成分析表：<code>yacc.yacc(write_tables=0)</code>。注意：如果禁用分析表生成，yacc()将在每次运行的时候重新构建分析表（这里耗费的时候取决于语法文件的规模） 
+<li>想在分析过程中输出丰富的调试信息，使用：<code>yacc.parse(debug=1)</code> 
+<li>yacc.yacc()方法会返回分析器对象，如果你想在一个程序中支持多个分析器： <pre><code>p = yacc.yacc()
+...
+p.parse()
+</code></pre>注意：<code>yacc.parse()</code>方法只绑定到最新创建的分析器对象上。 
+<li>由于生成生成LALR分析表相对开销较大，先前生成的分析表会被缓存和重用。判断是否重新生成的依据是对所有的语法规则和优先级规则进行MD5校验，只有不匹配时才会重新生成。生成分析表是合理有效的办法，即使是面对上百个规则和状态的语法。对于复杂的编程语言，像C语言，在一些慢的机器上生成分析表可能要花费30-60秒，请耐心。 
+<li>由于LR分析过程是基于分析表的，分析器的性能很大程度上取决于语法的规模。最大的瓶颈可能是词法分析器和语法规则的复杂度。</li></ul>
+<p>&nbsp;</p><a name="7"></a>
+<h3><font style="font-weight: bold">7 多个语法和词法分析器</font></h3>
+<p>在高级的分析器程序中，你可能同时需要多个语法和词法分析器。</p>
+<p>依照规则行事不会有问题。不过，你需要小心确定所有东西都正确的绑定(hooked up)了。首先，保证将lex()和yacc()返回的对象保存起来：</p><pre><code>lexer  = lex.lex()       # Return lexer object
+parser = yacc.yacc()     # Return parser object</code></pre>
+<p>接着，在解析时，确保给<code>parse()</code>方法一个正确的lexer引用：</p><pre><code>parser.parse(text,lexer=lexer)</code></pre>
+<p>如果遗漏这一步，分析器会使用最新创建的lexer对象，这可能不是你希望的。</p>
+<p>词法器和语法器的方法中也可以访问这些对象。在词法器中，标记的lexer属性指代的是当前触发规则的词法器对象：</p><pre><code>def t_NUMBER(t):
+   r'\d+'
+   ...
+   print t.lexer           # Show lexer object</code></pre>
+<p>在语法器中，lexer和parser属性指代的是对应的词法器对象和语法器对象</p><pre><code>def p_expr_plus(p):
+   'expr : expr PLUS expr'
+   ...
+   print p.parser          # Show parser object
+   print p.lexer           # Show lexer object</code></pre>
+<p>如果有必要，lexer对象和parser对象都可以附加其他属性。例如，你想要有不同的解析器状态，可以为为parser对象附加更多的属性，并在后面用到它们。</p>
+<p>&nbsp;</p><a name="8"></a>
+<h3><font style="font-weight: bold">8 使用Python的优化模式</font></h3>
+<p>由于PLY从文档字串中获取信息，语法解析和词法分析信息必须通过正常模式下的Python解释器得到（不带有-O或者-OO选项）。不过，如果你像这样指定<code>optimize</code>模式：</p><pre><code>lex.lex(optimize=1)
+yacc.yacc(optimize=1)</code></pre>
+<p>PLY可以在下次执行，在Python的优化模式下执行。但你必须确保第一次执行是在Python的正常模式下进行，一旦词法分析表和语法分析表生成一次后，在Python优化模式下执行，PLY会使用生成好的分析表而不再需要文档字串。</p>
+<p>注意：在优化模式下执行PLY会禁用很多错误检查机制。你应该只在程序稳定后，不再需要调试的情况下这样做。使用优化模式的目的应该是大幅减少你的编译器的启动时间（万事俱备只欠东风时）</p>
+<p>&nbsp;</p><a name="9"></a>
+<h3><font style="font-weight: bold">9 高级调试</font></h3>
+<p>调试一个编译器不是件容易的事情。PLY提供了一些高级的调试能力，这是通过Python的<code>logging</code>模块实现的，下面两节介绍这一主题：</p>
+<p>&nbsp;</p><a name="9_1"></a>
+<h4><font style="font-weight: bold">9.1 调试lex()和yacc()命令</font></h4>
+<p><code>lex()</code>和<code>yacc()</code>命令都有调试模式，可以通过debug标识实现：</p><pre><code>lex.lex(debug=True)
+yacc.yacc(debug=True)</code></pre>
+<p>正常情况下，调试不仅输出标准错误，对于yacc()，还会给出parser.out文件。这些输出可以通过提供logging对象来精细的控制。下面这个例子增加了对调试信息来源的输出：</p><pre><code># Set up a logging object
+import logging
+logging.basicConfig(
+    level = logging.DEBUG,
+    filename = "parselog.txt",
+    filemode = "w",
+    format = "%(filename)10s:%(lineno)4d:%(message)s"
+)
+log = logging.getLogger()
+
+lex.lex(debug=True,debuglog=log)
+yacc.yacc(debug=True,debuglog=log)</code></pre>
+<p>如果你提供一个自定义的logger，大量的调试信息可以通过分级来控制。典型的是将调试信息分为<code>DEBUG</code>,<code>INFO</code>,或者<code>WARNING</code>三个级别。</p>
+<p>PLY的错误和警告信息通过日志接口提供，可以从<code>errorlog</code>参数中传入日志对象</p><pre><code>lex.lex(errorlog=log)
+yacc.yacc(errorlog=log)</code></pre>
+<p>如果想完全过滤掉警告信息，你除了可以使用带级别过滤功能的日志对象，也可以使用lex和yacc模块都内建的<code>Nulllogger</code>对象。例如：</p><pre><code>yacc.yacc(errorlog=yacc.NullLogger())</code></pre>
+<p>&nbsp;</p><a name="9_2"></a>
+<h4><font style="font-weight: bold">9.2 运行时调试</font></h4>
+<p>为分析器指定debug选项，可以激活语法分析器的运行时调试功能。这个选项可以是整数（表示对调试功能是开还是关），也可以是logger对象。例如：</p><pre><code>log = logging.getLogger()
+parser.parse(input,debug=log)</code></pre>
+<p>如果传入日志对象的话，你可以使用其级别过滤功能来控制内容的输出。<code>INFO</code>级别用来产生归约信息；<code>DEBUG</code>级别会显示分析栈的信息、移进的标记和其他详细信息。<code>ERROR</code>级别显示分析过程中的错误相关信息。</p>
+<p>对于每个复杂的问题，你应该用日志对象，以便输出重定向到文件中，进而方便在执行结束后检查。</p>
+<p>&nbsp;</p><a name="10"></a>
+<h3><font style="font-weight: bold">10 如何继续</font></h3>
+<p>PLY分发包中的<code>example</code>目录包含几个简单的示例。对于理论性的东西以及LR分析发的实现细节，应当从编译器相关的书籍中学习。</p>
+<div class="table-responsive">
+<table class="table">
+<caption>一些翻译约定</caption>
+<tbody>
+<tr>
+<td>token</td>
+<td>标记</td></tr>
+<tr>
+<td>context free grammar</td>
+<td>上下文无关文法</td></tr>
+<tr>
+<td>syntax directed translation</td>
+<td>语法制导的翻译</td></tr>
+<tr>
+<td>ambiguity</td>
+<td>二义</td></tr>
+<tr>
+<td>terminals</td>
+<td>终结符</td></tr>
+<tr>
+<td>non-terminals</td>
+<td>非终结符</td></tr>
+<tr>
+<td>documentation string</td>
+<td>文档字符串（python中的_docstring_）</td></tr>
+<tr>
+<td>shift-reduce</td>
+<td>移进-归约</td></tr>
+<tr>
+<td>Empty Productions</td>
+<td>空产生式</td></tr>
+<tr>
+<td>Panic mode recovery</td>
+<td>悲观恢复模式</td></tr></tbody></table></div>
