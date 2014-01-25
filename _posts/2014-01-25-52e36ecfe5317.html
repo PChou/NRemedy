@@ -1,0 +1,53 @@
+---
+layout: postlayout
+title: Jekyll 1.4.3 mkdir Invalid argument
+description: Jekyll 1.4.3 mkdir 错误
+thumbimg: 1346208288725.jpg
+categories: [web-build]
+tags: [github-page,jekyll,Ruby]
+---
+<p>有网友反映说jekyll升级到1.4.3后出现类似下面的错误：</p><pre><code>d:/Ruby193/lib/ruby/1.9.1/fileutils.rb:247:in `mkdir': Invalid argument -&nbsp; d:/Projects/NRemedy/_site/d:. Use --trace to view backtrace</code></pre>
+<p>根据我研究下来可能windows下特有的问题，解决方案有两种：</p>
+<p>安装低版本的jekyll，这个办法简单粗暴</p><pre><code>gem uninstall jekyll
+gem install jekyll --version "=1.3.0"
+</code></pre>
+<p>还有一个办法是修改代码，我先讲步骤，再讲原理： 
+<p>来到这个目录，根据你ruby的安装位置，前缀可能有所不同 <pre><code>D:\Ruby193\lib\ruby\gems\1.9.1\gems\jekyll-1.4.3\lib\jekyll</code></pre>
+<p>找到<code>post.rb</code>中的下面代码： <pre><code>def destination(dest)
+	# The url needs to be unescaped in order to preserve the correct filename
+	path = File.join(dest, File.expand_path(CGI.unescape(self.url),"/"))
+	path = File.join(path, "index.html") if path[/\.html$/].nil?
+	path
+end</code></pre>
+<p>修改为： <pre><code>def destination(dest)
+	# The url needs to be unescaped in order to preserve the correct filename
+	path = File.join(dest, CGI.unescape(self.url))
+	path = File.join(path, "index.html") if path[/\.html$/].nil?
+	path
+end</code></pre>
+<p>找到<code>page.rb</code>中的下面代码：</p><pre><code>def destination(dest)
+	path = File.join(dest, File.expand_path(self.url, "/"))
+	path = File.join(path, "index.html") if self.url =~ /\/$/
+	path
+end</code></pre>
+<p>改成</p><pre><code>def destination(dest)
+	path = File.join(dest, self.url)
+	path = File.join(path, "index.html") if self.url =~ /\/$/
+	path
+end</code></pre>
+<p>这样应该就可以了。</p>
+<p>&nbsp;</p>
+<p>下面来讲讲原理：<br>jekyll在生成目标文件前需要计算目标文件的物理路径在哪里，根据我的调试，上面代码中两个关键的变量值分别是：</p>
+<ul>
+<li><code>dest</code> : 即默认的输出路径_site的全路径 
+<li><code>self.url</code> ：是每篇文章计算得到的一个相对路径，通常有分类和文件名中的时间部分决定的，形如：/life/2013/01/02/hello-github.html</li></ul>
+<p>上面代码的<code>destination</code>方法实际上是需要将<code>dest</code>和<code>self.url</code>合并在一起，最后得到文件的全路径，但是在这个过程，1.4.3版本多了一个<code>File.expand_path</code>。从<a href="http://ruby-doc.org/core-1.9.3/File.html#method-c-expand_path" target="_blank">这里</a>看到这个方法的含义是将一个相对路径扩展为绝对路径，而实际上<code>dest</code>和<code>self.url</code>是可以直接用<code>File.join</code>合并在一起的。那么出于什么原因需要调用<code>File.expand_path</code>呢？</p>
+<p>首先看下1.4.3这个版本的Release Notes：<a title="http://jekyllrb.com/news/2014/01/14/jekyll-1-4-3-released/" href="http://jekyllrb.com/news/2014/01/14/jekyll-1-4-3-released/">http://jekyllrb.com/news/2014/01/14/jekyll-1-4-3-released/</a></p>
+<p>大致知道是出于安全的考虑，如果用户文件的文件名包含类似..这样的符号，可能会导致安全隐患。</p>
+<p>那么为什么在windows下会出错呢？由于笔者对Ruby不是很了解，只能猜测一下了：</p>
+<p>/life/2013/01/02/hello-github.html这样的路径在linux下是基于根目录的，而在windows下这个路径如果用<code>File.expand_path</code>扩展的话就会变成相对于根驱动器，也就是说</p><pre><code>File.join("/life/2013/01/02/hello-github.html","/") #可能会得到d:/life/2013/01/02/hello-github.html
+</code></pre>
+<p>于是再与<code>dest</code>拼接就变成</p><pre><code>d:/Projects/NRemedy/_site/d:/life/2013/01/02/hello-github.html</code></pre>
+<p>这个路径当然不能被用来<code>mkdir</code>啦，就是报出这个错误</p><pre><code>d:/Ruby193/lib/ruby/1.9.1/fileutils.rb:247:in `mkdir': Invalid argument -&nbsp; d:/Projects/NRemedy/_site/d:. Use --trace to view backtrace</code></pre>
+<p>&nbsp;</p>
+<p>以上是个人的初步调研结果，没有太多的精力深入研究下去，只能严重关注<code>jekyll</code>的进展了。这是我在<code>jekyll</code>项目针对这个问题提的一个<a href="https://github.com/jekyll/jekyll/issues/1986" target="_blank">issue</a></p>

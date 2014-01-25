@@ -62,4 +62,8 @@ tags: [github-page, jekyll, Ruby]
 		self.content = File.read(File.join(base, name),:encoding => "utf-8")
 	5.最新的jekyll修改了命令行参数，需使用如下命令行
 		jekyll serve --safe --watch
+	6.jekyll 1.4.3在windows下本地生成的时候可能会出现'fileutils.rb:247:in mkdir Invalid argument'的错误，详见
+	<a href="{{ site.baseurl }}/web-build/2014/01/25/52e36ecfe5317.html">Jekyll 1.4.3 mkdir Invalid argument</a>
+	7.jekyll 1.4.3在--watch参数的情况下可能会出现'cannot load such file -- wdm (LoadError)'的错误，用gem安装wdm就好了：
+		gem install wdm
 </pre>
