@@ -1,0 +1,5 @@
+@mixin cross_browser_css($vert,$value) {
+	#{$vert} : $value;
+　　-moz-#{$vert}: $value;
+　　-webkit-#{$vert}: $value;
+}
