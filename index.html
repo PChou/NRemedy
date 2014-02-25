@@ -10,8 +10,10 @@ bg: background-color:#eee
  		<li>
 			<time class="cbp_tmtime"><span>{{ post.date | date: "%Y" }}</span> <span>{{ post.date | date: "%b" }} {{ post.date | date: "%d" }}</span></time>
 			<div class="cbp_tmicon cbp_tmicon-phone"></div>
+
 			<div class="cbp_tmlabel">
 				<h2><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h2>
+								<img style='height:200px;' src="{{ site.baseurl }}/assert/img/{{ post.thumbimg }}" alt="{{ post.thumbimg }}">      
 				<p>{{ post.description }}</p>
 			</div>
 		</li>

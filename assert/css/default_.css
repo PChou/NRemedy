@@ -16,7 +16,7 @@ body, html { font-size: 100%; padding: 0; margin: 0;}
 body {
     font-family: 'Microsoft YaHei','Lato', Calibri, Arial, sans-serif;
     color: #FF6138;
-    background-color: #333;
+    background-color: #fff;
 }
 
 a {
@@ -34,6 +34,26 @@ a:hover {
 	max-width: 69em;
 	margin: 0 auto;
 	padding: 0 1.875em 3.125em 1.875em;
+}
+
+.maincontent {
+	color: #ddd;
+	max-width: 60em;
+
+}
+
+.maincontent a {
+	color: #2a6496;
+}
+
+.maincontent p {
+	line-height: 1.5em;
+	text-indent: 32px;
+}
+
+.maincontent a:hover {
+	color: #428bca;
+	text-decoration: underline;
 }
 
 .container > header {
