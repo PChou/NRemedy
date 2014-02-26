@@ -10,11 +10,13 @@ $title-icon-size : 32px;
 $title-icon-color : #FF6138;
 $title-icon-hover-color : lighten(#FF6138,20%);
 
+
 $timeline-top-base-padding: 50px;
-$timeline-color : #FFFF9D;
+$timeline-top-base-icon-padding: 58px;
+$timeline-color : #4B4B4B;
 $timeline-left : 15%;
-$timeline-icon-width : 40px;
-$timeline-label-left : $timeline-left+5%;
+$timeline-icon-width : 24px;
+$timeline-label-left : $timeline-left+4%;
 $timeline-year-color : #A7A7A7;
 $timeline-year-size : 0.9em;
 $timeline-date-color : #00A388;

@@ -89,6 +89,11 @@ a:hover {
 
 @media screen and (max-width: 55em) {
 
+	.main,
+	.container > header {
+		width: 100%;
+	}
+
 	#qcode {
 		display: none;
 	}

@@ -91,23 +91,23 @@
 
 /* Example media queries */
 
-@media screen and (max-height: 26.375em){
+@media screen and (max-width: 47.2em){
 
 	.cbp-spmenu-vertical {
 		font-size: 90%;
-		width: 190px;
+		width: 150px;
 	}
 
 	.cbp-spmenu-left,
 	.cbp-spmenu-push-toleft {
-		left: -190px;
+		left: -150px;
 	}
 
 	.cbp-spmenu-right {
-		right: -190px;
+		right: -150px;
 	}
 
 	.cbp-spmenu-push-toright {
-		left: 190px;
+		left: 150px;
 	}
 }
