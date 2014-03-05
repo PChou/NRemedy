@@ -1,0 +1,145 @@
+title {
+  font-size: 2.5em;
+  color: #ff6138;
+  display: block;
+  @include container_width();
+}
+
+.maincontent {
+  h1,h2,h3,h4 {
+    padding-left:20px;
+    border-left: 5px solid #FF6138;
+  }
+
+  .description {
+    padding-bottom:25px;
+    text-indent: 0;
+  }
+
+  .lable-bar{
+    padding : 0.2em 0;
+    & > i {
+      font-size: 28px;
+      color: #ff6138;
+      vertical-align: middle;
+    }
+
+    .previous, .next {
+      display: block;
+      margin: 10px 0px;
+      font-size: 80%;
+    }
+  }
+
+  .label {
+    display: inline;
+    padding: .2em .6em .3em;
+    font-size: 75%;
+    font-weight: bold;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25em;
+    text-decoration: none;
+  }
+
+  .label-cat {
+    background-color: #00A388;
+    &:hover, &:focus{
+      background-color: darken(#00A388,10%)
+    }
+  }
+
+  .label-tag {
+    background-color: #31b0d5;
+    &:hover, &:focus{
+      background-color: darken(#31b0d5,10%)
+    }
+  }
+
+  .table {
+    width: 100%;
+    margin-bottom: 20px;
+    thead > tr > th , tbody>tr>th , tfoot>tr>th , thead>tr>td, tbody>tr>td , tfoot>tr>td {
+      padding: 8px;
+      line-height: 1.428571429;
+      vertical-align: top;
+      border-top: 1px solid #ddd;
+    }
+  }
+
+  .table-bordered {
+    border: 1px solid #ddd;
+    thead > tr > th , tbody>tr>th , tfoot>tr>th , thead>tr>td, tbody>tr>td , tfoot>tr>td {
+      border: 1px solid #ddd;
+    }
+  }
+
+  table caption {
+    text-align: left;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+}
+
+
+@media screen and (max-width: 768px) {
+  .table-responsive {
+    width: 100%;
+    margin-bottom: 15px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border: 1px solid #ddd;
+  }
+}
+
+
+
+#_52de149d84a8f pre code {
+  -font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', 'Monaco', Courier, monospace !important;
+  background-color: #262626;
+  display: block;
+  color: #ebefe7;
+  padding: 0.5em;
+}
+#_52de149d84a8f pre code .string,
+#_52de149d84a8f pre code .regexp {
+  color: #3d575c;
+}
+#_52de149d84a8f pre code .comment {
+  color: rgba(255, 255, 255, 0.5);
+}
+#_52de149d84a8f pre code .number {
+  color: #ae81ff;
+}
+#_52de149d84a8f pre code .class,
+#_52de149d84a8f pre code .special,
+#_52de149d84a8f pre code .mixin {
+  color: #a6e22e;
+}
+
+
+#_52de149d84a8f pre code .attribute,
+#_52de149d84a8f pre code .keyword {
+  color: #66d9ef;
+}
+#_52de149d84a8f pre code .variable {
+  color: #fff;
+}
+#_52de149d84a8f pre code .element {
+  color: #669991;
+}
+
+#_52de149d84a8f pre code .id {
+  color: #c2b470;
+  font-weight: normal;
+}
+#_52de149d84a8f pre .color {
+  color: #b35e4d;
+}
+#_52de149d84a8f pre #time {
+  color: #aaaaaa;
+}

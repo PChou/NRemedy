@@ -12,23 +12,65 @@ body {
     background-color: $body-background-color;
 }
 
+p {
+	line-height: 1.8em;
+	text-indent: 2em;
+}
+
 a {
-	color: #f0f0f0;
+	color: #428bca;
 	text-decoration: none;
 }
 
 a:hover {
-	color: #000;
+	color: #2a6496;
+	text-decoration: underline;
+}
+
+code, pre {
+	font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+}
+
+pre,pre code{
+	white-space: pre-wrap;
+}
+
+code {
+	padding: 2px 5px;
+	font-size: 90%;
+	color: #ff6138;
+	white-space: nowrap;
+	background-color: #FFFF9D;
+	font-weight: bold;
+}
+
+blockquote {
+	background-color: #00A388;
+	border: 1px solid #00705d;
+	padding: 1em;
+	color: #fff;
+	line-height: 1.8em;
+	a {
+		color:#FFFF9D;
+	}
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	max-width: 100%;
+	background-color: transparent;
+}
+
+small {
+	font-size: 85%;
 }
 
 .iconfont{font-family:"iconfont";font-size:16px;font-style:normal;}
 
 .main,
 .container > header {
-	width: 90%;
-	max-width: $default-main-width;
-	margin: 0 auto;
-	padding: 0 1.875em 3.125em 1.875em;
+	@include container_width();
 }
 
 .container > header {
@@ -55,6 +97,7 @@ a:hover {
 			width: 2.5em;
 			height: 2.5em;
 			margin: 0 0.1em;
+			text-decoration: none;
 			&:hover > i {
 				color: $title-icon-hover-color;
 			}
@@ -68,6 +111,13 @@ a:hover {
 
 }
 
+
+foot {
+	display: block;
+	background-color: #333;
+	color: #fff;
+	padding: 1em;
+}
 
 #qcode:hover .gewm {
 	display: block;
@@ -86,11 +136,17 @@ a:hover {
 	padding: 5px;
 }
 
+.img-responsive {
+	display: block;
+	height: auto;
+	max-width: 100%;
+}
+
 
 @media screen and (max-width: 55em) {
 
 	.main,
-	.container > header {
+	.container > header, .container title {
 		width: 100%;
 	}
 

@@ -3,3 +3,10 @@
 	-moz-#{$vert}: $value;
 	-webkit-#{$vert}: $value;
 }
+
+@mixin container_width() {
+	width: 80%;
+	max-width: $default-main-width;
+	margin: 0 auto;
+	padding: 0 1.875em 1em 1.875em;
+}

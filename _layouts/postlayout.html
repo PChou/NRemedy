@@ -9,8 +9,7 @@
 		<link rel="icon" href="{{ site.baseurl }}/favicon.ico" type="image/x-icon">
  		<link rel="shortcut icon" href="{{ site.baseurl }}/favicon.ico" type="image/x-icon">
 		<link href='http://fonts.googleapis.com/css?family=Russo+One' rel='stylesheet' type='text/css'>
-		<link rel="stylesheet" href="{{ site.baseurl }}/assert/css/default_.css" media="screen">
-		<link rel="stylesheet" href="{{ site.baseurl }}/assert/css/component_.css" media="screen">
+		<link rel="stylesheet" href="{{ site.baseurl }}/assert/css/default__.css" media="screen">
 		<link rel="stylesheet" href="{{ site.baseurl }}/assert/css/monokai_sublime.css" media="screen">
 		<script src="https://code.jquery.com/jquery.js"></script>
 		<script src="{{ site.baseurl }}/assert/js/highlight.pack.js"></script>
@@ -86,16 +85,46 @@
 					</div><i class="iconfont">&#x3433;</i></a>
 				</nav>
 			</header>
+			<title>{{ page.title }}</title>
+			
 			<div class="maincontent main">
+				<p class='description'><code>摘要</code>{{ page.description }}</p>
 				{{ content }}
-			</div>
 
-			<div id='foot' class='container'>
-			<p class="text-muted credit">
-				Powered by <a href='https://github.com/'>Github</a> <a href='http://jekyllrb.com/'>jekyll</a> <a href="http://www.bootcss.com/">bootstrap</a> <a href="http://glyphicons.com/">Glyphicons</a> <a href="http://disqus.com" class="dsq-brlink">Disqus</a>
-			</p>
+				<div class='lable-bar'><i class="iconfont">&#xf0161;</i>
+				{% for cat in page.categories %}
+					<a class="label label-cat" href="{{ site.baseurl }}/category.html#{{ cat }}">{{ cat }}</a>
+				{% endfor %}
+				</div>
+				<div class='lable-bar'><i class="iconfont">&#xf0060;</i>
+				{% for tag in page.tags %}
+					<a class="label label-tag" href="{{ site.baseurl }}/tag.html#{{ tag }}">{{ tag }}</a>
+				{% endfor %}
+				</div>
+
+				<div class='lable-bar'>
+					{% if page.previous %}
+					<navigator class='previous'>&lt;&lt; 上一篇 <a href="{{ page.previous.url  }}">{{ page.previous.title }}</a></navigator>
+					{% endif %}
+					{% if page.next %}
+					<navigator class='previous'>&gt;&gt; 下一篇 <a href="{{ page.next.url  }}">{{ page.next.title }}</a></navigator>
+					{% endif %}
+				</div>
+
+				<div id="disqus_thread"></div>
+				{% include disqus %}
+
+
+
+			</div>
 		</div>
-		</div>
+
+		<foot>
+			<p style='text-align:center;'>
+					Powered by <a href='https://github.com/'>Github</a> <a href='http://jekyllrb.com/'>jekyll</a> <a href="http://www.bootcss.com/">bootstrap</a> <a href="http://glyphicons.com/">Glyphicons</a> <a href="http://disqus.com" class="dsq-brlink">Disqus</a>
+				</p>
+		</foot>
+		<script src="{{ site.baseurl }}/assert/js/lessorg.highlight.js"></script>
 	</body>
 
 </html>

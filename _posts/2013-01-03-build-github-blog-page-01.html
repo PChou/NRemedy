@@ -22,7 +22,7 @@ tags: [github-page, jekyll, liquid]
 <li><span>{</span>% <span>%</span>}：此标记用于包含控制流关键字，比如：<span>{</span>% if <span>%</span>}、<span>{</span>% for x in xx <span>%</span>}</li></ul>
 <p>显而易见的是，有了这种标记的支持，再加上jekyll内建的对象，构建网站就方便不少了。</p>
 <p>可能有朋友会更其他的服务器端脚本语言比较，比如asp、razor、jsp、velocity…，但是一定要记得的是，jekyll对模板的解析仅仅只有一次，它的目标就是将模板一次性的转化成静态网站，而不是上述的动态网站脚本语言。因此，对GitHub网站的维护工作，大致可以用下面的图表示：</p>
-<p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png" width="411" height="376"></a></p>
+<p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png"><img class='img-responsive' style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-01-img0.png" width="411" height="376"></a></p>
 <ol>
 <li>利用本地编辑器编写博客后维护网站其他页面 
 <li>使用Jekyll-Bootstrap在本地测试网站功能 
@@ -34,3 +34,15 @@ tags: [github-page, jekyll, liquid]
 <li>逐步掌握jekyll 
 <li>基本的HTML、CSS、JS技术能力</li></ul>
 <p>在后续的文章中，我将从0开始一步步解释如何申请GitHub空间以及如何搭建本地预览环境。</p>
+<blockquote>
+	相关文章
+	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a>
+	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-03 %}">一步步在GitHub上创建博客主页(3)</a>
+	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-04 %}">一步步在GitHub上创建博客主页(4)</a>
+	<a style="display:block;" href="{% post_url 2013-01-07-build-github-blog-page-05 %}">一步步在GitHub上创建博客主页(5)</a>
+	<a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a>
+	<a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a>
+	<a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a>
+	<a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a>
+	<a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a>
+</blockquote>

@@ -50,9 +50,9 @@
 			}
 		}
 		.cbp_tmlabel {
-			background: #79BD8F;
+			background: #6ABD85;
 			&:after {
-				border-right-color: #79BD8F;
+				border-right-color: #6ABD85;
 			}
 		}
 	}
@@ -71,6 +71,13 @@
 			margin-top: 0px;
 			padding: 0 0 10px 0;
 			border-bottom: 1px solid rgba(255,255,255,0.4);
+			a{
+				color: #FFFF9D;
+				&::hover{
+					color: #FFFF9D;
+				}
+			}
+
 		}
 		/* The triangle */
 		&:after {
