@@ -9,7 +9,7 @@ tags: [Linux]
 
 <script type="text/javascript" src="http://underscorejs.org/underscore-min.js"></script>
 <script type="text/javascript" src="{{ site.baseurl }}/assert/js/data/linuxcast.data.js"></script>
-<h3>点击<span class="W_ico16 icon_sw_movie"></span>可直接播放，点击<a class="W_ico16 icon_sw_link"></a>可打开对应笔记。请使用支持html5功能的浏览器</h3>
+<h3>点击<span class="iconfont">&#xf01cb;</span>可直接播放，点击<a class="iconfont">&#xf01ae;</a>可打开对应笔记。请使用支持html5功能的浏览器</h3>
 <blockquote>2014/1/5更新：对视频进行分类排序，感谢<a target="_blank" href="http://weibo.com/emmaus3">@那是当然3</a>的建议</blockquote>
 <div class='_container'>
 	
@@ -28,16 +28,16 @@ tags: [Linux]
 	for(var i=0;item=cawl[i];i++){
 		html.push('<div><span class="castname">');
 		html.push(item.lib + ' - ' + item.course + ' - ' + item.title);
-		html.push('</span><span class="W_ico16 icon_sw_movie" title="视频" data-mp4="');
+		html.push('</span><span class="iconfont pointer" title="视频" data-mp4="');
 		html.push(item.src_mp4);
 		html.push('" data-webm="');
 		html.push(item.src_webm);
-		html.push('"></span>');
+		html.push('">&#xf01cb;</span>');
 		for(var j=0;n=notes[j];j++){
 			if(n.id == item.id){
-				html.push('<a class="W_ico16 icon_sw_link" target="_blank" href="');
+				html.push('<a class="iconfont pointer" target="_blank" href="');
 				html.push(n.link);
-				html.push('" title="笔记"></a>');
+				html.push('" title="笔记">&#xf01ae;</a>');
 				break;
 			}
 		}
@@ -47,7 +47,7 @@ tags: [Linux]
 	$('div#new').html(html.join(''));
 
 
-	$('div._container').on('click','.icon_sw_movie',function(){
+	$('div._container').on('click','.pointer',function(){
 		var $this = $(this);
 		if(window.myPlayer){
 			window.myPlayer.remove();

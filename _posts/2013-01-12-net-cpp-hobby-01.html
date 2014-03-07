@@ -10,33 +10,96 @@ tags: [CPP]
 本文为原创，首发于我的cnblog：<a href="http://www.cnblogs.com/P_Chou/archive/2012/05/24/2517255.html">.NET程序员的C情结</a>
 <p>即将两年的.NET经验，一年的BMC经验，作为一个电子专业的人来说，心中仍然保留着对C和C++的情结。</p>
 <p>最近项目空闲之余在看Windows Programming和Windows via C/C++，并且用C++为我们开发的类库制作安装程序，虽然只是简单的Windows C程序，但是那份成就感油然而生。本文记录开发这个小程序过程中的心得：</p>
-<p><strong>1、基于对话框的windows程序</strong></p>
+<h3>1、基于对话框的windows程序</h3>
 <p>虽然说标准的Windows程序总是由用户注册的窗口类开始的，并且程序员需要自己用while来接收应用程序消息队列里的消息，并处理。但是如果想要快速开发小程序的话，可以像下面这样基于对话框的来开始程序。对话框自动建立消息循环，接收消息，我们要做的只是定义一个对话框处理函数。</p>
-<div><div id="highlighter_936029" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp color1 bold">int</code> <code class="cpp plain">WINAPI _tWinMain(</code></div><div class="line number2 index1 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">HINSTANCE</code> <code class="cpp plain">hInstance,</code></div><div class="line number3 index2 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">HINSTANCE</code><code class="cpp plain">,</code></div><div class="line number4 index3 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">PTSTR</code> <code class="cpp plain">szCmdLine,</code></div><div class="line number5 index4 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">iCmdShow)</code></div><div class="line number6 index5 alt1"><code class="cpp plain">{</code></div><div class="line number7 index6 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">DialogBox(hInstance...,DlgProc);</code></div><div class="line number8 index7 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">0;</code></div><div class="line number9 index8 alt2"><code class="cpp plain">}</code></div></div></td></tr></tbody></table></div></div>
+<pre><code>int WINAPI _tWinMain(
+    HINSTANCE hInstance,
+    HINSTANCE,
+    PTSTR szCmdLine,
+    int iCmdShow)
+{
+    DialogBox(hInstance...,DlgProc);
+    return 0;
+}</code></pre>
 <p>&nbsp;</p>
-<p><strong>2、检查内存泄漏</strong></p>
+<h3>2、检查内存泄漏</h3>
 <p>虽说是个小程序，但是在最后执行的时候，程序返回后，windows弹出应用程序出现错误。我猜想是内存泄漏了。实在惭愧，这么一个小程序都能搞出内存泄漏。后来在网上查到一个检查内存泄漏的方法：<a href="http://www.cppblog.com/Lyt/archive/2009/03/22/77517.html">http://www.cppblog.com/Lyt/archive/2009/03/22/77517.html</a></p>
-<div><div id="highlighter_695426" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp preprocessor">#define _CRTDBG_MAP_ALLOC</code></div><div class="line number2 index1 alt1">&nbsp;</div><div class="line number3 index2 alt2"><code class="cpp preprocessor">#include &lt;Windows.h&gt;</code></div><div class="line number4 index3 alt1"><code class="cpp preprocessor">#include &lt;tchar.h&gt;</code></div><div class="line number5 index4 alt2"><code class="cpp preprocessor">#include &lt;stdio.h&gt;</code></div><div class="line number6 index5 alt1"><code class="cpp preprocessor">#include &lt;stdlib.h&gt;</code></div><div class="line number7 index6 alt2"><code class="cpp preprocessor">#include &lt;crtdbg.h&gt;</code></div><div class="line number8 index7 alt1">&nbsp;</div><div class="line number9 index8 alt2">&nbsp;</div><div class="line number10 index9 alt1"><code class="cpp color1 bold">int</code> <code class="cpp plain">WINAPI _tWinMain(</code></div><div class="line number11 index10 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">HINSTANCE</code> <code class="cpp plain">hInstance,</code></div><div class="line number12 index11 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">HINSTANCE</code><code class="cpp plain">,</code></div><div class="line number13 index12 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">PTSTR</code> <code class="cpp plain">szCmdLine,</code></div><div class="line number14 index13 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp color1 bold">int</code> <code class="cpp plain">iCmdShow)</code></div><div class="line number15 index14 alt2"><code class="cpp plain">{</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">hInstance = hInstance;</code></div><div class="line number17 index16 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">...</code></div><div class="line number18 index17 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">_CrtDumpMemoryLeaks();</code></div><div class="line number19 index18 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp keyword bold">return</code> <code class="cpp plain">0;</code></div><div class="line number20 index19 alt1"><code class="cpp plain">}</code></div></div></td></tr></tbody></table></div></div>
+<pre><code>#define _CRTDBG_MAP_ALLOC
+ 
+#include &lt;Windows.h&gt;
+#include &lt;tchar.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;crtdbg.h&gt;
+ 
+ 
+int WINAPI _tWinMain(
+    HINSTANCE hInstance,
+    HINSTANCE,
+    PTSTR szCmdLine,
+    int iCmdShow)
+{
+    hInstance = hInstance;
+    ...
+    _CrtDumpMemoryLeaks();
+    return 0;
+}</code></pre>
 <p>这里的_CrtDumpMemoryLeaks()会在vs的Output窗口中给出内存泄漏的报告。</p>
 <p>&nbsp;</p>
-<p><strong>3、根据对话框句柄无法获取对话框的资源ID</strong></p>
+<h3>3、根据对话框句柄无法获取对话框的资源ID</h3>
 <p>虽说GetWindowLong (hwndChild, GWL_ID) ;是通过句柄得到窗口资源ID，但是当句柄是对话框句柄是是无效的。另外相关函数如下：</p>
-<div><div id="highlighter_948970" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp plain">id = GetDlgCtrlID (hwndChild);</code></div><div class="line number2 index1 alt1">&nbsp;</div><div class="line number3 index2 alt2"><code class="cpp plain">hwndChild = GetDlgItem(hwndParent, id);</code></div></div></td></tr></tbody></table></div></div>
+<pre><code>id = GetDlgCtrlID (hwndChild);
+ 
+hwndChild = GetDlgItem(hwndParent, id);
+</code></pre>
 <p>&nbsp;</p>
-<p>4、GetWindowRect(hDlg,&amp;rect);返回窗口的大小，返回的rect中的right和bottom竟然是窗口的width和height，真不知道为什么取名字要那么歧义。。GetSystemMetrics(SM_CXFULLSCREEN)和GetSystemMetrics(SM_CYFULLSCREEN)获得显示屏的像素信息。</p>
+<h3>4、GetWindowRect(hDlg,&amp;rect);</h3>
+	<p>返回窗口的大小，返回的rect中的right和bottom竟然是窗口的width和height，真不知道为什么取名字要那么歧义。。GetSystemMetrics(SM_CXFULLSCREEN)和GetSystemMetrics(SM_CYFULLSCREEN)获得显示屏的像素信息。</p>
 <p>MoveWindow(hDlg,inewLeft,inewTop,width,height,FALSE);可以设置窗口的位置。</p>
 <p>&nbsp;</p>
-<p><strong>5、设置checkbox：</strong></p>
-<div><div id="highlighter_220487" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp plain">SendMessage(hwnd, BM_SETCHECK, BST_CHECKED, 0);</code></div><div class="line number2 index1 alt1"><code class="cpp plain">SendMessage(hwnd, BM_SETCHECK, BST_UNCHECKED, 0);</code></div><div class="line number3 index2 alt2"><code class="cpp plain">SendMessage(hwnd, BM_GETCHECK, 0, 0));</code></div></div></td></tr></tbody></table></div></div>
+<h3>5、设置checkbox：</h3>
+<pre><code>SendMessage(hwnd, BM_SETCHECK, BST_CHECKED, 0);
+SendMessage(hwnd, BM_SETCHECK, BST_UNCHECKED, 0);
+SendMessage(hwnd, BM_GETCHECK, 0, 0));</code></pre>
 <p>&nbsp;</p>
-<p><strong>6、FindFirstFile的目标文件可以有通配符，但是必须是全路径。还可用来判断路径是否存在（FILE_ATTRIBUTE_DIRECTORY）</strong></p>
-<div><div id="highlighter_572242" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp plain">WIN32_FIND_DATA FindFileData;</code></div><div class="line number2 index1 alt1"><code class="cpp color1 bold">HANDLE</code> <code class="cpp plain">hFind = FindFirstFile(tmp,&amp;FindFileData);</code></div><div class="line number3 index2 alt2"><code class="cpp keyword bold">if</code><code class="cpp plain">(INVALID_HANDLE_VALUE == hFind){</code></div><div class="line number4 index3 alt1">&nbsp;</div><div class="line number5 index4 alt2"><code class="cpp plain">}</code></div><div class="line number6 index5 alt1"><code class="cpp keyword bold">else</code><code class="cpp plain">{</code></div><div class="line number7 index6 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">FindClose(hFind);</code></div><div class="line number8 index7 alt1"><code class="cpp plain">}</code></div></div></td></tr></tbody></table></div></div>
+<h3>6、FindFirstFile的目标文件可以有通配符，但是必须是全路径。还可用来判断路径是否存在（FILE_ATTRIBUTE_DIRECTORY）</h3>
+<pre><code>WIN32_FIND_DATA FindFileData;
+HANDLE hFind = FindFirstFile(tmp,&FindFileData);
+if(INVALID_HANDLE_VALUE == hFind){
+ 
+}
+else{
+    FindClose(hFind);
+}</code></pre>
 <p>&nbsp;</p>
-<p><strong>7、字符串处理</strong></p>
-<p>_tcscpy、_tcscat、_tcslen、_tcscmp、_tcsstr</p>
+<h3>7、字符串处理</h3>
+<pre><code>_tcscpy、_tcscat、_tcslen、_tcscmp、_tcsstr</code></pre>
 <p>&nbsp;</p>
-<p><strong>8、注册表操作，如果要设置环境变量，必须直接在注册表中设置</strong></p>
-<div><div id="highlighter_246837" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp plain">RegOpenKeyEx(HKEY_LOCAL_MACHINE</code></div><div class="line number2 index1 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">,TEXT(</code><code class="cpp string">"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\"</code><code class="cpp plain">)</code></div><div class="line number3 index2 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">,0</code></div><div class="line number4 index3 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">,KEY_ALL_ACCESS</code></div><div class="line number5 index4 alt2"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">,&amp;hEnvKEY)</code></div><div class="line number6 index5 alt1">&nbsp;</div><div class="line number7 index6 alt2">&nbsp;</div><div class="line number8 index7 alt1"><code class="cpp comments">//读取键值的时候可以先读一次，获取需要的缓冲区长度和数据类型</code></div><div class="line number9 index8 alt2"><code class="cpp plain">RegQueryValueEx(hEnvKEY,TEXT(</code><code class="cpp string">"Path"</code><code class="cpp plain">),NULL,&amp;dwType,NULL,&amp;cbData)</code></div><div class="line number10 index9 alt1"><code class="cpp plain">RegQueryValueEx(hEnvKEY,TEXT(</code><code class="cpp string">"Path"</code><code class="cpp plain">),NULL,&amp;dwType,lpbOrignalEnvPath,&amp;cbData);</code></div><div class="line number11 index10 alt2">&nbsp;</div><div class="line number12 index11 alt1"><code class="cpp comments">//返回的LPBYTE其实已经是字符数组了，直接强转就可以了</code></div><div class="line number13 index12 alt2"><code class="cpp color1 bold">TCHAR</code><code class="cpp plain">* szOrignalEnvPath = (</code><code class="cpp color1 bold">TCHAR</code><code class="cpp plain">*)lpbOrignalEnvPath;</code></div><div class="line number14 index13 alt1">&nbsp;</div><div class="line number15 index14 alt2"><code class="cpp preprocessor">#ifdef _UNICODE,UNICODE</code></div><div class="line number16 index15 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">LSTATUS status = RegSetValueEx(hEnvKEY,TEXT(</code><code class="cpp string">"Path"</code><code class="cpp plain">),NULL,dwType,(</code><code class="cpp color1 bold">LPBYTE</code><code class="cpp plain">)szTargetEnvPath,_tcslen(szTargetEnvPath)*2+2);</code></div><div class="line number17 index16 alt2"><code class="cpp preprocessor">#else</code></div><div class="line number18 index17 alt1"><code class="cpp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="cpp plain">LSTATUS status = RegSetValueEx(hEnvKEY,TEXT(</code><code class="cpp string">"Path"</code><code class="cpp plain">),NULL,dwType,(</code><code class="cpp color1 bold">LPBYTE</code><code class="cpp plain">)szTargetEnvPath,_tcslen(szTargetEnvPath)+1);</code></div><div class="line number19 index18 alt2">&nbsp;</div><div class="line number20 index19 alt1"><code class="cpp comments">//设置完后可以通过下面方法，通知系统进程，环境变量变化了。这也提示我们在编写应用程序的时候有时需要处理WM_SETTINGCHANGE的意义</code></div><div class="line number21 index20 alt2"><code class="cpp plain">SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (</code><code class="cpp color1 bold">LPARAM</code><code class="cpp plain">)TEXT(</code><code class="cpp string">"Environment"</code><code class="cpp plain">));</code></div></div></td></tr></tbody></table></div></div>
-<p><strong>9、获取系统变量和环境变量</strong></p>
-<div><div id="highlighter_205066" class="syntaxhighlighter csharpcodeprovider cpp"><div class="toolbar"><span><a href="#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="cpp comments">//同样可以通过调用两次来获取缓冲区长度</code></div><div class="line number2 index1 alt1"><code class="cpp plain">dwSize = GetEnvironmentVariable(TEXT(</code><code class="cpp string">"HOMEDRIVE"</code><code class="cpp plain">),NULL,0);</code></div><div class="line number3 index2 alt2"><code class="cpp plain">szHomeDrive = </code><code class="cpp keyword bold">new</code> <code class="cpp color1 bold">TCHAR</code><code class="cpp plain">[dwSize+1];</code></div><div class="line number4 index3 alt1"><code class="cpp plain">GetEnvironmentVariable(TEXT(</code><code class="cpp string">"HOMEDRIVE"</code><code class="cpp plain">),szHomeDrive,dwSize+1);</code></div></div></td></tr></tbody></table></div></div>
-<p><strong>10、C多文件编译、作用域和存储周期</strong></p>
+<h3>8、注册表操作，如果要设置环境变量，必须直接在注册表中设置</h3>
+<pre><code>RegOpenKeyEx(HKEY_LOCAL_MACHINE
+                ,TEXT("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\\")
+                ,0
+                ,KEY_ALL_ACCESS
+                ,&hEnvKEY)
+ 
+ 
+//读取键值的时候可以先读一次，获取需要的缓冲区长度和数据类型
+RegQueryValueEx(hEnvKEY,TEXT("Path"),NULL,&dwType,NULL,&cbData)
+RegQueryValueEx(hEnvKEY,TEXT("Path"),NULL,&dwType,lpbOrignalEnvPath,&cbData);
+ 
+//返回的LPBYTE其实已经是字符数组了，直接强转就可以了
+TCHAR* szOrignalEnvPath = (TCHAR*)lpbOrignalEnvPath;
+ 
+#ifdef _UNICODE,UNICODE
+                LSTATUS status = RegSetValueEx(hEnvKEY,TEXT("Path"),NULL,dwType,(LPBYTE)szTargetEnvPath,_tcslen(szTargetEnvPath)*2+2);
+#else
+                LSTATUS status = RegSetValueEx(hEnvKEY,TEXT("Path"),NULL,dwType,(LPBYTE)szTargetEnvPath,_tcslen(szTargetEnvPath)+1);
+ 
+//设置完后可以通过下面方法，通知系统进程，环境变量变化了。这也提示我们在编写应用程序的时候有时需要处理WM_SETTINGCHANGE的意义
+SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, (LPARAM)TEXT("Environment"));</code></pre>
+<h3>9、获取系统变量和环境变量</h3>
+<pre><code>//同样可以通过调用两次来获取缓冲区长度
+dwSize = GetEnvironmentVariable(TEXT("HOMEDRIVE"),NULL,0);
+szHomeDrive = new TCHAR[dwSize+1];
+GetEnvironmentVariable(TEXT("HOMEDRIVE"),szHomeDrive,dwSize+1);
+</code></pre>
