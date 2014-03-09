@@ -7,7 +7,7 @@ categories: [network]
 tags: [FTP, NAT]
 ---
 
-<h2><font style="font-weight: bold">FTP基础知识 </font></h2>
+<h2>FTP基础知识</h2>
 <p><strong></strong>FTP是File Transfer Protocol（文件传输协议）的缩写，用来在两台计算机之间互相传送文件。相比于HTTP，FTP协议要复杂得多。复杂的原因，是因为FTP协议要用到两个TCP连接，一个是命令链路，用来在FTP客户端与服务器之间传递命令；另一个是数据链路，用来上传或下载数据。通常在访问FTP服务端之初指定的是FTP命令链路的端口，默认为21，客户端向服务器的FTP端口发送连接请求，服务器接受连接，建立一条命令链路，之后的所有命令都是在这个端口上进行的。</p>
 <p>随后FTP协议在要求数据传输时会建立数据链路（即双方都使用有别于命令链路的端口）。建立数据链路有两种模式</p>
 <ul>
@@ -15,18 +15,18 @@ tags: [FTP, NAT]
 <li>被动模式（PASV）：服务端通知客户端自己打开的数据链路端口，由客户端发起TCP链接，建立连接后开始数据传输。</li></ul>
 <p>由此可见，位于路由器（NAT网关）后方的客户端，如果使用主动模式的话，是无法建立数据链路的，因为NAT之外的FTP服务器无法向NAT后端的客户端发起TCP链接。</p>
 <p>&nbsp;</p>
-<h2><strong>NAT</strong></h2>
+<h2>NAT</h2>
 <p>从上面的问题衍生出NAT的原理，事实上，我们生活中处处都在接触NAT，家里的宽带路由器实际上就是NAT网关。NAT的全称为“Network Address Transaction”，它工作在网络层，能够修改IP数据包的源IP和目的IP，对上层透明。而我们家用的NAT网关更准确的说，实际上是NAPT（Network Address Port Transaction），除了能够修改IP地址，还能工作在TCP层，修改源和目的的端口。</p>
 <p>NAT网关，它对外有一个外网端口和IP、对内有一个内网端口和IP。内网的终端向外网发送的TCP或UDP包都会被NAT网关修改IP和端口，并且将记住端口的映射关系。反之，外网返回的数据包虽然目的IP和端口都是NAT网关的，但是由于前面网关记住了端口映射关系，因此它能再次修改回正确的内网IP和端口，并转发给相应的内网主机。整个过程对通信双发是透明的。</p>
-<p><a href="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img1.png"><img style="display: inline" title="ftp-notwork-in-nat-img1" alt="ftp-notwork-in-nat-img1" src="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img1.png" width="627" height="311"></a></p>
+<p><a href="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img1.png"><img class='img-responsive' style="display: inline" title="ftp-notwork-in-nat-img1" alt="ftp-notwork-in-nat-img1" src="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img1.png" width="627" height="311"></a></p>
 <p>但是，这个过程有个缺点，外网主机无法主动向内网主机建立TCP链接，因为，外网主机仅仅知道的是NAT网关的IP和端口，如果发起TCP链接，会出现两种可能：</p>
 <ul>
 <li>如果这个请求的端口不在网关的映射表中，包就被丢弃了 
 <li>如果这个请求的端口恰好是网关映射表中的某条记录，包就会被转发给对应的主机</li></ul>
 <p>因此，考虑上面的第二种情况，如果静态的在映射表中配置一条映射：目的端口为端口A的TCP或UDP包转发给 主机 A 的端口A。那么外网可以通过这个确定的端口A访问内网的主机，虽然IP地址还是网关的IP。这种机制就是路由器的“端口映射规则”：目的就是让外网访问内网主机。</p>
 <p>&nbsp;</p>
-<h2><font style="font-weight: bold">如何解决</font></h2>
+<h2>如何解决</h2>
 <p>有了端口映射，理论上说，可以让客户端在PORT模式下，打开固定的端口，并配置该端口的端口映射。不过，普通的windows命令行FTP工具没有这个功能。</p>
 <p>还有一种办法就是用PASV模式，这取决于服务端是否支持，并且windows的FTP命令行工具没有该功能。</p>
 <p>另外，IE8以上的浏览器可以作为FTP客户端，并且支持PASV模式：</p>
-<p><a href="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png"><img style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="ftp-notwork-in-nat-img0" border="0" alt="ftp-notwork-in-nat-img0" src="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png" width="375" height="477"></a></p>
+<p><a href="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png"><img class='img-responsive' style="background-image: none; border-right-width: 0px; padding-left: 0px; padding-right: 0px; display: inline; border-top-width: 0px; border-bottom-width: 0px; border-left-width: 0px; padding-top: 0px" title="ftp-notwork-in-nat-img0" border="0" alt="ftp-notwork-in-nat-img0" src="{{ site.baseurl }}/assert/img/ftp-notwork-in-nat-img0.png" width="375" height="477"></a></p>
