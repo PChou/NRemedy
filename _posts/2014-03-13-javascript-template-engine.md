@@ -153,7 +153,7 @@ tags: [javascript,template,Function]
     		index = offset + match.length;
 			//这里的return没有什么意义，因为关键不是替换text，而是构建function_body
     		return match;
-		}
+		});
  		//最后的代码应该是返回temp
 		function_body += "';return temp;";
 	}
