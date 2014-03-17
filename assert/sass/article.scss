@@ -1,100 +1,40 @@
-title {
-  font-size: 2.5em;
-  color: #ff6138;
-  display: block;
-  @include container_width();
-}
+.right-container {
+  .post {
+    padding: 30px 50px;
 
-.maincontent {
-  h1,h2,h3,h4 {
-    padding-left:20px;
-    border-left: 5px solid #FF6138;
-  }
-
-  .description {
-    padding-bottom:25px;
-    text-indent: 0;
-  }
-
-  .lable-bar{
-    padding : 0.2em 0;
-    & > i {
-      font-size: 28px;
-      color: #ff6138;
-      vertical-align: middle;
-    }
-
-    .previous, .next {
+    description{
+      color: $body-color;
+      margin: 20px 0px 50px 0px;
       display: block;
-      margin: 10px 0px;
-      font-size: 80%;
+    }
+
+    h1 {
+      margin: 0px;
+      padding: 20px 0px 20px 5px;
+      -border-bottom: 2px solid #555;
+      float: left;
+    }
+
+    .date {
+      float: right;
+      margin-top:30px;
+    }
+
+    category {
+      display: inline-block;
+      padding: 5px 10px;
+      margin-right: 5px;
+      background-color: $category-tag-bg-color;
+      color:$right-background-color;
+      cursor: pointer;
+      &:hover,&:focus{
+        background-color: lighten($category-tag-bg-color,10%);
+      }
     }
   }
-
-  .label {
-    display: inline;
-    padding: .2em .6em .3em;
-    font-size: 75%;
-    font-weight: bold;
-    line-height: 1;
-    color: #fff;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: .25em;
-    text-decoration: none;
-  }
-
-  .label-cat {
-    background-color: #00A388;
-    &:hover, &:focus{
-      background-color: darken(#00A388,10%)
-    }
-  }
-
-  .label-tag {
-    background-color: #31b0d5;
-    &:hover, &:focus{
-      background-color: darken(#31b0d5,10%)
-    }
-  }
-
-  .table {
-    width: 100%;
-    margin-bottom: 20px;
-    thead > tr > th , tbody>tr>th , tfoot>tr>th , thead>tr>td, tbody>tr>td , tfoot>tr>td {
-      padding: 8px;
-      line-height: 1.428571429;
-      vertical-align: top;
-      border-top: 1px solid #ddd;
-    }
-  }
-
-  .table-bordered {
-    border: 1px solid #ddd;
-    thead > tr > th , tbody>tr>th , tfoot>tr>th , thead>tr>td, tbody>tr>td , tfoot>tr>td {
-      border: 1px solid #ddd;
-    }
-  }
-
-  table caption {
-    text-align: left;
-    font-weight: bold;
-    font-size: 18px;
-  }
-
 }
 
 
-@media screen and (max-width: 768px) {
-  .table-responsive {
-    width: 100%;
-    margin-bottom: 15px;
-    overflow-x: scroll;
-    overflow-y: hidden;
-    border: 1px solid #ddd;
-  }
-}
 
 
 

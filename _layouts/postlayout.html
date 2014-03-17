@@ -58,37 +58,51 @@
 		<script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 	</head>
 
-	<body class='cbp-spmenu-push'>
-		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-right" id="cbp-spmenu-tag">
-			<h3>标签</h3>
-			{% for tag in site.tags %}
-				<a href="{{ site.baseurl }}/tag.html#{{ tag[0] }}">{{ tag[0] }}</a>
-			{% endfor %}
-		</nav>
-		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-right" id="cbp-spmenu-cat">
-			<h3>分类</h3>
-			{% for cat in site.categories %}
-				<a href="{{ site.baseurl }}/category.html#{{ cat[0] }}">{{ cat[0] }}</a>
-			{% endfor %}
-		</nav>
-		<div class="container">
-			<header class="clearfix">
-				<h1>P_Chou Tech Space</h1>
-				<nav>
-					<a href="{{ site.baseurl }}/index.html"><i class="iconfont">&#xf012b;</i></a>
-					<a id="showCat" href="javascript:void(0);"><i class="iconfont">&#xf0161;</i></a>
-					<a id="showTag" href="javascript:void(0);"><i class="iconfont">&#xf0060;</i></a>
-					<a href="{{ site.baseurl }}/me.html"><i class="iconfont">&#xf00cc;</i></a>
-					<a href="{{ site.baseurl }}/rss.xml"><i class="iconfont">&#xf01bc;</i></a>
-					<a id='qcode' href="javascript:void(0);"><div class="gewm">
-						<div id="gEwm" ></div>
-					</div><i class="iconfont">&#x343a;</i></a>
-				</nav>
-			</header>
-			<title>{{ page.title }}</title>
-			
-			<div class="maincontent main">
-				<p class='description'><code>摘要</code>{{ page.description }}</p>
+	<body>
+		<div class='left-container'>
+			<div class="mini-collapse">
+				<h3>P_Chou Tech Space</h3>
+				<a id='toggle-menu' href='javascript:void(0)'>&#xf0025;</a>
+			</div>
+			<div id='menu-info' class='collapse'>
+				<div class='logo'>
+					<h1>P_Chou</h1>
+					<h1>Tech Space</h1>
+				</div>
+				<div class='navigator'>
+					<a href='{{ site.baseurl }}/index.html'>&#xf012b;</a>
+					<a href='javascript:void(0)'>&#xf01bc;</a>
+					<a href='javascript:void(0)'>&#xf00cc;</a>
+					<a href='javascript:void(0)'>&#x343a;</a>
+				</div>
+				<div class='category'>
+					<ul>
+						{% for cat in site.categories %}
+							<li><a href="{{ site.baseurl }}/category.html#{{ cat[0] }}">{{ cat[0] }}<span>{{ cat[1].size }}</span></a></li>
+						{% endfor %}
+					</ul>
+				</div>
+
+				<div class='tags'>
+					{% for tag in site.tags %}
+						<a href="{{ site.baseurl }}/tag.html#{{ tag[0] }}" style='font-size:{{ tag[1].size | plus: 15  }}px;'>{{ tag[0] }}</a>
+					{% endfor %}
+				</div>
+				<div class='clear'></div>
+				<div class='foot'>
+					<p>Powered by</p><p><a href='https://github.com/'>Github</a> <a href='http://jekyllrb.com/'>jekyll</a> <a href="http://www.bootcss.com/">bootstrap</a> <a href="http://glyphicons.com/">Glyphicons</a> <a href="http://disqus.com" class="dsq-brlink">Disqus</a></p>
+				</div>
+			</div>
+		</div>
+		<div class='right-container'>
+			<div class='post'>
+				<h1>{{ page.title }}</h1>
+				<span class='date'>{{ page.date | date: "%Y" }} {{ page.date | date: "%b" }} {{ page.date | date: "%d" }}</span>
+				<div class='clear'></div>
+				{% for cat in page.categories %}
+					<category>{{ cat }}</category>
+				{% endfor %}					
+				<description>{{ page.description }}</description>
 				{{ content }}
 
 				<div class='lable-bar'><i class="iconfont">&#xf0161;</i>
@@ -110,20 +124,10 @@
 					<navigator class='previous'>&gt;&gt; 下一篇 <a href="{{ page.next.url  }}">{{ page.next.title }}</a></navigator>
 					{% endif %}
 				</div>
-
 				<div id="disqus_thread"></div>
 				{% include disqus %}
-
-
-
 			</div>
 		</div>
-
-		<foot>
-			<p style='text-align:center;'>
-					Powered by <a href='https://github.com/'>Github</a> <a href='http://jekyllrb.com/'>jekyll</a> <a href="http://www.bootcss.com/">bootstrap</a> <a href="http://glyphicons.com/">Glyphicons</a> <a href="http://disqus.com" class="dsq-brlink">Disqus</a>
-				</p>
-		</foot>
 		<script src="{{ site.baseurl }}/assert/js/lessorg.highlight.js"></script>
 	</body>
 
