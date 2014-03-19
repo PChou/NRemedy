@@ -5,6 +5,7 @@ description: 通过对bootstrap源码的学习，加深了对less的了解，也
 thumbimg: Open-Source-Software-.jpg
 categories: [open-source]
 tags: [bootstrap,grid]
+buttomstript: <script src="/assert/js/lessorg.highlight.js"></script>
 ---
 <div id="_52de149d84a8f"> <p>作为下决心学习css的程序员，暗自觉得bootstrap3的源码应该是很好的学习地方。之前一直对bootstrap如何实现栅格系统比较好奇，今天就进入到源码来看一下所谓的grid系统是怎么回事。</p> <p>bootstrap是用less编写的，在开始之前自然需要对less有一定的了解：<a href="http://www.lesscss.net/" target="_blank">LESSCSS中文网站</a></p> <p>本文参考的是bootstrap3.0.3版本的源码，转载请注明<a href="http://pchou.info/open-source/2014/01/21/52de149d84a8f.html" target="_blank">出处</a>  <p>PS:我的博客使用的<a href="https://github.com/isagalaev/highlight.js" target="_blank">highlight.js</a>语法高亮插件，在发布这篇文章之前还没有less的语法插件，但<a href="https://github.com/calvinjuarez/less.js" target="_blank">calvinjuarez</a>正在开发，所以暂时先用<a href="http://www.lesscss.org" target="_blank">lesscss.org</a>上的语法高亮和样式。</p> <p>&nbsp; <h3><font style="font-weight: bold">一些相关的css修正</font></h3> <p>栅格系统的基本前提是<strong>修正的盒子模型</strong>，这使得在有<code>padding</code>和<code>border</code>的情况下，计算宽度不至于出错 <pre><code class="no-highlight">// Reset the box-sizing
 
