@@ -7,14 +7,20 @@ bg: background-color:#eee
 <div class='post-list'>
 	{% for post in site.posts %}
 	<div class='post-item'>
-		<h1>{{ post.title }}</h1>
-		<span class='date'>{{ post.date | date: "%Y" }} {{ post.date | date: "%b" }} {{ post.date | date: "%d" }}</span>
-		<div class='clear'></div>
-		{% for cat in post.categories %}
-			<category>{{ cat }}</category>
-		{% endfor %}
-		<p>{{ post.description }}</p>
-		<a href="{{ site.baseurl }}{{ post.url }}">阅读全文</a>
+		<div>
+			<h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+			<div>
+				<span class='inline-block'>{{ post.date | date: "%Y" }} {{ post.date | date: "%b" }} {{ post.date | date: "%d" }}</span>
+			</div>	
+			<div>		
+			<p class='inline-block'>{{ post.description }} <a href="{{ site.baseurl }}{{ post.url }}">阅读全文</a></p>
+			<img class='inline-block' src='{{ site.url }}/assert/img/{{ post.thumbimg }}' />
+			</div>
+			{% for cat in post.categories %}
+				<category>{{ cat }}</category>
+			{% endfor %}
+			
+		</div>
 	</div>
 
  	{% endfor %}

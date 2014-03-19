@@ -24,8 +24,6 @@ body {
 		display: none;
 	}
 	& > div {
-		height: 100%;
-		overflow-y: scroll;
 		color:$body-color;
 		padding:0px 50px;
 		.navigator{
@@ -135,56 +133,72 @@ body {
 .right-container {
 	float:left;
 	width:63%;
-	height:100%;
 	background-color: $right-background-color;
 	color: $right-color;
-	overflow-y: scroll;
 
 	.post-list {
 
 		.post-item {
 
-			padding: 30px;
-
-			h1 {
-				margin: 0px;
-				padding: 20px 0px 20px 5px;
-				-border-bottom: 2px solid #555;
-				float: left;
-			}
-
-			.date {
-				float: right;
-				margin-top:30px;
-			}
-
-			category {
-				display: inline-block;
-				padding: 5px 10px;
-				margin-right: 5px;
-				background-color: $category-tag-bg-color;
-				color:$right-background-color;
-				cursor: pointer;
-				&:hover,&:focus{
-					background-color: lighten($category-tag-bg-color,10%);
-				}
-			}
-
-
 			&:nth-child(odd) {
 				box-shadow: inset 0 1px 10px rgba(163, 159, 159, 0.3), 0 1px 0 rgba(107, 107, 107, 0.1), 0 -1px 0px rgba(131, 131, 131, 0.5);
 			}
 
-			.readmore {
-				font-size: 125%;
-				display: block;
-				margin-top: 15px;
-				text-decoration: none;
-				color: $category-tag-bg-color;
-				&:hover,&:focus{
-					color:  lighten($category-tag-bg-color,10%);
+			& > div {
+				padding: 20px 0px;
+				width:70%;
+				margin: 0 auto;
+
+				h1 {
+					a {
+						color: $right-color;
+					}
+				}
+
+				p {
+					width : 70%;
+					vertical-align: top;
+				}
+
+				img {
+					width: 15%;
+					vertical-align: top;
+				}
+
+				.inline-block {
+					display: inline-block;
+					margin-right: 20px;
+				}
+
+
+				category {
+					display: inline-block;
+					padding: 5px 10px;
+					margin-right: 5px;
+					background-color: $category-tag-bg-color;
+					color:$right-background-color;
+					cursor: pointer;
+					&:hover,&:focus{
+						background-color: lighten($category-tag-bg-color,10%);
+					}
+				}
+
+
+				
+
+				.readmore {
+					font-size: 125%;
+					display: block;
+					margin-top: 15px;
+					text-decoration: none;
+					color: $category-tag-bg-color;
+					&:hover,&:focus{
+						color:  lighten($category-tag-bg-color,10%);
+					}
 				}
 			}
+
+			
 		}
 
 	}

@@ -97,14 +97,15 @@
 		<div class='right-container'>
 			<div class='post'>
 				<h1>{{ page.title }}</h1>
-				<span class='date'>{{ page.date | date: "%Y" }} {{ page.date | date: "%b" }} {{ page.date | date: "%d" }}</span>
-				<div class='clear'></div>
-				{% for cat in page.categories %}
-					<category>{{ cat }}</category>
-				{% endfor %}					
+				<div>
+					<span class='inline-block'>{{ page.date | date: "%Y" }} {{ page.date | date: "%b" }} {{ page.date | date: "%d" }}</span>
+				</div>	
+				
 				<description>{{ page.description }}</description>
-				{{ content }}
 
+				<div class='content'>
+					{{ content }}
+				</div>
 				<div class='lable-bar'><i class="iconfont">&#xf0161;</i>
 				{% for cat in page.categories %}
 					<a class="label label-cat" href="{{ site.baseurl }}/category.html#{{ cat }}">{{ cat }}</a>

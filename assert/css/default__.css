@@ -174,8 +174,6 @@ body {
   .left-container .mini-collapse {
     display: none; }
   .left-container > div {
-    height: 100%;
-    overflow-y: scroll;
     color: #aaaaaa;
     padding: 0px 50px; }
     .left-container > div .navigator {
@@ -255,38 +253,41 @@ body {
 .right-container {
   float: left;
   width: 63%;
-  height: 100%;
   background-color: #eeeeee;
-  color: #333333;
-  overflow-y: scroll; }
-  .right-container .post-list .post-item {
-    padding: 30px; }
-    .right-container .post-list .post-item h1 {
-      margin: 0px;
-      padding: 20px 0px 20px 5px;
-      -border-bottom: 2px solid #555;
-      float: left; }
-    .right-container .post-list .post-item .date {
-      float: right;
-      margin-top: 30px; }
-    .right-container .post-list .post-item category {
+  color: #333333; }
+  .right-container .post-list .post-item:nth-child(odd) {
+    box-shadow: inset 0 1px 10px rgba(163, 159, 159, 0.3), 0 1px 0 rgba(107, 107, 107, 0.1), 0 -1px 0px rgba(131, 131, 131, 0.5); }
+  .right-container .post-list .post-item > div {
+    padding: 20px 0px;
+    width: 70%;
+    margin: 0 auto; }
+    .right-container .post-list .post-item > div h1 a {
+      color: #333333; }
+    .right-container .post-list .post-item > div p {
+      width: 70%;
+      vertical-align: top; }
+    .right-container .post-list .post-item > div img {
+      width: 15%;
+      vertical-align: top; }
+    .right-container .post-list .post-item > div .inline-block {
+      display: inline-block;
+      margin-right: 20px; }
+    .right-container .post-list .post-item > div category {
       display: inline-block;
       padding: 5px 10px;
       margin-right: 5px;
       background-color: #d55400;
       color: #eeeeee;
       cursor: pointer; }
-      .right-container .post-list .post-item category:hover, .right-container .post-list .post-item category:focus {
+      .right-container .post-list .post-item > div category:hover, .right-container .post-list .post-item > div category:focus {
         background-color: #ff6a09; }
-    .right-container .post-list .post-item:nth-child(odd) {
-      box-shadow: inset 0 1px 10px rgba(163, 159, 159, 0.3), 0 1px 0 rgba(107, 107, 107, 0.1), 0 -1px 0px rgba(131, 131, 131, 0.5); }
-    .right-container .post-list .post-item .readmore {
+    .right-container .post-list .post-item > div .readmore {
       font-size: 125%;
       display: block;
       margin-top: 15px;
       text-decoration: none;
       color: #d55400; }
-      .right-container .post-list .post-item .readmore:hover, .right-container .post-list .post-item .readmore:focus {
+      .right-container .post-list .post-item > div .readmore:hover, .right-container .post-list .post-item > div .readmore:focus {
         color: #ff6a09; }
 
 @media (max-width: 768px) {
@@ -322,16 +323,18 @@ body {
     height: auto;
     overflow: hidden; } }
 .right-container .post {
-  padding: 30px 50px; }
+  padding: 30px 10px;
+  margin: 0 auto;
+  width: 70%; }
   .right-container .post description {
     color: #aaaaaa;
     margin: 20px 0px 50px 0px;
     display: block; }
+  .right-container .post .content h1, .right-container .post .content h2, .right-container .post .content h3, .right-container .post .content h4, .right-container .post .content h5 {
+    border-left: 5px solid #d55400;
+    padding-left: 20px; }
   .right-container .post h1 {
-    margin: 0px;
-    padding: 20px 0px 20px 5px;
-    -border-bottom: 2px solid #555;
-    float: left; }
+    margin: 0px; }
   .right-container .post .date {
     float: right;
     margin-top: 30px; }
