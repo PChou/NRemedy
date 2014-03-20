@@ -240,6 +240,59 @@ tr.headers {
         margin: 0px 20px;
         line-height: 2; }
 
+.me-mod {
+  max-width: 820px;
+  min-width: 350px;
+  /* same as one img */
+  margin: 58px auto;
+  padding: 20px 40px; }
+  .me-mod a, .me-mod cite {
+    box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box; }
+  .me-mod .head {
+    margin-right: 20px;
+    margin-bottom: 10px; }
+    .me-mod .head img {
+      border: 1px solid #c21;
+      width: 30%;
+      float: left; }
+    .me-mod .head .description {
+      width: 60%;
+      font-size: 1em;
+      line-height: 1.7;
+      float: right; }
+  .me-mod .social * {
+    display: inline-block;
+    vertical-align: top; }
+  .me-mod .social .gmail {
+    height: 30px;
+    width: 30px;
+    padding-top: 2px; }
+    .me-mod .social .gmail img {
+      height: 60%; }
+  .me-mod h4 {
+    margin-top: 20px;
+    font-weight: bold; }
+  .me-mod .books {
+    border-top: 2px solid #c21;
+    padding-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #555; }
+    .me-mod .books img {
+      width: 100%;
+      max-width: 350px;
+      margin-bottom: 5px; }
+  .me-mod .book {
+    width: 33%;
+    float: left;
+    height: 305px;
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px; }
+
 @media (max-width: 768px) {
   .left-container {
     float: left;
@@ -273,7 +326,13 @@ tr.headers {
     margin-bottom: 15px;
     overflow-x: scroll;
     overflow-y: hidden;
-    border: 1px solid #ddd; } }
+    border: 1px solid #ddd; }
+
+  .me-mod .head {
+    text-align: center;
+    float: none; }
+  .me-mod .book {
+    width: 50%; } }
 /* http://www.lesscss.org/ 语法高亮 */
 #_52de149d84a8f pre code {
   -font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', 'Monaco', Courier, monospace !important;

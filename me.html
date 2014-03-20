@@ -9,7 +9,7 @@ title: P_Chou Tech Space
 	$(function () {
 		var container = $('#books');
 		$.each(books,function (i,book) {
-			var bookui = $('<div class="col-xs-12 col-sm-6 col-md-4 book"></div>');
+			var bookui = $('<div class="book"></div>');
 			var img = $('<img/>');
 			var name = $('<p></p>');
 			img.attr('data-url',book.img);
@@ -24,28 +24,23 @@ title: P_Chou Tech Space
 	
 </script>
 
-<div class='me-mod'>
-
-	<div class='head'>
-		<img src='assert/img/head3.jpg' />
+	<div class='post-item'>
+		<div>
+			<div class='me-mod'>
+				<div class='head clearfix'>
+					<img src='assert/img/head3.jpg' />
+					<div class='description'>
+					前段时间听说这么个名词：全栈程序员，不禁感觉自己貌似也许有点略微也是这么个性质的程序员。Windows，Linux，虚拟机、网络、存储都会点，数据库(mssql、mysql、oracle)及数据库编程，编程语言C#、Python、C/C++、Ruby、javascript、php、node.js或熟练或入门，web开发ASP.NET[MVC]，web前端css也会点，还懂点web架构。写过语言分析器、写过类库，还会点bmc的remedy...虽然涉猎较广，但还是对学过的事物始终饱有一种深入学习的热情，只是限于时间和工作性质的原因；同时对于新的技术也很有热情。十分欢迎技术交流。
+				</div>
+				</div>
+				<h4>我的书架</h4>
+				<div id='books' class='books row'></div>
+			</div>
+			<div id="disqus_thread"></div>
+		</div>
 	</div>
 
-	<div class='description'>
-		前段时间听说这么个名词：全栈程序员，不禁感觉自己貌似也许有点略微也是这么个性质的程序员。Windows，Linux，虚拟机、网络、存储都会点，数据库(mssql、mysql、oracle)及数据库编程，编程语言C#、Python、C/C++、Ruby、javascript、php、node.js或熟练或入门，web开发ASP.NET[MVC]，web前端css也会点，还懂点web架构。写过语言分析器、写过类库，还会点bmc的remedy...虽然涉猎较广，但还是对学过的事物始终饱有一种深入学习的热情，只是限于时间和工作性质的原因；同时对于新的技术也很有热情。十分欢迎技术交流。
-	</div>
-
-	<div class='social'>
-		<wb:follow-button uid="2371992362" type="red_1" width="70" height="30" ></wb:follow-button>
-				<a class='gmail' href='mailto:parkerzhou2010@gmail.com'>
-			<img src="http://www.google.com.hk/favicon.ico">
-		</a>
-	</div>
-	<h4>我的书架</h4>
-	<div id='books' class='books row'>
-	</div>
-	
-	<div id="disqus_thread"></div>
-<script type="text/javascript">
+	<script type="text/javascript">
 	/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
 	var disqus_shortname = 'pchou'; // required: replace example with your forum shortname
 
@@ -71,4 +66,3 @@ title: P_Chou Tech Space
         (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
     }());
     </script>
-</div>

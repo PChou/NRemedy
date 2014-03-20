@@ -256,6 +256,75 @@ tr.headers {
 
 }
 
+.me-mod {
+	max-width: 820px;
+	min-width: 350px; /* same as one img */
+	margin: 58px auto;
+	padding: 20px 40px;
+	a,cite {
+		@include cross_browser_css(box-sizing,content-box);
+	}
+	.head {
+		margin-right: 20px;
+		margin-bottom: 10px;
+		img {
+			border: 1px solid #c21;
+			width : 30%;
+			float: left;
+		}
+		.description {
+			width : 60%;
+			font-size: 1em;
+			line-height: 1.7;
+			float: right;
+		}
+	}
+
+	.social {
+		* {
+			display: inline-block;
+			vertical-align: top;
+		}
+		.gmail {
+			height: 30px;
+			width: 30px;
+			padding-top: 2px;
+		 	img {
+				height: 60%;
+			}
+		}
+	}
+
+	h4{
+		margin-top: 20px;
+		font-weight: bold;
+	}
+
+	.books {
+		border-top: 2px solid #c21;
+		padding-top: 20px;
+		text-align: center;
+		font-weight: bold;
+		color: #555;
+		img {
+			width: 100%;
+			max-width: 350px;
+			margin-bottom: 5px;
+		}
+	}
+
+	.book {
+		width: 33%;
+		float: left;
+		height: 305px;
+		position: relative;
+		min-height: 1px;
+		padding-right: 15px;
+		padding-left: 15px;
+	}
+
+}
+
 
 @media (max-width: $screen-sm-min) { 
 
@@ -302,6 +371,17 @@ tr.headers {
 		overflow-x: scroll;
 		overflow-y: hidden;
 		border: 1px solid #ddd;
+	}
+
+	.me-mod {
+		.head {
+			text-align: center;
+			float: none;
+		}
+
+		.book {
+			width: 50%;
+		}
 	}
 
 }
