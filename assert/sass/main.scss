@@ -40,6 +40,26 @@ tr.headers {
 	border: 1px solid #ddd;
 }
 
+.i-weibo,.i-github,.i-sf,.i-google {
+	background : url('/assert/img/social-icon.png');
+	height: 24px;
+	width: 24px;
+	display:inline-block;
+}
+
+.i-weibo {
+	background-position: 0px -48px;
+}
+
+.i-github {
+	background-position: 0px -136px;
+}
+
+.i-google{
+	background-position: 0px -160px;
+}
+
+
 #gotop{
   display:none;
   position:fixed;
@@ -265,33 +285,24 @@ tr.headers {
 		@include cross_browser_css(box-sizing,content-box);
 	}
 	.head {
-		margin-right: 20px;
 		margin-bottom: 10px;
-		img {
-			border: 1px solid #c21;
+		.img {
+			text-align: center;
 			width : 30%;
 			float: left;
+			img {
+				width: 100%;
+				border: 1px solid #c21;
+				display: block;
+				margin-bottom: 6px;
+			}
 		}
+		
 		.description {
 			width : 60%;
 			font-size: 1em;
 			line-height: 1.7;
 			float: right;
-		}
-	}
-
-	.social {
-		* {
-			display: inline-block;
-			vertical-align: top;
-		}
-		.gmail {
-			height: 30px;
-			width: 30px;
-			padding-top: 2px;
-		 	img {
-				height: 60%;
-			}
 		}
 	}
 
@@ -374,9 +385,17 @@ tr.headers {
 	}
 
 	.me-mod {
-		.head {
-			text-align: center;
-			float: none;
+		.head {			
+			.img {
+				width: 100%;
+				img {
+					width: 50%;
+					margin:8px auto;
+				}
+			}
+			.description {
+				width : 100%;
+			}
 		}
 
 		.book {

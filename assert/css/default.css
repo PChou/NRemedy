@@ -34,9 +34,9 @@ table {
 
 @font-face {
   font-family: 'iconfont';
-  src: url("http://at.alicdn.com/t/font_1395239533_2206988.eot");
+  src: url("http://at.alicdn.com/t/font_1395307880_4954178.eot");
   /* IE9*/
-  src: url("http://at.alicdn.com/t/font_1395239533_2206988.eot?#iefix") format("embedded-opentype"), url("http://at.alicdn.com/t/font_1395239533_3015404.woff") format("woff"), url("http://at.alicdn.com/t/font_1395239533_188691.ttf") format("truetype"), url("http://at.alicdn.com/t/font_1395239533_3791118.svg#iconfont") format("svg");
+  src: url("http://at.alicdn.com/t/font_1395307880_4954178.eot?#iefix") format("embedded-opentype"), url("http://at.alicdn.com/t/font_1395307880_9161122.woff") format("woff"), url("http://at.alicdn.com/t/font_1395307880_4053228.ttf") format("truetype"), url("http://at.alicdn.com/t/font_1395307880_9707928.svg#iconfont") format("svg");
   /* iOS 4.1- */ }
 
 .clearfix:before, .clearfix:after {
@@ -72,6 +72,21 @@ tr.headers {
 
 .table-bordered > thead > tr > th, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > tbody > tr > td, .table-bordered > tfoot > tr > td {
   border: 1px solid #ddd; }
+
+.i-weibo, .i-github, .i-sf, .i-google {
+  background: url("/assert/img/social-icon.png");
+  height: 24px;
+  width: 24px;
+  display: inline-block; }
+
+.i-weibo {
+  background-position: 0px -48px; }
+
+.i-github {
+  background-position: 0px -136px; }
+
+.i-google {
+  background-position: 0px -160px; }
 
 #gotop {
   display: none;
@@ -251,26 +266,21 @@ tr.headers {
     -moz-box-sizing: content-box;
     -webkit-box-sizing: content-box; }
   .me-mod .head {
-    margin-right: 20px;
     margin-bottom: 10px; }
-    .me-mod .head img {
-      border: 1px solid #c21;
+    .me-mod .head .img {
+      text-align: center;
       width: 30%;
       float: left; }
+      .me-mod .head .img img {
+        width: 100%;
+        border: 1px solid #c21;
+        display: block;
+        margin-bottom: 6px; }
     .me-mod .head .description {
       width: 60%;
       font-size: 1em;
       line-height: 1.7;
       float: right; }
-  .me-mod .social * {
-    display: inline-block;
-    vertical-align: top; }
-  .me-mod .social .gmail {
-    height: 30px;
-    width: 30px;
-    padding-top: 2px; }
-    .me-mod .social .gmail img {
-      height: 60%; }
   .me-mod h4 {
     margin-top: 20px;
     font-weight: bold; }
@@ -328,9 +338,13 @@ tr.headers {
     overflow-y: hidden;
     border: 1px solid #ddd; }
 
-  .me-mod .head {
-    text-align: center;
-    float: none; }
+  .me-mod .head .img {
+    width: 100%; }
+    .me-mod .head .img img {
+      width: 50%;
+      margin: 8px auto; }
+  .me-mod .head .description {
+    width: 100%; }
   .me-mod .book {
     width: 50%; } }
 /* http://www.lesscss.org/ 语法高亮 */
