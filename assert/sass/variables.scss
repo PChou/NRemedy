@@ -1,23 +1,10 @@
-$body-front-color : #333;
-$body-background-color : #eee;
-$default-main-width : 69em;
-
-$title-h1-size : 2.5em;
-$title-h1-weight : 400;
-$title-h1-color : #FF6138;
-
-$title-icon-size : 32px;
-$title-icon-color : #FF6138;
-$title-icon-hover-color : lighten(#FF6138,20%);
+$body-background-color : #333;
+$body-color : #aaa;
+$right-background-color : #eee;
+$right-color : #333;
+$category-tag-bg-color: #D55400;
+$tag-bg-color: #23add6;
+$screen-sm-min: 768px;
 
 
-$timeline-top-base-padding: 50px;
-$timeline-top-base-icon-padding: 58px;
-$timeline-color : #4B4B4B;
-$timeline-left : 15%;
-$timeline-icon-width : 24px;
-$timeline-label-left : $timeline-left+4%;
-$timeline-year-color : #A7A7A7;
-$timeline-year-size : 0.9em;
-$timeline-date-color : #00A388;
-$timeline-date-size : 2em;
+$category-li-height: 40px;

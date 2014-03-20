@@ -38,21 +38,21 @@ tags: [Linux]
 <p><strong>chown</strong>：修改文件或文件夹的所属用户</p>
 <p><strong>chmod</strong>：修UGO权限。</p>
 <blockquote>
-chmod u+w 表示为所属用户添加写权限</br>
-chmod g+w 表示为所属组添加写权限</br>
-chmod o+x 表示为其他用户添加执行权限</br>
-chmod 750 表示为所属用户添加读写执行（7），为所属用户添加读执行（5），其他用户没有任何权限（0）
+<p>chmod u+w 表示为所属用户添加写权限</p>
+<p>chmod g+w 表示为所属组添加写权限</p>
+<p>chmod o+x 表示为其他用户添加执行权限</p>
+<p>chmod 750 表示为所属用户添加读写执行（7），为所属用户添加读执行（5），其他用户没有任何权限（0）
 </blockquote>
 <p>&nbsp;</p>
 <h3>扩展权限</h3>
 <p><strong>suid</strong>：只对文件有效，表示文件在执行的时候以文件的所属用户的权限执行，比如/usr/bin/passwd，在终端上文件会显示红色，并且U权限中的x会被替换成s</p>
-<blockquote>chmod u+s：将文件设置suid
+<blockquote><p>chmod u+s：将文件设置suid</p>
 </blockquote>
 <p><strong>sgid</strong>：通常对文件夹有效，表示在文件夹中建立文件或文件夹的时候继承该文件夹的组用户。G权限中的x会被替换成s</p>
-<blockquote>chmod g+s：将文件夹设置sgid
+<blockquote><p>chmod g+s：将文件夹设置sgid</p>
 </blockquote>
 <p><strong>sticky</strong>：作用于文件夹，表示在该文件夹下的文件只能由文件的owner删除，其他人可以在文件夹下创建、浏览、但也只能删除自己为owner的文件。O权限中的x会被替换成t</p>
-<blockquote>chmod o+t：将文件夹设置sticky
+<blockquote><p>chmod o+t：将文件夹设置sticky</p>
 </blockquote>
 <p>&nbsp;</p>
 <p>参考视频教程：<a title="http://www.linuxcast.net/users/course_chapter/11" href="http://www.linuxcast.net/users/course_chapter/11">http://www.linuxcast.net/users/course_chapter/11</a></p>

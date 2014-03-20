@@ -10,15 +10,18 @@ tags: [github-page, jekyll, Ruby]
 <p>前几篇介绍了GitHub-Page的基本原理和使用方法，还介绍了如何将购买的域名绑定博客主页。然而，当需要正儿八经的将一个博客构建起来，不仅要知道如何上传我们的文件，还要能够高效的更好的设计博客。因此，必须能够在上传之前在本地完成测试；另一方面，完全靠html来编辑博客，显然工作量太大，随着博客越来越复杂，简直不可能维护，因此，需要用jekyll这个模板引擎来帮忙。本篇先介绍如何搭建一个本地的测试环境。</p>
 <p>&nbsp;</p>
 <blockquote>
-	更新</br>
+	<p>更新</p>
 	<ul>
 	<li>1.根据网友的反应，需要注意的是Ruby的版本和RubyDevKit的版本要对应，不要装错；
 	<li>2.另外，目前新版的Ruby自带gem了，所以gem安装可以跳过；
 	<li>3.由于国内的网络（你们懂的），gem官方的源基本上是没法用了，参考文中的链接，使用淘宝的镜像比较靠谱；
-	<li>4.jekyll有一个问题，可能需要修改下面这个文件
-		D:\Ruby193\lib\ruby\gems\1.9.1\gems\jekyll-1.2.1\lib\jekyll\convertible.rb
-		将它改成
-		self.content = File.read(File.join(base, name),:encoding => "utf-8")
+	<li>4.jekyll有一个问题，可能需要修改下面这个文件，否则会出现GBK错误
+		<pre>D:\Ruby193\lib\ruby\gems\1.9.1\gems\jekyll-1.2.1\lib\jekyll\convertible.rb
+将它改成
+self.content = File.read(File.join(base, name),:encoding => "utf-8")
+D:\Ruby193\lib\ruby\gems\1.9.1\gems\jekyll-1.2.1\lib\jekyll\tags\include.rb中的最后几行的地方改成
+File.read_with_options(file,:encoding => "utf-8")
+		</pre>
 	<li>5.最新的jekyll修改了命令行参数，需使用如下命令行
 		jekyll serve --safe --watch
 	<li>6.jekyll 1.4.3在windows下本地生成的时候可能会出现'fileutils.rb:247:in mkdir Invalid argument'的错误，详见
@@ -33,7 +36,7 @@ tags: [github-page, jekyll, Ruby]
 <p>ruby安装说明：<a title="http://www.ruby-lang.org/zh_cn/downloads/" href="http://www.ruby-lang.org/zh_cn/downloads/">http://www.ruby-lang.org/zh_cn/downloads/</a></p>
 <p>ruby安装下载(windows)：<a title="http://rubyinstaller.org/downloads/" href="http://rubyinstaller.org/downloads/">http://rubyinstaller.org/downloads/</a></p>
 <p>windows的安装还是一如既往的“无脑”，不多说了。</p>
-<blockquote>如果想要快速体验ruby开发，可以参考：<a href="http://www.ruby-lang.org/zh_cn/documentation/quickstart/" target="_blank">20分钟体验 Ruby</a></blockquote>
+<blockquote><p>如果想要快速体验ruby开发，可以参考：<a href="http://www.ruby-lang.org/zh_cn/documentation/quickstart/" target="_blank">20分钟体验 Ruby</a></p></blockquote>
 <p>&nbsp;</p>
 <h1>RubyDevKit安装</h1>
 <p>从这个页面下载DevKit：<a title="http://rubyinstaller.org/downloads/" href="http://rubyinstaller.org/downloads/">http://rubyinstaller.org/downloads/</a></p>
@@ -69,8 +72,8 @@ tags: [github-page, jekyll, Ruby]
 <h1>安装jekyll</h1>
 <p>有了上面的基础，安装jekyll就十分轻松了，执行下面gem命令即可全自动搞定：</p>
 <pre><code>$gem install jekyll</code></pre>
-<blockquote>
-	jekyll依赖的组件如下：
+<blockquote><p>
+	jekyll依赖的组件如下：</p>
 <ul>
 <li>directory_watcher</li>
 <li>liquid</li>
@@ -85,14 +88,14 @@ tags: [github-page, jekyll, Ruby]
 <p>jekyll此时会在localhost的4000端口监听http请求，用浏览器访问<a href="http://localhost:4000/index.html">http://localhost:4000/index.html</a>，之前的页面出现了！</p>
 
 <blockquote>
-	相关文章
-	<a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-03 %}">一步步在GitHub上创建博客主页(3)</a>
-	<a style="display:block;" href="{% post_url 2013-01-07-build-github-blog-page-05 %}">一步步在GitHub上创建博客主页(5)</a>
-	<a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a>
-	<a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a>
-	<a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a>
+	<p>相关文章
+	<p><a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-03 %}">一步步在GitHub上创建博客主页(3)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-07-build-github-blog-page-05 %}">一步步在GitHub上创建博客主页(5)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a></p>
+	<p><a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a></p>
 </blockquote>

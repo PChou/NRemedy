@@ -4,9 +4,41 @@
 	-webkit-#{$vert}: $value;
 }
 
-@mixin container_width() {
-	width: 80%;
-	max-width: $default-main-width;
-	margin: 0 auto;
-	padding: 0 1.875em 1em 1.875em;
+/* mixin */
+@mixin clearfix {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+@mixin left-title {
+	display: block;
+	font-weight: bold;
+	color: #fff;
+}
+
+@mixin hover-lighten {
+	&:focus,&:hover{
+		color: lighten($body-color,50%);
+	}
+}
+
+@mixin tag($bc: $tag-bg-color, $fc: $right-background-color) {
+	display: inline-block;
+	padding: 2px 7px;
+	margin-right: 5px;
+	background-color: $bc;
+	a { 
+		color: $fc; 
+		text-decoration: none;
+	}
+	cursor: pointer;
+	&:hover,&:focus{
+		background-color: lighten($bc,10%);
+	}
 }

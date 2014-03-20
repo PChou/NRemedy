@@ -7,8 +7,8 @@ categories: [web-build]
 tags: [github-page, jekyll, liquid]
 ---
 <blockquote>
-	更新</br>
-	jekyll最新的动态和文档现在可以在<a href="http://jekyllrb.com/">jekyllrb</a>上找到
+	<p>更新</p>
+	<p>jekyll最新的动态和文档现在可以在<a href="http://jekyllrb.com/">jekyllrb</a>上找到</p>
 </blockquote>
 
 <h1>jekyll介绍</h1>
@@ -81,7 +81,7 @@ layout: default
 &lt;html&gt;</code></pre>
 <p>现在请观察一下_site中的index.html，就是上面的Html代码！OK，现在你明白jekyll的工作方式了吧，它仅仅一次性的完成静态页面的转化，其余的事情全都交给普通的web server了！</p>
 <p>需要注意的是，如果你失败了，请确保你的文件都是UTF-8 without BOM的格式。</p>
-<blockquote>在windows中，为了甄别UTF-8编码格式的文本文件，默认会在文件头插入两个字节的标识，被称为BOM。事实证明这是个“歪门邪道”，jekyll不识别这种特殊的标记，所以可以使用Notepad++或其他的工具将UTF-8编码文件开头的BOM去掉。</blockquote>
+<blockquote><p>在windows中，为了甄别UTF-8编码格式的文本文件，默认会在文件头插入两个字节的标识，被称为BOM。事实证明这是个“歪门邪道”，jekyll不识别这种特殊的标记，所以可以使用Notepad++或其他的工具将UTF-8编码文件开头的BOM去掉。</p></blockquote>
 <p>&nbsp;</p>
 <h1>第一篇文章</h1>
 <p>现在我们来创建一篇博客文章，并在index.html页面添加文章的链接。</p>
@@ -144,14 +144,14 @@ layout: default
 <p>更多关于liquid的使用方法，请参见<a href="https://github.com/Shopify/liquid/wiki/Liquid-for-Designers" target="_blank">这里</a></p>
 <p>更多关于jekyll对liquid的扩展，请参见<a href="https://github.com/mojombo/jekyll/wiki/Liquid-Extensions" target="_blank">这里</a></p>
 <blockquote>
-	相关文章
-	<a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-03 %}">一步步在GitHub上创建博客主页(3)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-04 %}">一步步在GitHub上创建博客主页(4)</a>
-	<a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a>
-	<a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a>
-	<a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a>
+	<p>相关文章</p>
+	<p><a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-03 %}">一步步在GitHub上创建博客主页(3)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-04 %}">一步步在GitHub上创建博客主页(4)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a></p>
+	<p><a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a></p>
 </blockquote>

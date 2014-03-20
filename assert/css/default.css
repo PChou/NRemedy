@@ -1,0 +1,251 @@
+@charset "UTF-8";
+/* mixin */
+*, *:after, *:before {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box; }
+
+body {
+  background-color: #333333;
+  color: #aaaaaa;
+  margin: 0px;
+  font-family: 'Microsoft YaHei'; }
+
+code, pre {
+  font-family: Monaco,Menlo,Consolas,"Courier New",monospace; }
+
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #C7254E;
+  background-color: #F9F2F4;
+  border-radius: 4px; }
+
+pre {
+  word-break: break-all;
+  word-wrap: break-word; }
+
+blockquote {
+  margin: 20px 0; }
+
+@font-face {
+  font-family: 'iconfont';
+  src: url("http://at.alicdn.com/t/font_1395239533_2206988.eot");
+  /* IE9*/
+  src: url("http://at.alicdn.com/t/font_1395239533_2206988.eot?#iefix") format("embedded-opentype"), url("http://at.alicdn.com/t/font_1395239533_3015404.woff") format("woff"), url("http://at.alicdn.com/t/font_1395239533_188691.ttf") format("truetype"), url("http://at.alicdn.com/t/font_1395239533_3791118.svg#iconfont") format("svg");
+  /* iOS 4.1- */ }
+
+.clearfix:before, .clearfix:after {
+  content: " ";
+  display: table; }
+.clearfix:after {
+  clear: both; }
+
+.iconfont {
+  font-family: 'iconfont'; }
+
+.pull-left {
+  float: left; }
+
+.pull-right {
+  float: right; }
+
+.img-responsive {
+  display: block;
+  height: auto;
+  max-width: 100%; }
+
+#gotop {
+  display: none;
+  position: fixed;
+  right: 30px;
+  bottom: 50px;
+  font-family: 'iconfont';
+  font-size: 50px;
+  color: #d55400;
+  cursor: pointer; }
+
+.left-container {
+  float: left;
+  width: 35%; }
+  .left-container .mini-collapse {
+    display: none;
+    width: 90%; }
+  .left-container > div {
+    margin: 0 auto;
+    width: 75%; }
+    .left-container > div .center {
+      text-align: center; }
+    .left-container > div .left-item {
+      margin: 30px 0px; }
+    .left-container > div .navigator {
+      font-family: 'iconfont'; }
+      .left-container > div .navigator a {
+        padding: 10px;
+        display: inline-block;
+        border-radius: 50% 50% 50% 50%;
+        color: #aaaaaa;
+        border: 1px solid #000;
+        box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.1), 0 -1px 0 rgba(0, 0, 0, 0.5);
+        text-decoration: none; }
+        .left-container > div .navigator a:focus, .left-container > div .navigator a:hover {
+          color: white; }
+    .left-container > div .category:before {
+      content: "分类";
+      display: block;
+      font-weight: bold;
+      color: #fff; }
+    .left-container > div .category ul {
+      list-style: none;
+      margin: 0;
+      -webkit-padding-start: 0px; }
+      .left-container > div .category ul li {
+        border-bottom: 1px solid #aaaaaa;
+        height: 40px; }
+        .left-container > div .category ul li a {
+          display: block;
+          line-height: 40px;
+          text-decoration: none;
+          color: #aaaaaa;
+          width: 100%; }
+          .left-container > div .category ul li a:hover, .left-container > div .category ul li a:focus {
+            color: #fff; }
+            .left-container > div .category ul li a:hover span, .left-container > div .category ul li a:focus span {
+              border: 1px solid #fff; }
+          .left-container > div .category ul li a span {
+            display: inline-block;
+            float: right;
+            border: 1px solid #aaaaaa;
+            border-radius: 15px 15px 15px 15px;
+            padding: 0px 8px;
+            line-height: 20px;
+            margin-top: 10px; }
+    .left-container > div .tags {
+      line-height: 1.5; }
+      .left-container > div .tags:before {
+        content: "标签云";
+        display: block;
+        font-weight: bold;
+        color: #fff; }
+      .left-container > div .tags a {
+        color: #aaaaaa;
+        display: inline;
+        text-decoration: none; }
+        .left-container > div .tags a:focus, .left-container > div .tags a:hover {
+          color: white;
+          text-decoration: underline; }
+    .left-container > div .foot a {
+      color: #aaaaaa;
+      text-decoration: none; }
+      .left-container > div .foot a:focus, .left-container > div .foot a:hover {
+        color: white; }
+
+.right-container {
+  float: left;
+  width: 63%;
+  background-color: #eeeeee;
+  color: #333333; }
+  .right-container a {
+    color: #428BCA;
+    text-decoration: none; }
+    .right-container a:hover, .right-container a:focus {
+      color: #2A6496;
+      text-decoration: underline; }
+  .right-container .qrcode {
+    display: block;
+    text-align: center; }
+    .right-container .qrcode:before {
+      content: "扫一扫,手机阅读";
+      display: block;
+      padding: 8px; }
+  .right-container .post-item:nth-child(odd) {
+    box-shadow: inset 0 1px 10px rgba(163, 159, 159, 0.3), 0 1px 0 rgba(107, 107, 107, 0.1), 0 -1px 0px rgba(131, 131, 131, 0.5); }
+  .right-container .post-item > div {
+    margin: 0 auto;
+    width: 70%;
+    padding: 20px 0px; }
+    .right-container .post-item > div > div {
+      margin-top: 10px; }
+      .right-container .post-item > div > div .date {
+        color: #d55400;
+        margin-right: 5px; }
+  .right-container .post-item h1 {
+    margin: 0px 0px 20px 0px; }
+    .right-container .post-item h1 a {
+      color: #333333;
+      text-decoration: none; }
+  .right-container .post-item .description p {
+    width: 80%;
+    display: inline-block;
+    vertical-align: top;
+    color: #aaaaaa;
+    margin-right: 20px;
+    line-height: 2; }
+  .right-container .post-item .description img {
+    display: inline-block;
+    width: 12%;
+    vertical-align: top; }
+  .right-container .post-item category {
+    display: inline-block;
+    padding: 2px 7px;
+    margin-right: 5px;
+    background-color: #d55400;
+    cursor: pointer; }
+    .right-container .post-item category a {
+      color: #eeeeee;
+      text-decoration: none; }
+    .right-container .post-item category:hover, .right-container .post-item category:focus {
+      background-color: #ff6a09; }
+  .right-container .post-item tag {
+    display: inline-block;
+    padding: 2px 7px;
+    margin-right: 5px;
+    background-color: #23add6;
+    cursor: pointer; }
+    .right-container .post-item tag a {
+      color: #eeeeee;
+      text-decoration: none; }
+    .right-container .post-item tag:hover, .right-container .post-item tag:focus {
+      background-color: #4bbfe1; }
+  .right-container .post {
+    margin-bottom: 20px; }
+    .right-container .post p {
+      line-height: 1.5; }
+    .right-container .post h1, .right-container .post h2, .right-container .post h3, .right-container .post h4, .right-container .post h5 {
+      padding-left: 20px;
+      border-left: 5px solid #d55400; }
+    .right-container .post blockquote {
+      border-left: 5px solid #23add6;
+      color: #555;
+      font-size: 1em; }
+      .right-container .post blockquote p {
+        margin: 0px 20px;
+        line-height: 2; }
+
+@media (max-width: 768px) {
+  .left-container {
+    float: left;
+    width: 100%; }
+    .left-container .mini-collapse {
+      display: block; }
+      .left-container .mini-collapse h3 {
+        float: left; }
+      .left-container .mini-collapse a {
+        font-family: 'iconfont';
+        float: right;
+        display: block;
+        font-size: 30px;
+        color: #aaaaaa;
+        text-decoration: none;
+        padding: 15px; }
+        .left-container .mini-collapse a.active {
+          background-color: black;
+          color: white; }
+    .left-container .collapse {
+      display: none; }
+
+  .right-container {
+    float: left;
+    width: 100%; }
+    .right-container .qrcode {
+      display: none; } }

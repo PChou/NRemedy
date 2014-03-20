@@ -36,7 +36,31 @@ tags: [CPP, dot NET, Compiler]
 <p>首先看下我的编译环境的目录结构</p>
 <p><a href="{{ site.baseurl }}/assert/img/2013-01-13-cppcli-target-net2-without-vs2008-img1.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/2013-01-13-cppcli-target-net2-without-vs2008-img1.png" width="157" height="110"></a></p>
 <p>其中WinSDK6下分别是windows的include和lib，其他都是从上面的步骤中copy过来的，现在我们在制作vsvars32.bat:</p>
-<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source"><font style="background-color: #ffff00"><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">SET</span> <span style="color: rgb(0,0,0)">VCINSTALLDIR</span><span style="color: rgb(0,0,0)">=</span>J:\vs<span style="color: rgb(0,0,255)">2008</span>vcbuild<br></font><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">SET</span> <span style="color: rgb(0,0,0)">FrameworkDir</span><span style="color: rgb(0,0,0)">=</span>C:\Windows\Microsoft.NET\Framework<br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">SET</span> <span style="color: rgb(0,0,0)">FrameworkVersion</span><span style="color: rgb(0,0,0)">=</span>v<span style="color: rgb(0,0,255)">2</span>.<span style="color: rgb(0,0,255)">0</span>.<span style="color: rgb(0,0,255)">50727</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">SET</span> <span style="color: rgb(0,0,0)">Framework35Version</span><span style="color: rgb(0,0,0)">=</span>v<span style="color: rgb(0,0,255)">3</span>.<span style="color: rgb(0,0,255)">5</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">if</span> <span style="color: rgb(0,0,255)">"%VCINSTALLDIR%"</span><span style="color: rgb(0,0,0)">==</span><span style="color: rgb(0,0,255)">""</span> <span style="color: rgb(0,0,128); font-weight: bold">goto</span> <span style="color: rgb(0,0,0)">error_no_VCINSTALLDIR</span><br><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">echo</span> Setting environment <span style="color: rgb(0,0,128); font-weight: bold">for</span> using Microsoft Visual Studio <span style="color: rgb(0,0,255)">2008</span> x<span style="color: rgb(0,0,255)">86</span> tools.<br><br><br><span style="color: rgb(0,0,0)">@</span>rem<br><span style="color: rgb(0,0,0)">@</span>rem Root of Visual Studio IDE installed files.<br><span style="color: rgb(0,0,0)">@</span>rem<br><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">set</span> <span style="color: rgb(0,0,0)">PATH</span><span style="color: rgb(0,0,0)">=</span><span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\bin;C:\Windows\Microsoft.NET\Framework\v<span style="color: rgb(0,0,255)">3</span>.<span style="color: rgb(0,0,255)">5</span>;C:\Windows\Microsoft.NET\Framework\v<span style="color: rgb(0,0,255)">2</span>.<span style="color: rgb(0,0,255)">0</span>.<span style="color: rgb(0,0,255)">50727</span>;<span style="color: rgb(0,0,0)">%PATH%</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">set</span> <span style="color: rgb(0,0,0)">INCLUDE</span><span style="color: rgb(0,0,0)">=</span><span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\include;<span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\WinSDK<span style="color: rgb(0,0,255)">6</span>\Include;<span style="color: rgb(0,0,0)">%INCLUDE%</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">set</span> <span style="color: rgb(0,0,0)">LIB</span><span style="color: rgb(0,0,0)">=</span><span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\lib;<span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\WinSDK<span style="color: rgb(0,0,255)">6</span>\Lib;<span style="color: rgb(0,0,0)">%LIB%</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">set</span> <span style="color: rgb(0,0,0)">LIBPATH</span><span style="color: rgb(0,0,0)">=</span>C:\Windows\Microsoft.NET\Framework\v<span style="color: rgb(0,0,255)">3</span>.<span style="color: rgb(0,0,255)">5</span>;C:\Windows\Microsoft.NET\Framework\v<span style="color: rgb(0,0,255)">2</span>.<span style="color: rgb(0,0,255)">0</span>.<span style="color: rgb(0,0,255)">50727</span>;<span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\lib;<span style="color: rgb(0,0,0)">%VCINSTALLDIR%</span>\WinSDK<span style="color: rgb(0,0,255)">6</span>\Lib;<span style="color: rgb(0,0,0)">%LIBPATH%</span><br><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">goto</span> <span style="color: rgb(0,0,0)">end</span><br><br><span style="color: rgb(0,0,0)">:error_no_VCINSTALLDIR</span><br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">echo</span> ERROR: VCINSTALLDIR variable is not <span style="color: rgb(0,0,128); font-weight: bold">set</span>. <br><span style="color: rgb(0,0,0)">@</span><span style="color: rgb(0,0,128); font-weight: bold">goto</span> <span style="color: rgb(0,0,0)">end</span><br><br><span style="color: rgb(0,0,0)">:end</span><br></div>
+<pre><code>@SET VCINSTALLDIR=J:\vs2008vcbuild
+@SET FrameworkDir=C:\Windows\Microsoft.NET\Framework
+@SET FrameworkVersion=v2.0.50727
+@SET Framework35Version=v3.5
+@if "%VCINSTALLDIR%"=="" goto error_no_VCINSTALLDIR
+
+@echo Setting environment for using Microsoft Visual Studio 2008 x86 tools.
+
+
+@rem
+@rem Root of Visual Studio IDE installed files.
+@rem
+
+@set PATH=%VCINSTALLDIR%\bin;C:\Windows\Microsoft.NET\Framework\v3.5;C:\Windows\Microsoft.NET\Framework\v2.0.50727;%PATH%
+@set INCLUDE=%VCINSTALLDIR%\include;%VCINSTALLDIR%\WinSDK6\Include;%INCLUDE%
+@set LIB=%VCINSTALLDIR%\lib;%VCINSTALLDIR%\WinSDK6\Lib;%LIB%
+@set LIBPATH=C:\Windows\Microsoft.NET\Framework\v3.5;C:\Windows\Microsoft.NET\Framework\v2.0.50727;%VCINSTALLDIR%\lib;%VCINSTALLDIR%\WinSDK6\Lib;%LIBPATH%
+
+@goto end
+
+:error_no_VCINSTALLDIR
+@echo ERROR: VCINSTALLDIR variable is not set. 
+@goto end
+
+:end</code></pre>
 <p>这是适用于x86目标平台的 编译环境，如果要编译其他平台，可以类推。</p>
 <p>脚本的第一行指向的是你的编译环境的路径，如果你像我一样放在U盘中，并且目录名叫vs2008vcbuild，那么你可以不用改</p>
 <p>&nbsp;</p>

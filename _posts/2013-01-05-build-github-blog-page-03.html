@@ -29,20 +29,20 @@ tags: [github-page]
 <p><a href="{{ site.baseurl }}/assert/img/build-github-blog-page-03-img0.png"><img style="display: inline" title="image" alt="image" src="{{ site.baseurl }}/assert/img/build-github-blog-page-03-img0.png" width="621" height="103"></a></p>
 <p>然后在你的gh-pages分支的根目录中创建一个CNAME文件，其中只能有一行，就是pchou.info，用Git客户端上传更改，大约等十几分钟就能生效了。</p>
 <p>可以先ping一下pchou.info，如果返回的IP地址更配置的A记录一样的话，说明域名已经注册好了，就等GitHub生效了。不过别急，你还需要把_config.yml中的baseurl设置如下</p>
-<blockquote>baseurl : /</blockquote>
+<blockquote><p>baseurl : /</p></blockquote>
 <p>或者是</p>
-<blockquote>baseurl :</blockquote>
+<blockquote><p>baseurl :</p></blockquote>
 <p>这取决于你的模板如何引用baseurl，总之指向根目录就好了。</p>
 <p>刚开始的时候我比较困惑的是，为什么A记录都指向的是同一个IP，GitHub是如何知道应该返回哪个用户的页面的。其实很简单，秘密就是上面提到的CNAME文件，GitHub应该会缓存所有gh-pages分支中的CNAME文件，用户对域名的请求被定向到GitHub住服务器的IP地址后，再根据用户请求的域名，判断对应哪个gh-pages，而且它会自动带上项目名，所以baseurl需要改为更目录。</p>
 <blockquote>
-	相关文章
-	<a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a>
-	<a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-04 %}">一步步在GitHub上创建博客主页(4)</a>
-	<a style="display:block;" href="{% post_url 2013-01-07-build-github-blog-page-05 %}">一步步在GitHub上创建博客主页(5)</a>
-	<a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a>
-	<a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a>
-	<a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a>
-	<a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a>
+	<p>相关文章</p>
+	<p><a style="display:block;" href="{% post_url 2013-01-03-build-github-blog-page-01 %}">一步步在GitHub上创建博客主页(1)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-02 %}">一步步在GitHub上创建博客主页(2)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-05-build-github-blog-page-04 %}">一步步在GitHub上创建博客主页(4)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-07-build-github-blog-page-05 %}">一步步在GitHub上创建博客主页(5)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-09-build-github-blog-page-06 %}">一步步在GitHub上创建博客主页(6)</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-01-20-build-github-blog-page-07 %}">一步步在GitHub上创建博客主页(7)--兼容Windows Writer的服务提供器</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-526712a543031 %}">基于PHP的Windows Writer服务提供器——介绍</a></p>
+	<p><a style="display:block;" href="{% post_url 2013-10-23-5267e1c65917c %}">基于PHP的Windows Writer服务提供器——如何使用</a></p>
+	<p><a style="display:block;" href="{% post_url 2014-01-25-52e36ecfe5317 %}">Jekyll 1.4.3 mkdir Invalid argument</a></p>
 </blockquote>
