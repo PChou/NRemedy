@@ -66,16 +66,20 @@ tags: [Performance, BMC]
 <li>调优mid-tier应用程序本身。</li></ul>
 <h2><strong>Web基础配置调优</strong></h2>
 <p>下面的参数将有效的改善浏览器的响应时间：</p>
-<h3><font style="font-weight: bold">HTTP keep-alive</font></h3>
+<h3>HTTP keep-alive</h3>
 <p>允许HTTP协议中的保持连接的数量，这将减少客户端与服务端建立TCP连接的次数。客户端将能够用现有的连接来进行HTTP通信。通常的web server在这个参数上需要考虑两个方面： </p>
 <ol>
 <li>Keep-alive count：表示服务器能够保持连接的最大数量，对于Apache，默认100 
 <li>Connection timeout：表示对于空闲的TCP连接，多长时间超时并关闭，对于Apache，默认20sec</li></ol>
 <p>这两个参数都会通过HTTP响应头返回浏览器，浏览器会进行合适的处理。默认的参数对于像mid-tier这样的应用并不适用，因为mid-tier应用是基于AJAX类型的应用，大量的AJAX请求却只包含少量的数据，如果反复的建立连接，可想而知。推荐设置如下</p>
-<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source"><span style="color: rgb(0,0,128); font-weight: bold">&lt;Connector</span> <span style="color: rgb(255,0,0)">URIEncoding=</span><span style="color: rgb(0,0,255)">"UTF-8"</span> <span style="color: rgb(255,0,0)">acceptCount=</span><span style="color: rgb(0,0,255)">"100"</span> <br><span style="color: rgb(255,0,0)">connectionTimeout=</span><span style="color: rgb(0,0,255)">"90000"</span>&nbsp; <br><span style="color: rgb(255,0,0)">maxHttpHeaderSize=</span><span style="color: rgb(0,0,255)">"8192"</span> <span style="color: rgb(255,0,0)">maxKeepAliveRequests=</span><span style="color: rgb(0,0,255)">"-</span><br><span style="color: rgb(0,0,255)">1"</span> <span style="color: rgb(255,0,0)">maxThreads=</span><span style="color: rgb(0,0,255)">"500"</span> <span style="color: rgb(255,0,0)">port=</span><span style="color: rgb(0,0,255)">"80"</span> <br><span style="color: rgb(255,0,0)">protocol=</span><span style="color: rgb(0,0,255)">"HTTP/1.1"</span> <span style="color: rgb(255,0,0)">redirectPort=</span><span style="color: rgb(0,0,255)">"8443"</span><span style="color: rgb(0,0,128); font-weight: bold">/&gt;</span><br></div>
+<pre><code>&lt;Connector URIEncoding="UTF-8" acceptCount="100" 
+connectionTimeout="90000"  
+maxHttpHeaderSize="8192" maxKeepAliveRequests="-
+1" maxThreads="500" port="80" 
+protocol="HTTP/1.1" redirectPort="8443"/&gt;</code></pre>
 <p>以上设置对性能提升的幅度取决于很多因素，其中一点就是网络延时，网络延时越大，这种设置的效果越好（大大减少TCP握手）。并且，对于HTTPS的站点此种提升可能更大（减少了SSL建立时期的密钥协商）。利用web代理调试技术可以观察设置是否生效，例如Fiddler。</p>
 <p>&nbsp;</p>
-<h3><font style="background-color: #ffffff"><font style="font-weight: bold">JVM settings</font></font></h3>
+<h3>JVM settings</h3>
 <p>包括JVM heap size、MaxPermSize。这些值将影响垃圾回收的行为。不够优化的设置会导致以下问题： </p>
 <ul>
 <li>垃圾回收更频繁，这样消耗更多的CPU 
@@ -90,7 +94,7 @@ tags: [Performance, BMC]
 <li>XX:+UseCompressedOops 
 <li>-XX:+UseParallelGC</li></ul>
 <p>&nbsp;</p>
-<h3><font style="background-color: #ffffff"><font style="font-weight: bold">Web应用程序的宿主线程配置</font></font></h3>
+<h3>Web应用程序的宿主线程配置</h3>
 <p>考虑下面的参数，具体配置可以参考上文： </p>
 <ul>
 <li>maxThreads：Tomcat最大同时处理HTTP请求的数量 
@@ -146,14 +150,24 @@ tags: [Performance, BMC]
 <p>&nbsp;</p>
 <h2><strong>数据库调优</strong></h2>
 <p>AR服务器与数据之间的通信频繁，需要足够的带宽。BMC推荐使用外部存储。</p>
-<h3><font style="font-weight: bold">Oracle调优</font></h3>
+<h3>Oracle调优</h3>
 <p>暂时跳过</p>
-<h3><font style="font-weight: bold">SQL Server调优</font></h3>
+<h3>SQL Server调优</h3>
 <ul>
 <li>强制参数化。强制SQL Server参数化有利于复用SQL执行计划，减少SQL语句解析时间。类似Oracle的共享游游标。 
-<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source"><span style="color: rgb(0,0,128); font-weight: bold">Alter</span> <span style="color: rgb(0,0,128); font-weight: bold">database</span> <span style="color: rgb(0,0,0)">ARSystem</span> <span style="color: rgb(0,0,128); font-weight: bold">set</span> <span style="color: rgb(0,0,0)">PARAMETERIZATION</span> <span style="color: rgb(0,0,0)">FORCED</span><br><span style="color: rgb(0,0,128); font-weight: bold">select</span> <span style="color: rgb(0,0,0)">name</span><span style="color: rgb(0,0,0)">,</span> <span style="color: rgb(0,0,0)">is_parameterization_forced</span> <span style="color: rgb(0,0,128); font-weight: bold">from</span> <span style="color: rgb(0,0,0)">sys</span><span style="color: rgb(0,0,0)">.</span><span style="color: rgb(0,0,0)">databases</span> <br><span style="color: rgb(0,0,128); font-weight: bold">where</span> <span style="color: rgb(0,0,0)">name</span><span style="color: rgb(0,0,0)">=</span><span style="color: rgb(0,0,255)">'ARSystem'</span><br></div>
+<pre><code>Alter database ARSystem set PARAMETERIZATION FORCED
+select name, is_parameterization_forced from sys.databases 
+where name='ARSystem'</code></pre>
 <li>设置快照隔离。参考<br><a title="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607975.html" href="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607975.html">http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607975.html</a> <br><a title="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607985.html" href="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607985.html">http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607985.html</a> <br><a title="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607994.html" href="http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607994.html">http://www.cnblogs.com/trisaeyes/archive/2006/12/30/607994.html</a><br>
-<div style="background-color: rgb(249,247,237); font-family: 'Microsoft Yahei', consolas, 'Lucida Console', 'Courier New'; color: rgb(0,0,0)" class="source"><span style="color: rgb(0,0,128); font-weight: bold">ALTER</span> <span style="color: rgb(0,0,128); font-weight: bold">DATABASE</span> <span style="color: rgb(0,0,0)">arsystem</span> <span style="color: rgb(0,0,128); font-weight: bold">SET</span> <br><span style="color: rgb(0,0,0)">ALLOW_SNAPSHOT_ISOLATION</span> <span style="color: rgb(0,0,128); font-weight: bold">ON</span> <br><span style="color: rgb(0,0,128); font-weight: bold">ALTER</span> <span style="color: rgb(0,0,128); font-weight: bold">DATABASE</span> <span style="color: rgb(0,0,0)">arsystem</span> <span style="color: rgb(0,0,128); font-weight: bold">SET</span> <br><span style="color: rgb(0,0,0)">READ_COMMITTED_SNAPSHOT</span> <span style="color: rgb(0,0,128); font-weight: bold">ON</span><br><br><span style="color: rgb(0,0,128); font-weight: bold">select</span> <span style="color: rgb(0,0,0)">name</span><span style="color: rgb(0,0,0)">,</span> <span style="color: rgb(0,0,0)">is_read_committed_snapshot_on</span> <br><span style="color: rgb(0,0,128); font-weight: bold">from</span> <span style="color: rgb(0,0,0)">sys</span><span style="color: rgb(0,0,0)">.</span><span style="color: rgb(0,0,0)">databases</span>&nbsp; <br><span style="color: rgb(0,0,128); font-weight: bold">where</span> <span style="color: rgb(0,0,0)">name</span><span style="color: rgb(0,0,0)">=</span><span style="color: rgb(0,0,255)">'ARSystem'</span><br></div></li></ul>
+<pre><code>ALTER DATABASE arsystem SET 
+ALLOW_SNAPSHOT_ISOLATION ON 
+ALTER DATABASE arsystem SET 
+READ_COMMITTED_SNAPSHOT ON
+
+select name, is_read_committed_snapshot_on 
+from sys.databases  
+where name='ARSystem'</code></pre>
+</li></ul>
 <p>&nbsp;</p>
 <h2><font style="font-weight: bold">总体系统调优</font></h2>
 <h3><font style="font-weight: bold">网络</font></h3>
