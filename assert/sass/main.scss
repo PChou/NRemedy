@@ -22,6 +22,23 @@
 	max-width: 100%;
 }
 
+.table {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.table-bordered {
+	border: 1px solid #ddd;
+}
+
+tr.headers {
+	color: #fff;
+	background-color: #555;
+}
+
+.table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td {
+	border: 1px solid #ddd;
+}
 
 #gotop{
   display:none;
@@ -279,4 +296,61 @@
 		}
 	}
 
+	.table-responsive {
+		width: 100%;
+		margin-bottom: 15px;
+		overflow-x: scroll;
+		overflow-y: hidden;
+		border: 1px solid #ddd;
+	}
+
+}
+
+
+/* http://www.lesscss.org/ 语法高亮 */
+
+#_52de149d84a8f pre code {
+  -font-family: 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', 'Monaco', Courier, monospace !important;
+  background-color: #262626;
+  display: block;
+  color: #ebefe7;
+  padding: 0.5em;
+}
+#_52de149d84a8f pre code .string,
+#_52de149d84a8f pre code .regexp {
+  color: #3d575c;
+}
+#_52de149d84a8f pre code .comment {
+  color: rgba(255, 255, 255, 0.5);
+}
+#_52de149d84a8f pre code .number {
+  color: #ae81ff;
+}
+#_52de149d84a8f pre code .class,
+#_52de149d84a8f pre code .special,
+#_52de149d84a8f pre code .mixin {
+  color: #a6e22e;
+}
+
+
+#_52de149d84a8f pre code .attribute,
+#_52de149d84a8f pre code .keyword {
+  color: #66d9ef;
+}
+#_52de149d84a8f pre code .variable {
+  color: #fff;
+}
+#_52de149d84a8f pre code .element {
+  color: #669991;
+}
+
+#_52de149d84a8f pre code .id {
+  color: #c2b470;
+  font-weight: normal;
+}
+#_52de149d84a8f pre .color {
+  color: #b35e4d;
+}
+#_52de149d84a8f pre #time {
+  color: #aaaaaa;
 }
