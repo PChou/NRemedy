@@ -374,6 +374,23 @@ tr.headers {
 		.qrcode{
 			display: none;
 		}
+
+		.post-item {
+			& > div {
+				width:90%;
+			}
+
+			.description {
+				p {
+					width: 100%;
+				}
+
+				img{
+					display: none;
+				}
+			}
+		}
+
 	}
 
 	.table-responsive {

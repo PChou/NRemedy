@@ -330,6 +330,12 @@ tr.headers {
     width: 100%; }
     .right-container .qrcode {
       display: none; }
+    .right-container .post-item > div {
+      width: 90%; }
+    .right-container .post-item .description p {
+      width: 100%; }
+    .right-container .post-item .description img {
+      display: none; }
 
   .table-responsive {
     width: 100%;
