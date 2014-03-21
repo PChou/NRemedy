@@ -254,6 +254,11 @@ tr.headers {
       .right-container .post blockquote p {
         margin: 0px 20px;
         line-height: 2; }
+    .right-container .post img {
+      display: block;
+      height: auto;
+      max-width: 100%;
+      margin: 0 auto; }
 
 .me-mod {
   max-width: 820px;
