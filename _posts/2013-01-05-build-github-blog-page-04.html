@@ -61,6 +61,8 @@ File.read_with_options(file,:encoding => "utf-8")
 - C:/Ruby193</code></pre>
 <p>最后，执行如下命令，执行安装：</p>
 <pre><code>$ruby setup.rb</code></pre>
+<p>如果没有setup.rb的话，执行：</p>
+<pre><code>$ruby dk.rb install</code></pre>
 <p>&nbsp;</p>
 <h1>Rubygems</h1>
 <p>Rubygems是类似Radhat的RPM、centOS的Yum、Ubuntu的apt-get的应用程序打包部署解决方案。Rubygems本身基于Ruby开发，在Ruby命令行中执行。我们需要它主要是因为jekyll的执行需要依赖很多Ruby应用程序，如果一个个手动安装比较繁琐。jekyll作为一个Ruby的应用，也实现了Rubygems打包标准。只要通过简单的命令就可以自动下载其依赖。 
