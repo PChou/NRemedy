@@ -47,6 +47,43 @@ tags: [web-server,nginx]
 > 
 > 关于Nginx的标准http模块的嵌入变量，详见[这里](http://nginx.org/en/docs/http/ngx_http_core_module.html#variables)
 
+### 提供flv视频播放 ###
+使用`jwplayer`+`Nginx`能够实现视频在线播放，视频格式为flv。Nginx有一个flv模块[ngx_http_flv_module](http://nginx.org/en/docs/http/ngx_http_flv_module.html)，能够支持flv视频的快进播放。在安装Nginx的时候可能需要手动添加`--with-http_flv_module`，不过笔者使用的yum安装，自动带上了这个模块。
+
+其实从这个模块的文档中可以看到，它只是能够处理`start`的带参数http请求，需要像下面这样配置：
+
+	location ~ \.flv {
+		root /var/video;
+    	flv;
+	}
+
+从客户端播放器的角度看，还需要配置播放器的一些参数，以jwplayer为例：
+
+	jwplayer("flashContent").setup({
+		flashplayer: "/jwplayer/player.swf",
+		height: 270,
+		width: 480,
+		file: "${file_url}.flv", //flv文件路径
+		image:"${file_url}.jpg", //缩略图
+		streamer:"start",
+		provider: "http", //有时可能是type:"http"
+	});
+
+这里的关键参数是`provider`，用来告诉jwplayer使用http方式请求视频(还有其他协议，比如[RTSP](http://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol))，`streamer`参数是配合Nginx支持的`start`参数来设置的。
+
+如果想要实现快进播放的话，还有一个关键点，就是视频需要包含有**关键帧信息**。关键帧信息其实就是一系列`时间点`+`byte位`。可以用[yamdi](http://yamdi.sourceforge.net/)为flv注入关键帧:
+	
+	yamdi -i a_without_meta.flv -o b_with_meta.flv
+
+这样jwplayer能够根据快进的时间从关键帧信息中找到最近的关键帧的起始二进制点，并将这个byte作为start参数回传给Nginx。如果关键帧信息越密集的话，越占空间，但是快进也能够越精确：
+
+	//刚开始播放的时候，产生的http：
+	.../b_with_meta.flv?start=0
+	//用户快进后，产生的http：
+	.../b_with_meta.flv?start=37682252
+
+
+
 ## Nginx作为反向代理 ##
 ### 一个IP多个域名 ###
 如果只有一个公网IP，但是网站功能需要划分为多个不同的子网站或者子域名，可以用Nginx来搭建反向代理来“复用”IP资源。假设有如下几个域名都是abc.com这个主域的：
