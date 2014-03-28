@@ -255,7 +255,7 @@ tr.headers {
 
 	.post {
 		margin-bottom : 20px;
-
+		font-size: 95%;
 		p{
 			line-height: 1.5;
 		}
@@ -278,6 +278,10 @@ tr.headers {
 			height: auto;
 			max-width: 100%;
 			margin: 0 auto;
+		}
+
+		li {
+			margin: 10px 0px;
 		}
 	}
 

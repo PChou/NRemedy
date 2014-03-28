@@ -241,7 +241,8 @@ tr.headers {
     .right-container .post-item tag:hover, .right-container .post-item tag:focus {
       background-color: #4bbfe1; }
   .right-container .post {
-    margin-bottom: 20px; }
+    margin-bottom: 20px;
+    font-size: 95%; }
     .right-container .post p {
       line-height: 1.5; }
     .right-container .post h1, .right-container .post h2, .right-container .post h3, .right-container .post h4, .right-container .post h5 {
@@ -259,6 +260,8 @@ tr.headers {
       height: auto;
       max-width: 100%;
       margin: 0 auto; }
+    .right-container .post li {
+      margin: 10px 0px; }
 
 .me-mod {
   max-width: 820px;
