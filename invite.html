@@ -1,0 +1,60 @@
+<html>
+<head>
+	<script src="http://cdn.bootcss.com/URI.js/1.11.2/URI.min.js"></script>
+	<style type="text/css">
+
+		body {
+			background-color:#333;
+			padding-top:5px;
+		}
+
+		.container {
+			margin:0 auto;
+			width: 683px;
+			position: relative;
+		}
+
+		.container img {
+			width:800px;
+			height:683px;
+		}
+
+		.container span{
+			position: absolute;
+			font-family: "Microsoft YaHei";
+			color: #ae311d;
+		}
+
+		span.inviter {
+			top: 426px;
+			left: 433px;
+		}
+
+		span.position {
+			top: 500px;
+			left: 421px;
+			width: 150px;
+		}
+
+
+	</style>
+</head>
+<body>
+<div class='container'>
+<img src='http://pchou.qiniudn.com/invite.jpg'/>
+<span class='inviter' id='inviter'>于晓</span>
+<span class='position'>苏州市金阊区留园路477号圆外楼饭店</span>
+</div>
+
+<script type="text/javascript">
+	
+	var uri = URI(window.location);
+	//alert(uri.query(true).inviter);
+	var span = document.getElementById('inviter');
+	span.innerHTML = uri.query(true).inviter;
+
+</script>
+
+
+</body>
+</html>
