@@ -63,7 +63,7 @@
 
 				<div class='tags left-item'>
 					{% for tag in site.tags %}
-						<a href="{{ site.baseurl }}/tag.html#{{ tag[0] }}" style='font-size:{{ tag[1].size | plus: 15  }}px;'>{{ tag[0] }}</a>
+						<a href="{{ site.baseurl }}/tag.html#{{ tag[0] }}" style='font-size:{{ tag[1].size | times: 2 | plus: 15  }}px;'>{{ tag[0] }}</a>
 					{% endfor %}
 				</div>
 				<div class='foot center'>

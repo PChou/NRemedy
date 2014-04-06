@@ -8,7 +8,7 @@ tags: [docker,dockerfile]
 ---
 
 ## 缘起 ##
-在几个月前听说Docker，但是一直没有时间去研究，前一段时间趁着azure免费试用，赶紧实验一下，但是卡在了ubuntu基础镜像的下载上(由于国内网络的特殊原因)，所以也就搁浅了。在逛[Segmentfault](http://segmentfault.com/)的时候，看到上面有个[Docker子站问答](http://segmentfault.com/docker)，逛了逛果然有干活，于是重新试了一下，这里把经验和体会分享一下。
+在几个月前听说Docker，但是一直没有时间去研究，前一段时间趁着azure免费试用，赶紧实验一下，但是卡在了ubuntu基础镜像的下载上(由于国内网络的特殊原因)，所以也就搁浅了。在逛[Segmentfault](http://segmentfault.com/)的时候，看到上面有个[Docker子站问答](http://segmentfault.com/docker)，逛了逛果然有干货，于是重新试了一下，这里把经验和体会分享一下。
 
 ## Docker简介 ##
 我觉得简单来说，[Docker](https://www.docker.io/)就是一个应用程序执行容器，类似虚拟机的概念。但是与虚拟化技术的不同点在于下面几点：
