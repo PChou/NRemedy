@@ -129,3 +129,20 @@ Nginx作为反向代理的时候，如果上游服务器处理时间过长的话
 
 	proxy_read_timeout	180s;
 
+
+### 默认的header过滤 ###
+Nginx默认对客户端的http请求进行很多验证，其中容易忽视的是header的验证，默认由下面两个配置节控制：
+
+	underscores_in_headers on|off;
+	ignore_invalid_headers on|off;
+
+`underscores_in_headers off`表示对包含有下划线(_)的header认为是**不合法的**，而`ignore_invalid_headers on`则表示对于**不合法的header都过滤掉（无视掉）**。如果在客户端自定义header的话，要注意尽量不要包含下划线，否则会碰到被Nginx过滤掉的问题。如果不可避免的要使用下划线的话，就考虑配置成这样的组合：
+
+	underscores_in_headers on;
+	ignore_invalid_headers off;
+
+可以把上面的配置节设置在`http`或者`server`段中。
+
+对于排查这个问题，可以通过将错误日志的告警级别调整到debug，并查看error日志，一般错误日志里面会包含有类似这样的信息
+
+> ...client sent invalid header line:...
