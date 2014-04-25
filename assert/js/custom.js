@@ -22,12 +22,12 @@ $(function(){
             //以1秒的间隔返回顶部
             $('body,html').animate({scrollTop:0},1000);
     });
-    $("#gotop").mouseover(function(e) {
-        $(this).css("background","url(images/backtop2013.png) no-repeat 0px 0px");
-    });
-    $("#gotop").mouseout(function(e) {
-        $(this).css("background","url(images/backtop2013.png) no-repeat -70px 0px");
-    });
+    // $("#gotop").mouseover(function(e) {
+    //     $(this).css("background","url(images/backtop2013.png) no-repeat 0px 0px");
+    // });
+    // $("#gotop").mouseout(function(e) {
+    //     $(this).css("background","url(images/backtop2013.png) no-repeat -70px 0px");
+    // });
     goTop();//实现回到顶部元素的渐显与渐隐
 
     var opt = { text : window.location.href, width:150, height:150 };
