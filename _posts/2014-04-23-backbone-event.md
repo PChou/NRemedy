@@ -33,7 +33,7 @@ tags: [javascript,backbone]
 使当前对象侦听`obj`对象的一个叫`name`的事件，当事件被触发后，回调`callback`
 
 ### listenToOnce: function(obj, name, callback) ###
-使当前对象侦听`obj`对象的一个叫`name`的事件，当事件被触发后，回调`callback`一次（以后不会在回调）
+使当前对象侦听`obj`对象的一个叫`name`的事件，当事件被触发后，回调`callback`一次（以后不会再回调）
 
 ### trigger: function(name) ###
 当前对象触发`name`事件
