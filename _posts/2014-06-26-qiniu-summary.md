@@ -1,10 +1,10 @@
 ---
 layout: postlayout
 title: 使用七牛云存储的一些经验总结
-description: 近段时间将使用七牛云存储来存放用户上传的数据，客户端通过七牛的js-sdk与七牛交互，服务端实现了七牛相关的接口。在这过程中多多少少遇到点问题，在这里总结一下
-thumbimg: JavaScript-logo.png
-categories: [javascript]
-tags: [javascript,backbone]
+description: 近段时间将使用七牛云存储来存放用户上传的数据，客户端通过七牛的js-sdk与七牛交互，服务端C#实现了七牛相关的接口。在这过程中多多少少遇到点问题，在这里总结一下
+thumbimg: Open-Source-Software-.jpg
+categories: [open-source]
+tags: [dot NET,backbone,cloud]
 ---
 
 ## 599错误处理 ##
