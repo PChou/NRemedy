@@ -63,7 +63,7 @@ tags: [github-page, jekyll]
 
 其中2、3两种方式能够享受CDN加速，因为域名不是直接与IP地址映射的，github就有机会帮用户选择最近的镜像主机提供服务。但是笔者先前是直接将在A记录里面将主域`pchou.info`和`www.pchou.info`指向了`204.232.175.78`。这也是为什么github会给我警告的原因。但是改进有些令人发愁，因为希望保留别人对我的外链啊，那么如何改进呢？
 
-首先删除所有的A记录，添加CNAME记录
+首先删除`www.pchou.info`的A记录，添加CNAME记录
 
 > www.pchou.info -> pchou.github.io
 
